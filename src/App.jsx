@@ -1,13 +1,7 @@
-import './App.css'
+import React from 'react'
 
-function App() {
-
-
+export default function App() {
   return (
-    <>
-      
-    </>
+    <div className='text-6xl font-bold text-red-400 text-center'>This is Home page</div>
   )
 }
-
-export default App
