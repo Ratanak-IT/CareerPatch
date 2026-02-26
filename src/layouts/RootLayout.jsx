@@ -11,6 +11,8 @@ import MainSection from '../components/section/MainSection'
 import PeopleLoveWorking from '../components/section/PeopleLoveWorking'
 import SectionSolutionForEveryNeed from '../components/section/SectionSalutionForEveryDay'
 import FindTheBest from '../components/section/FindTheBest'
+import CardDetailFreelancer from '../carddetail/CardDetailFreelancer'
+import CardDetailBusiness from '../carddetail/CarddetailBusiness'
 
 
 
@@ -21,6 +23,8 @@ export default function RootLayout() {
       <main className='flex-1'>
         <Outlet />
       </main>
+      <CardDetailFreelancer/>
+      <CardDetailBusiness/>
       {/* <MainSection/>
       <NavbarAfterLogin/>
       <ButtonComponent/>
