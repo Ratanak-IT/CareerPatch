@@ -4,7 +4,7 @@ import ProfileCardLayout from './components/profile/freelancer/CardInformationFr
 export default function App() {
   return (
     <>
-      <ProfileCardLayout/>
+      
     </>
   )
 }

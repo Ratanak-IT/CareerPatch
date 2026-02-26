@@ -26,8 +26,8 @@ export default function RootLayout() {
       <TalenCategories/>
       <HowIsWork/>
       
-      <PeopleLoveWorking/> */}
-      <FooterComponent />
+      <PeopleLoveWorking/>
+      <FooterComponent /> */}
     </div>
   )
 }

@@ -1,8 +1,14 @@
 import { useState } from "react";
 
-import avatarImg from "../../assets/freelancerproject.jpg";
 
-// ─── Static card data (swap with API data as needed) ────────────────────────
+// ── Safe image import — falls back to placeholder if asset missing ──
+let avatarImg = "";
+try {
+  avatarImg = new URL("../../assets/freelancerproject.jpg", import.meta.url).href;
+} catch {
+  avatarImg = "https://placehold.co/285x253?text=No+Image";
+}
+
 const CARDS_DATA = [
   {
     id: 1,
@@ -50,25 +56,22 @@ const CARDS_DATA = [
   },
 ];
 
-// ─── Single Card ─────────────────────────────────────────────────────────────
 function FreelancerCard({ image, title, description, tags, date, author, avatar }) {
   const [liked, setLiked] = useState(false);
 
   return (
-    // Fixed size: w-[285px] h-[487px] — no shrink, no grow
     <div
       className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col flex-shrink-0"
       style={{ width: 285, height: 487 }}
     >
-      {/* ── Image ─────────────────────────────────────── */}
+      {/* Image */}
       <div className="relative flex-shrink-0" style={{ height: 253 }}>
         <img
           src={image}
           alt={title}
-          className="w-full h-full  object-cover"
+          className="w-full h-full object-cover"
+          onError={(e) => { e.target.src = "https://placehold.co/285x253?text=No+Image"; }}
         />
-
-        {/* Heart toggle */}
         <button
           onClick={() => setLiked((prev) => !prev)}
           className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white bg-opacity-90 flex items-center justify-center shadow transition-transform hover:scale-110"
@@ -91,12 +94,9 @@ function FreelancerCard({ image, title, description, tags, date, author, avatar 
         </button>
       </div>
 
-      {/* ── Body ──────────────────────────────────────── */}
+      {/* Body */}
       <div className="p-4 flex flex-col flex-1 overflow-hidden">
-        {/* Job title */}
         <h2 className="text-blue-500 font-bold text-sm mb-1 truncate">{title}</h2>
-
-        {/* Description — clamp to 4 lines */}
         <p
           className="text-gray-500 text-xs leading-relaxed mb-4 overflow-hidden"
           style={{
@@ -108,7 +108,6 @@ function FreelancerCard({ image, title, description, tags, date, author, avatar 
           {description}
         </p>
 
-        {/* Tags + Date */}
         <div className="flex items-center justify-between mb-4 flex-wrap gap-y-1">
           <div className="flex flex-wrap gap-1">
             {tags.map((tag) => (
@@ -123,16 +122,15 @@ function FreelancerCard({ image, title, description, tags, date, author, avatar 
           <span className="text-gray-400 text-xs">{date}</span>
         </div>
 
-        {/* Divider */}
         <div className="border-t border-gray-100 mb-3" />
 
-        {/* Author + CTA */}
         <div className="flex items-center justify-between mt-auto">
           <div className="flex items-center gap-2">
             <img
               src={avatar}
               alt={author}
               className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100"
+              onError={(e) => { e.target.src = "https://placehold.co/32x32?text=?"; }}
             />
             <span className="text-gray-700 text-xs font-medium">{author}</span>
           </div>
@@ -145,18 +143,12 @@ function FreelancerCard({ image, title, description, tags, date, author, avatar 
   );
 }
 
-// ─── Grid Container ───────────────────────────────────────────────────────────
-// Responsive breakpoints:
-//   Mobile  (<640px)  → 1 column  (centered)
-//   Tablet  (≥640px)  → 2 columns
-//   Desktop (≥1024px) → 3 columns
-//   Wide    (≥1280px) → 4 columns  ← your target
 export default function CardFreelancerPostComponent() {
   return (
     <section className="w-full px-4 py-8">
       <div
         className="
-          grid gap-5 justify-items-center
+          grid gap-x-[50px] gap-y-[px] justify-items-center
           grid-cols-1
           sm:grid-cols-2
           lg:grid-cols-3
