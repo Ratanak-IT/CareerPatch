@@ -56,7 +56,7 @@ export default function TalenCategories() {
           className="text-3xl md:text-4xl font-bold text-[#1E88E5]"
           style={{ fontFamily: "'Poppins', sans-serif" }}
         >
-          Talent Categories
+          Browse talent by categories
         </h2>
         <p
           className={`mt-2 text-sm ${darkMode ? "text-slate-400" : "text-gray-400"}`}

@@ -14,6 +14,7 @@ export default function TalentByFreelancer({
   const { darkMode } = useDarkMode();
 
   return (
+    <>
     <div
       className="rounded-2xl p-5 flex flex-col gap-4 transition-transform duration-300 hover:-translate-y-1"
       style={{
@@ -21,10 +22,11 @@ export default function TalentByFreelancer({
         background: darkMode ? "rgba(15,34,64,0.85)" : "#ffffff",
         border: `1px solid ${darkMode ? "#1e3a5f" : "#e8f0fe"}`,
         boxShadow: darkMode
-          ? "0 8px 32px rgba(0,0,0,0.3)"
-          : "0 8px 32px rgba(30,136,229,0.07)",
+        ? "0 8px 32px rgba(0,0,0,0.3)"
+        : "0 8px 32px rgba(30,136,229,0.07)",
       }}
-    >
+      >
+      
       {/* Top row: avatar + info */}
       <div className="flex items-center gap-3">
         <img
@@ -32,7 +34,7 @@ export default function TalentByFreelancer({
           alt={name}
           className="w-14 h-14 rounded-full object-cover flex-shrink-0"
           style={{ border: `2px solid ${darkMode ? "#1e3a5f" : "#bfdbfe"}` }}
-        />
+          />
         <div>
           <h3 className={`font-bold text-[15px] leading-tight ${darkMode ? "text-white" : "text-gray-900"}`}>
             {name}
@@ -52,7 +54,7 @@ export default function TalentByFreelancer({
         <span
           className="inline-block text-[11px] font-semibold px-3 py-1 rounded-full text-[#1E88E5]"
           style={{ background: darkMode ? "rgba(30,136,229,0.15)" : "#dbeafe" }}
-        >
+          >
           {tag}
         </span>
       </div>
@@ -72,9 +74,10 @@ export default function TalentByFreelancer({
         style={{ background: "#1E88E5" }}
         onMouseEnter={e => e.currentTarget.style.background = "#2563EB"}
         onMouseLeave={e => e.currentTarget.style.background = "#1E88E5"}
-      >
+        >
         View Profile
       </button>
     </div>
+        </>
   );
 }
