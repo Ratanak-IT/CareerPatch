@@ -19,14 +19,15 @@ export default function RootLayout() {
       <main className='flex-1'>
         <Outlet />
       </main>
-      <MainSection/>
+      {/* <MainSection/>
       <NavbarAfterLogin/>
       <ButtonComponent/>
       <TalentByFreelancer/>
       <TalenCategories/>
       <HowIsWork/>
-      {/* <FooterComponent /> */}
-      <PeopleLoveWorking/>
+      
+      <PeopleLoveWorking/> */}
+      <FooterComponent />
     </div>
   )
 }

@@ -1,27 +1,12 @@
 import './App.css'
-import BusinessProfileCardComponent from './components/profile/business/BusinessProfileCardComponent';
-import CardViewApplyComponent from './components/profile/business/CardViewApplyComponent';
-import CardInformationFreelancerComponent from './components/profile/freelancer/CardInformationFreelancerComponent';
-import ToggleTabComponent from './components/profile/freelancer/ToggleTabComponent';
+import ProfileCardLayout from './components/profile/freelancer/CardInformationFreelancerComponent'
 
-
-
-function App() {
-
-
+export default function App() {
   return (
     <>
-    <CardInformationFreelancerComponent />
-    <ToggleTabComponent/>
-    <BusinessProfileCardComponent/>
-    <CardViewApplyComponent/>
-      
-     
-      
+      <ProfileCardLayout/>
     </>
   )
 }
 
 
-
-export default App
