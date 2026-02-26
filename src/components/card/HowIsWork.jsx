@@ -1,6 +1,9 @@
 import React from 'react';
+import { useDarkMode } from '../navbar/NavbarComponent';
 
 export default function HowIsWork() {
+  const { darkMode } = useDarkMode();
+
   const steps = [
     {
       id: 1,
@@ -23,43 +26,88 @@ export default function HowIsWork() {
   ];
 
   return (
-    <section className="w-full bg-white py-16">
-      {/* Container with 120px margin on desktop as per layout guide */}
-      <div className="mx-auto px-4 lg:px-[120px]">
-        
-        {/* Title with specific color 1E88E5 */}
-        <h2 className="text-center text-[#1E88E5] text-4xl font-bold">
-          How is works
+    <section
+      className="w-full py-16 transition-colors duration-300"
+      style={{
+        fontFamily: "'Poppins', sans-serif",
+        background: darkMode
+          ? "linear-gradient(160deg, #0d1b2e 0%, #0f2240 50%, #0d1520 100%)"
+          : "#ffffff",
+      }}
+    >
+      <div className="max-w-[1440px] mx-auto px-4 lg:px-[120px]">
+
+        {/* Title */}
+        <h2
+          className="text-center text-[#1E88E5] text-4xl font-bold"
+          style={{ fontFamily: "'Poppins', sans-serif" }}
+        >
+          How it works
         </h2>
 
-        {/* Card Container with 30px spacing from title */}
-        <div className="mt-[30px] grid grid-cols-1 md:grid-cols-3 gap-[20px] bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.03)] border border-gray-100 p-12">
-          
+        {/* Cards container */}
+        <div
+          className="mt-[30px] grid grid-cols-1 md:grid-cols-3 gap-[20px] rounded-2xl p-12 transition-all duration-300"
+          style={{
+            background: darkMode ? "rgba(30,41,59,0.8)" : "#ffffff",
+            border: `1px solid ${darkMode ? "#1e3a5f" : "#f1f5f9"}`,
+            boxShadow: darkMode
+              ? "0 10px 40px rgba(0,0,0,0.3)"
+              : "0 10px 40px rgba(0,0,0,0.04)",
+          }}
+        >
           {steps.map((step) => (
-            <div key={step.id} className="group flex flex-col items-center text-center cursor-default">
-              
-              {/* Icon Circle with color F3F4F6 */}
-              <div className="w-20 h-20 rounded-full bg-[#F3F4F6] flex items-center justify-center mb-6 transition-all duration-300">
-                {/* Icon with color 1E88E5 and hover color 2563EB */}
-                <svg 
-                  className="w-10 h-10 text-[#1E88E5] group-hover:text-[#2563EB] transition-colors duration-300" 
-                  fill="none" 
-                  stroke="currentColor" 
+            <div
+              key={step.id}
+              className="group flex flex-col items-center text-center cursor-default"
+            >
+              {/* Icon circle */}
+              <div
+                className="w-20 h-20 rounded-full flex items-center justify-center mb-6 transition-all duration-300"
+                style={{
+                  background: darkMode ? "rgba(30,136,229,0.15)" : "#F3F4F6",
+                }}
+              >
+                <svg
+                  className="w-10 h-10 text-[#1E88E5] group-hover:text-[#2563EB] transition-colors duration-300"
+                  fill="none"
+                  stroke="currentColor"
                   viewBox="0 0 24 24"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d={step.iconPath} />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.5"
+                    d={step.iconPath}
+                  />
                 </svg>
               </div>
-              
-              <h3 className="text-xl font-bold text-gray-800 mb-2">
+
+              {/* Step number badge */}
+              <span
+                className="text-[11px] font-semibold uppercase tracking-widest mb-2"
+                style={{
+                  fontFamily: "'Poppins', sans-serif",
+                  color: "#1E88E5",
+                }}
+              >
+                Step {step.id}
+              </span>
+
+              <h3
+                className={`text-xl font-bold mb-2 transition-colors duration-300 ${darkMode ? "text-white" : "text-gray-800"}`}
+                style={{ fontFamily: "'Poppins', sans-serif" }}
+              >
                 {step.title}
               </h3>
-              <p className="text-gray-400 text-sm leading-relaxed max-w-[200px]">
+              <p
+                className={`text-sm leading-relaxed max-w-[200px] transition-colors duration-300 ${darkMode ? "text-slate-400" : "text-gray-400"}`}
+                style={{ fontFamily: "'Poppins', sans-serif" }}
+              >
                 {step.desc}
               </p>
             </div>
           ))}
-
         </div>
       </div>
     </section>
