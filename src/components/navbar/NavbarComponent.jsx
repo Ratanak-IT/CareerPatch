@@ -138,7 +138,7 @@ export default function NavbarComponent() {
               Login
             </Link>
             <Link
-              to="/signup"
+              to="/register"
               style={{ fontFamily: "'Poppins', sans-serif", fontSize: "20px", fontWeight: 600, borderRadius: "15px", padding: "8px 20px" }}
               className="bg-blue-500 hover:bg-blue-600 text-white no-underline inline-flex items-center whitespace-nowrap transition-colors duration-200 shadow-sm"
             >
@@ -219,7 +219,7 @@ export default function NavbarComponent() {
               Login
             </Link>
             <Link
-              to="/signup"
+              to="/register"
               onClick={() => setMobileOpen(false)}
               style={{ fontFamily: "'Poppins', sans-serif", fontSize: "16px", fontWeight: 600, borderRadius: "12px" }}
               className="flex-1 text-center py-2.5 bg-blue-500 hover:bg-blue-600 text-white no-underline transition-colors"

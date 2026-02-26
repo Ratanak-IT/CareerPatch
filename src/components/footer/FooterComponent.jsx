@@ -127,15 +127,15 @@ export default function FooterComponent() {
   const { darkMode } = useDarkMode();
 
   const forClients = [
-    { label: "Find Freelancers", path: "/findfreelan" },
-    { label: "Post Project",     path: "/post-project" },
-    { label: "Refund Policy",    path: "/refund-policy" },
-    { label: "Privacy Policy",   path: "/privacy-policy" },
+    { label: "Home", path: "/" },
+    { label: "Find Work",     path: "/findwork" },
+    { label: "Find Freelancers",    path: "/findfreelan" },
+    { label: "About Us",   path: "/about" },
   ];
 
   const forFreelancers = [
     { label: "Find Work",      path: "/findwork" },
-    { label: "Create Account", path: "/signup" },
+    { label: "Create Account", path: "/register" },
   ];
 
   return (
