@@ -9,6 +9,8 @@ import TalenCategories from '../components/card/TalenCategories'
 import HowIsWork from '../components/card/HowIsWork'
 import MainSection from '../components/section/MainSection'
 import PeopleLoveWorking from '../components/section/PeopleLoveWorking'
+import SectionSolutionForEveryNeed from '../components/section/SectionSalutionForEveryDay'
+import FindTheBest from '../components/section/FindTheBest'
 
 
 
@@ -19,14 +21,16 @@ export default function RootLayout() {
       <main className='flex-1'>
         <Outlet />
       </main>
-      <MainSection/>
+      {/* <MainSection/>
       <NavbarAfterLogin/>
       <ButtonComponent/>
       <TalentByFreelancer/>
+      <FindTheBest/>
       <TalenCategories/>
       <HowIsWork/>
-      {/* <FooterComponent /> */}
-      <PeopleLoveWorking/>
+      <SectionSolutionForEveryNeed/> */}
+      <FooterComponent />
+      {/* <PeopleLoveWorking/> */}
     </div>
   )
 }
