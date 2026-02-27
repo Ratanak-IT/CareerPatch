@@ -17,6 +17,7 @@ import LoginPage from './pages/Login.jsx'
 import Home from './pages/Home.jsx'
 import { setupListeners } from '@reduxjs/toolkit/query'
 import CardDetailFreelancer from './carddetail/CardDetailFreelancer.jsx'
+import ProfileFreelancer from './pages/ProfileFreelancer.jsx'
 setupListeners(store.dispatch);
 
 createRoot(document.getElementById('root')).render(
@@ -32,6 +33,7 @@ createRoot(document.getElementById('root')).render(
             <Route path="/about" element={<About />} />
             <Route path="/findfreelan" element={<FindFreelancers />} />
             <Route path="/findwork" element={<FindWork />} />
+            <Route path="/profile" element={<ProfileFreelancer />} />
 <Route path="/services/:serviceId" element={<CardDetailFreelancer />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<Register />} />

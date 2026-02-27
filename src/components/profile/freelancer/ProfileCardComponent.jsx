@@ -5,7 +5,7 @@ export default function ProfileCardComponent() {
   const [imgError, setImgError] = useState(false);
 
   return (
-    <div >
+    <div className="z-10">
       {/* Card Container: max 1200px wide, min 317px tall */}
       <div
         className="relative bg-white rounded-xl overflow-hidden shadow-lg w-full"

@@ -24,7 +24,7 @@ const RootLayout = () => {
   return (
     <DarkModeProvider>
       {isAuthed ? <NavbarAfterLogin /> : <NavbarComponent />}
-
+        
         <Outlet />
       
       <FooterComponent />

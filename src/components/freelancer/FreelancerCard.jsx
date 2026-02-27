@@ -1,5 +1,6 @@
-import { useState } from "react";
 import { Link } from "react-router";
+import { useDispatch, useSelector } from "react-redux";
+import { toggleFavorite, selectIsFavorite } from "../../features/favorites/favoritesSlice";
 
 export default function FreelancerCard({
   id,
@@ -11,7 +12,8 @@ export default function FreelancerCard({
   author,
   avatar,
 }) {
-  const [liked, setLiked] = useState(false);
+  const dispatch = useDispatch();
+  const liked = useSelector(selectIsFavorite(id));
 
   return (
     <Link
@@ -19,7 +21,6 @@ export default function FreelancerCard({
       className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col flex-shrink-0"
       style={{ width: 285, height: 487, textDecoration: "none" }}
     >
-      {/* Image */}
       <div className="relative flex-shrink-0" style={{ height: 253 }}>
         <img
           src={image}
@@ -29,11 +30,13 @@ export default function FreelancerCard({
             e.currentTarget.src = "https://placehold.co/285x253?text=No+Image";
           }}
         />
+
         <button
-         onClick={(e) => {
-  e.stopPropagation();
-  setLiked((prev) => !prev);
-}}
+          onClick={(e) => {
+            e.preventDefault();     // prevent link navigation
+            e.stopPropagation();
+            dispatch(toggleFavorite(id));
+          }}
           className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white bg-opacity-90 flex items-center justify-center shadow transition-transform hover:scale-110"
           aria-label={liked ? "Unlike" : "Like"}
         >
@@ -54,34 +57,26 @@ export default function FreelancerCard({
         </button>
       </div>
 
-      {/* Body */}
       <div className="p-4 flex flex-col flex-1 overflow-hidden">
         <h2 className="text-blue-500 font-bold text-sm mb-1 truncate">{title}</h2>
 
         <p
           className="text-gray-500 text-xs leading-relaxed mb-4 overflow-hidden"
-          style={{
-            display: "-webkit-box",
-            WebkitLineClamp: 4,
-            WebkitBoxOrient: "vertical",
-          }}
+          style={{ display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical" }}
         >
           {description}
         </p>
 
         <div className="flex items-center justify-between mb-4 flex-wrap gap-y-1">
           <div className="flex flex-wrap gap-1">
-            {(Array.isArray(tags) ? tags : [])
-              .filter(Boolean)
-              .slice(0, 2)
-              .map((t) => (
-                <span
-                  key={t}
-                  className="bg-blue-500 text-white text-xs font-medium px-2.5 py-0.5 rounded-full"
-                >
-                  {t}
-                </span>
-              ))}
+            {(Array.isArray(tags) ? tags : []).filter(Boolean).slice(0, 2).map((t) => (
+              <span
+                key={t}
+                className="bg-blue-500 text-white text-xs font-medium px-2.5 py-0.5 rounded-full"
+              >
+                {t}
+              </span>
+            ))}
           </div>
 
           <span className="text-gray-400 text-xs">{date}</span>
@@ -102,7 +97,14 @@ export default function FreelancerCard({
             <span className="text-gray-700 text-xs font-medium">{author}</span>
           </div>
 
-          <button className="bg-blue-500 hover:bg-blue-600 active:scale-95 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200">
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              // open chat later
+            }}
+            className="bg-blue-500 hover:bg-blue-600 active:scale-95 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200"
+          >
             Message
           </button>
         </div>

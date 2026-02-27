@@ -4,6 +4,6 @@ import CardDetailFreelancer from '../carddetail/CardDetailFreelancer'
 
 export default function FindWork() {
   return (
-   <CardDetailFreelancer/>
+   <div></div>
   )
 }

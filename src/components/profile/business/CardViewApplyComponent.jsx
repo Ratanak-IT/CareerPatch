@@ -119,13 +119,6 @@ function ProfileSection({ profile }) {
   );
 }
 
-// ── Main Component ────────────────────────────────────────────────
-/**
- * Responsive:
- * 📱 Mobile  (< 640px)   — single column, stacked vertically
- * 📟 Tablet  (640–1023px) — notifications on top, profile below; max-w-2xl
- * 🖥  Desktop (≥ 1024px)  — side by side, fixed widths, max-w-[1200px], centered
- */
 export default function CardViewApplyComponent({ data = pageData }) {
   return (
     <div className="min-h-screen w-full bg-white flex items-center justify-center p-4 sm:p-8">

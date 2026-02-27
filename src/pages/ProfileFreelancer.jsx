@@ -1,215 +1,445 @@
-import React, { useState } from 'react'
-import ProfileCardComponent from '../components/profile/freelancer/ProfileCardComponent'
-import CardInformationFreelancerComponent from '../components/profile/freelancer/CardInformationFreelancerComponent'
-import ToggleTabComponent from '../components/profile/freelancer/ToggleTabComponent'
-import ButtonPostComponent from '../components/profile/freelancer/ButtonPostComponent'
-import CardFreelancerPostComponent from '../components/freelancer/CardFreelancerPostComponent'
+import React, { useMemo, useState } from "react";
+import { useSelector } from "react-redux";
+import FreelancerCard from "../components/freelancer/FreelancerCard";
+import { selectFavoriteIds } from "../features/favorites/favoritesSlice";
 
-// ─── Icons ────────────────────────────────────────────────────────────────────
-const SunIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-    <circle cx="12" cy="12" r="5" />
-    <path strokeLinecap="round" d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
-  </svg>
-)
-const MoonIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
-  </svg>
-)
-const HeartIcon = ({ filled }) => (
-  <svg className="w-4 h-4" fill={filled ? "#3B82F6" : "none"} stroke={filled ? "#3B82F6" : "#9ca3af"} strokeWidth={1.8} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
-  </svg>
-)
+import {
+  useMeQuery,
+  useUpdateFreelancerProfileMutation,
+  useUploadProfileImageMutation,
+} from "../services/profileApi";
+import { useGetMyServicesQuery } from "../services/servicesApi";
 
-// ─── Sample Data ──────────────────────────────────────────────────────────────
-let coverImg = "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=253&fit=crop"
 
-const FREELANCER_DATA = [
-  { id: 1, image: coverImg, title: "UX/UI Designer", description: "Creative design solutions for web and mobile interfaces, focusing on user experience and modern aesthetics.", tags: ["Figma", "Design"], date: "February 21, 2026", author: "Nita", avatar: "" },
-  { id: 2, image: coverImg, title: "UX/UI Designer", description: "Creative design solutions for web and mobile interfaces, focusing on user experience and modern aesthetics.", tags: ["Figma", "Design"], date: "February 21, 2026", author: "Hazel", avatar: "" },
-  { id: 3, image: coverImg, title: "UX/UI Designer", description: "Creative design solutions for web and mobile interfaces, focusing on user experience and modern aesthetics.", tags: ["Figma", "Design"], date: "February 21, 2026", author: "Jiker", avatar: "" },
-  { id: 4, image: coverImg, title: "UX/UI Designer", description: "Creative design solutions for web and mobile interfaces, focusing on user experience and modern aesthetics.", tags: ["Figma", "Design"], date: "February 21, 2026", author: "Spider", avatar: "" },
-]
 
-const JOB_DATA = [
-  { id: 1, image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=253&fit=crop", title: "UX/UI Designer", description: "Creative design solutions for web and mobile interfaces, focusing on user experience and modern aesthetics.", tags: ["Figma", "Design"], date: "February 21, 2026", level: "Expert", author: "Hazel", avatar: "" },
-  { id: 2, image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=253&fit=crop", title: "UX/UI Designer", description: "Creative design solutions for web and mobile interfaces, focusing on user experience and modern aesthetics.", tags: ["Figma", "Design"], date: "February 21, 2026", level: "Expert", author: "Jungkook", avatar: "" },
-  { id: 3, image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=253&fit=crop", title: "UX/UI Designer", description: "Creative design solutions for web and mobile interfaces, focusing on user experience and modern aesthetics.", tags: ["Figma", "Design"], date: "February 21, 2026", level: "Expert", author: "Jimin", avatar: "" },
-  { id: 4, image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=400&h=253&fit=crop", title: "UX/UI Designer", description: "Creative design solutions for web and mobile interfaces, focusing on user experience and modern aesthetics.", tags: ["Figma", "Design"], date: "February 21, 2026", level: "Expert", author: "Kelis", avatar: "" },
-]
+const FALLBACK_COVER =
+  "https://images.unsplash.com/photo-1529101091764-c3526daf38fe?auto=format&fit=crop&q=80&w=1600";
+const FALLBACK_AVATAR = "https://placehold.co/80x80?text=User";
+const FALLBACK_IMAGE = "https://placehold.co/285x253?text=No+Image";
 
-// ─── Freelancer Favorite Card ─────────────────────────────────────────────────
-function FreelancerFavCard({ image, title, description, tags, date, author, avatar, isDark }) {
-  const [liked, setLiked] = useState(true)
+function formatDate(value) {
+  if (!value) return "—";
+  // your API sometimes returns timestamp like 1771952158274
+  const d = typeof value === "number" ? new Date(value) : new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString();
+}
+
+export default function ProfileFreelancerPage() {
+  // data
+  const { data: meRes } = useMeQuery();
+  const user = meRes?.data;
+
+  const { data: servicesRes, isLoading: servicesLoading, isError: servicesError } =
+    useGetMyServicesQuery();
+
+  const [updateProfile, { isLoading: saving }] = useUpdateFreelancerProfileMutation();
+  const [uploadImage, { isLoading: uploading }] = useUploadProfileImageMutation();
+
+  // UI state
+  const [tab, setTab] = useState("information"); // "information" | "favorites"
+  const favoriteIds = useSelector(selectFavoriteIds);
+
+  // editable fields (simple example)
+  const [editOpen, setEditOpen] = useState(false);
+  const [form, setForm] = useState({
+    fullName: user?.fullName || "",
+    phone: user?.phone || "",
+    address: user?.address || "",
+    bio: user?.bio || "",
+    experienceYears: user?.experienceYears || 0,
+  });
+
+  // skill input: type -> Enter -> add
+  const [skills, setSkills] = useState(Array.isArray(user?.skills) ? user.skills : []);
+  const [skillText, setSkillText] = useState("");
+
+  // normalize services list
+  const services = useMemo(() => {
+    const raw = servicesRes?.data;
+    if (Array.isArray(raw)) return raw;
+    if (Array.isArray(raw?.content)) return raw.content;
+    if (Array.isArray(servicesRes?.content)) return servicesRes.content;
+    return [];
+  }, [servicesRes]);
+
+  // favorites list from services
+  const favoriteServices = useMemo(() => {
+    const set = new Set(favoriteIds.map(String));
+    return services.filter((s) => set.has(String(s?.id)));
+  }, [services, favoriteIds]);
+
+  // keep form synced when user loaded
+  React.useEffect(() => {
+    setForm({
+      fullName: user?.fullName || "",
+      phone: user?.phone || "",
+      address: user?.address || "",
+      bio: user?.bio || "",
+      experienceYears: user?.experienceYears || 0,
+    });
+    setSkills(Array.isArray(user?.skills) ? user.skills : []);
+  }, [user?.id]); // only when user changes
+
+  const onAddSkill = () => {
+    const v = skillText.trim();
+    if (!v) return;
+    setSkills((prev) => (prev.includes(v) ? prev : [...prev, v]));
+    setSkillText("");
+  };
+
+  const onRemoveSkill = (value) => {
+    setSkills((prev) => prev.filter((x) => x !== value));
+  };
+
+  const onSaveProfile = async () => {
+    try {
+      await updateProfile({
+        ...form,
+        skills,
+      }).unwrap();
+      setEditOpen(false);
+    } catch (e) {
+      console.log("update profile error:", e);
+    }
+  };
+
+  const onPickProfileImage = async (file) => {
+    if (!file) return;
+    try {
+      await uploadImage(file).unwrap();
+      // me query invalidates -> refresh automatically if your backend returns new url
+    } catch (e) {
+      console.log("upload image error:", e);
+    }
+  };
+
+  const avatarUrl = user?.profileImageUrl || FALLBACK_AVATAR;
+  const coverUrl = user?.coverImageUrl || FALLBACK_COVER;
+
   return (
-    <div className={`rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col `}
-      style={{ width: 285, height: 487 }}>
-      {/* Image */}
-      <div className="relative flex-shrink-0" style={{ height: 253 }}>
-        <img src={image} alt={title} className="w-full h-full object-cover"
-          onError={(e) => { e.target.src = "https://placehold.co/285x253?text=No+Image" }} />
-        <button onClick={() => setLiked(p => !p)}
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white bg-opacity-90 flex items-center justify-center shadow transition-transform hover:scale-110">
-          <HeartIcon filled={liked} />
-        </button>
-      </div>
-      {/* Body */}
-      <div className="p-4 flex flex-col flex-1 overflow-hidden">
-        <h2 className="text-blue-500 font-bold text-sm mb-1 truncate">{title}</h2>
-        <p className={`text-xs leading-relaxed mb-4 overflow-hidden `}
-          style={{ display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical" }}>
-          {description}
-        </p>
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-y-1">
-          <div className="flex flex-wrap gap-1">
-            {tags.map(tag => (
-              <span key={tag} className="bg-blue-500 text-white text-xs font-medium px-2.5 py-0.5 rounded-full">{tag}</span>
-            ))}
+    <div className="min-h-screen bg-gray-50">
+      <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 py-6">
+        {/* Top cover */}
+        <div className="rounded-2xl overflow-hidden bg-white shadow-sm">
+          <div className="relative h-[180px] sm:h-[220px]">
+            <img src={coverUrl} alt="cover" className="w-full h-full object-cover" />
           </div>
-          <span className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Date: {date}</span>
-        </div>
-        <div className={`border-t mb-3 ${isDark ? 'border-[#2e3347]' : 'border-gray-100'}`} />
-        <div className="flex items-center justify-between mt-auto">
-          <div className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ring-2 `}>
-              {author[0]}
+
+          {/* Profile header row */}
+          <div className="flex items-center justify-between gap-4 px-4 sm:px-6 py-4">
+            <div className="flex items-center gap-4">
+              <div className="-mt-12 sm:-mt-14 w-[96px] h-[96px] rounded-xl overflow-hidden bg-white shadow-md ring-4 ring-white">
+                <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+              </div>
+
+              <div>
+                <p className="text-[16px] font-semibold text-gray-900 leading-tight">
+                  {user?.fullName || "—"}
+                </p>
+                <p className="text-[12px] text-gray-500 mt-1">
+                  {user?.userType || "FREELANCER"} • {user?.address || "—"}
+                </p>
+
+                <div className="mt-2 flex items-center gap-2">
+                  <button
+                    onClick={() => setEditOpen(true)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-3 py-2 rounded-lg"
+                  >
+                    Edit Profile
+                  </button>
+
+                  <label className="cursor-pointer text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50">
+                    {uploading ? "Uploading..." : "Change Photo"}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => onPickProfileImage(e.target.files?.[0])}
+                    />
+                  </label>
+                </div>
+              </div>
             </div>
-            <span className={`text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{author}</span>
-          </div>
-          <button className="bg-blue-500 hover:bg-blue-600 active:scale-95 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200">
-            Message
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
 
-// ─── Job Announcement Card ────────────────────────────────────────────────────
-function JobFavCard({ image, title, description, tags, date, level, author, avatar, isDark }) {
-  const [liked, setLiked] = useState(true)
-  return (
-    <div className={`rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 flex flex-col `}
-      style={{ width: 285, height: 500 }}>
-      {/* Image */}
-      <div className="relative flex-shrink-0" style={{ height: 200 }}>
-        <img src={image} alt={title} className="w-full h-full object-cover"
-          onError={(e) => { e.target.src = "https://placehold.co/285x200?text=No+Image" }} />
-        <button onClick={() => setLiked(p => !p)}
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white bg-opacity-90 flex items-center justify-center shadow transition-transform hover:scale-110">
-          <HeartIcon filled={liked} />
-        </button>
-      </div>
-      {/* Body */}
-      <div className="p-4 flex flex-col flex-1 overflow-hidden">
-        <h2 className="text-blue-500 font-bold text-sm mb-1 truncate">{title}</h2>
-        <p className={`text-xs leading-relaxed mb-3 overflow-hidden `}
-          style={{ display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical" }}>
-          {description}
-        </p>
-        {/* Tags + Date */}
-        <div className="flex items-center justify-between mb-1 flex-wrap gap-y-1">
-          <div className="flex flex-wrap gap-1">
-            {tags.map(tag => (
-              <span key={tag} className="bg-blue-500 text-white text-xs font-medium px-2.5 py-0.5 rounded-full">{tag}</span>
-            ))}
+            <button className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-4 py-2 rounded-lg">
+              Message
+            </button>
           </div>
         </div>
-        {/* Date + Level */}
-        <div className="flex items-center justify-between mb-3">
-          <span className={`text-xs `}>Date: {date}</span>
-          <span className="text-xs font-semibold text-blue-500">Level: {level}</span>
+
+        {/* Tabs */}
+        <div className="mt-6 flex justify-center">
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden flex">
+            <button
+              onClick={() => setTab("information")}
+              className={`px-8 py-2 text-sm font-semibold ${
+                tab === "information" ? "bg-purple-600 text-white" : "text-purple-600"
+              }`}
+            >
+              Information
+            </button>
+            <button
+              onClick={() => setTab("favorites")}
+              className={`px-8 py-2 text-sm font-semibold ${
+                tab === "favorites" ? "bg-purple-600 text-white" : "text-purple-600"
+              }`}
+            >
+              Favorites
+            </button>
+          </div>
         </div>
-        <div className={`border-t mb-3 `} />
-        <div className="flex items-center justify-between mt-auto">
-          <div className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ring-2 `}>
-              {author[0]}
+
+        {/* Main content */}
+        {tab === "information" && (
+          <>
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {/* Left column */}
+              <div className="space-y-4">
+                <div className="bg-white rounded-xl border border-gray-200 p-4">
+                  <p className="text-sm font-semibold text-gray-900">About Me</p>
+                  <p className="text-xs text-gray-500 mt-2 leading-5">
+                    {user?.bio || "—"}
+                  </p>
+                </div>
+
+                <div className="bg-white rounded-xl border border-gray-200 p-4">
+                  <p className="text-sm font-semibold text-gray-900">Contact Info</p>
+                  <div className="text-xs text-gray-600 mt-2 space-y-2">
+                    <div>{user?.email || "—"}</div>
+                    <div>{user?.phone || "—"}</div>
+                    <div>{user?.address || "—"}</div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl border border-gray-200 p-4">
+                  <p className="text-sm font-semibold text-gray-900">Languages</p>
+                  <div className="text-xs text-gray-600 mt-2 space-y-1">
+                    <div>Khmer</div>
+                    <div>English</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Middle column */}
+              <div className="lg:col-span-1 bg-white rounded-xl border border-gray-200 p-4 min-h-[260px]">
+                <p className="text-sm font-semibold text-gray-900">Work experience</p>
+                <div className="text-sm text-gray-600 mt-3 leading-6">
+                  {/* replace later with real API if you have it */}
+                  <div>Web developer — Sep 2020 - Nov 2023</div>
+                  <div>Java developer — Dec 2023 - Jan 2025</div>
+                </div>
+              </div>
+
+              {/* Right column */}
+              <div className="bg-white rounded-xl border border-gray-200 p-4 min-h-[260px]">
+                <p className="text-sm font-semibold text-gray-900">Skill</p>
+                <div className="text-sm text-gray-700 mt-3 space-y-2">
+                  {(Array.isArray(user?.skills) ? user.skills : []).map((s) => (
+                    <div key={s}>{s}</div>
+                  ))}
+                </div>
+              </div>
             </div>
-            <span className={`text-xs font-medium `}>{author}</span>
+
+            {/* Posts */}
+            <div className="mt-8 flex items-center justify-between">
+              <p className="text-blue-500 font-bold text-xl">All posts</p>
+              <button className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-4 py-2 rounded-lg">
+                Post
+              </button>
+            </div>
+
+            <div className="mt-4">
+              {servicesLoading && (
+                <p className="text-gray-500 text-center">Loading services...</p>
+              )}
+              {servicesError && (
+                <p className="text-red-500 text-center">Failed to load services.</p>
+              )}
+
+              {!servicesLoading && !servicesError && (
+                <div
+                  className="
+                    grid gap-x-[50px] justify-items-center
+                    grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
+                    max-w-[1240px] mx-auto
+                  "
+                >
+                  {services.map((s) => {
+                    const image =
+                      Array.isArray(s?.jobImages) && s.jobImages.length > 0
+                        ? s.jobImages[0]
+                        : FALLBACK_IMAGE;
+
+                    return (
+                      <FreelancerCard
+                        key={s?.id}
+                        id={s?.id}
+                        image={image}
+                        title={s?.title || "Untitled"}
+                        description={s?.description || "No description"}
+                        tags={[s?.category?.name].filter(Boolean)}
+                        date={formatDate(s?.createdAt)}
+                        author={user?.fullName || "Freelancer"}
+                        avatar={avatarUrl}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {tab === "favorites" && (
+          <div className="mt-8">
+            <p className="text-blue-500 font-bold text-xl mb-4">Favorites</p>
+
+            {favoriteServices.length === 0 && (
+              <p className="text-gray-500 text-center">No favorites yet.</p>
+            )}
+
+            {favoriteServices.length > 0 && (
+              <div
+                className="
+                  grid gap-x-[50px] justify-items-center
+                  grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4
+                  max-w-[1240px] mx-auto
+                "
+              >
+                {favoriteServices.map((s) => {
+                  const image =
+                    Array.isArray(s?.jobImages) && s.jobImages.length > 0
+                      ? s.jobImages[0]
+                      : FALLBACK_IMAGE;
+
+                  return (
+                    <FreelancerCard
+                      key={s?.id}
+                      id={s?.id}
+                      image={image}
+                      title={s?.title || "Untitled"}
+                      description={s?.description || "No description"}
+                      tags={[s?.category?.name].filter(Boolean)}
+                      date={formatDate(s?.createdAt)}
+                      author={user?.fullName || "Freelancer"}
+                      avatar={avatarUrl}
+                    />
+                  );
+                })}
+              </div>
+            )}
           </div>
-          <button className="bg-blue-500 hover:bg-blue-600 active:scale-95 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200">
-            Apply Now
-          </button>
-        </div>
+        )}
+
+        {/* Edit modal (simple) */}
+        {editOpen && (
+          <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center px-4">
+            <div className="bg-white rounded-2xl w-full max-w-[520px] p-5">
+              <div className="flex items-center justify-between">
+                <p className="font-bold text-gray-900">Edit Profile</p>
+                <button onClick={() => setEditOpen(false)} className="text-gray-500">
+                  ✕
+                </button>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                <input
+                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                  placeholder="Full name"
+                  value={form.fullName}
+                  onChange={(e) => setForm((p) => ({ ...p, fullName: e.target.value }))}
+                />
+                <input
+                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                  placeholder="Phone"
+                  value={form.phone}
+                  onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+                />
+                <input
+                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                  placeholder="Address"
+                  value={form.address}
+                  onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
+                />
+                <textarea
+                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                  rows={4}
+                  placeholder="Bio"
+                  value={form.bio}
+                  onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))}
+                />
+
+                <input
+                  type="number"
+                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                  placeholder="Experience years"
+                  value={form.experienceYears}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, experienceYears: Number(e.target.value || 0) }))
+                  }
+                />
+
+                {/* Skills editor: Enter to add */}
+                <div className="border rounded-xl p-3">
+                  <p className="text-sm font-semibold text-gray-900 mb-2">Skills</p>
+
+                  <div className="flex gap-2">
+                    <input
+                      className="flex-1 border rounded-lg px-3 py-2 text-sm"
+                      placeholder="Type skill then press Enter"
+                      value={skillText}
+                      onChange={(e) => setSkillText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          onAddSkill();
+                        }
+                      }}
+                    />
+                    <button
+                      onClick={onAddSkill}
+                      className="px-3 py-2 rounded-lg bg-blue-500 text-white text-sm font-semibold"
+                    >
+                      Add skill
+                    </button>
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {skills.map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => onRemoveSkill(s)}
+                        className="text-xs font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100"
+                        title="Click to remove"
+                      >
+                        {s} ✕
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 flex justify-end gap-2">
+                <button
+                  onClick={() => setEditOpen(false)}
+                  className="px-4 py-2 rounded-lg border text-sm font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={onSaveProfile}
+                  className="px-4 py-2 rounded-lg bg-blue-500 text-white text-sm font-semibold"
+                  disabled={saving}
+                >
+                  {saving ? "Saving..." : "Save"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
-  )
-}
-
-// ─── Favorites Tab Content ────────────────────────────────────────────────────
-function FavoritesContent({ isDark }) {
-  const sectionTitle = `text-lg font-bold mb-4 `
-  const grid = "grid gap-x-[30px] gap-y-6 justify-items-center grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-
-  return (
-    <div className="w-full max-w-[1200px] flex flex-col gap-10">
-      {/* Freelancer Section */}
-      <div>
-        <h3 className={sectionTitle}>Freelancer</h3>
-        <div className={grid}>
-          {FREELANCER_DATA.map(card => (
-            <FreelancerFavCard key={card.id} {...card} isDark={isDark} />
-          ))}
-        </div>
-      </div>
-
-      {/* Job Announcement Section */}
-      <div>
-        <h3 className={sectionTitle}>Job Announcement</h3>
-        <div className={grid}>
-          {JOB_DATA.map(card => (
-            <JobFavCard key={card.id} {...card} isDark={isDark} />
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─── Main Page ────────────────────────────────────────────────────────────────
-export default function ProfileFreelancer() {
-  const [activeTab, setActiveTab] = useState("information")
-  const [isDark, setIsDark] = useState(false)
-
-  return (
-    <div className={`min-h-screen py-6 px-4 flex flex-col items-center gap-5 transition-colors duration-300 ${isDark ? 'bg-[#0f1117]' : 'bg-gray-50'}`}>
-
-      
-
-      {/* 1. Profile Header */}
-      <div className="w-full max-w-[1200px]">
-        <ProfileCardComponent isDark={isDark} />
-      </div>
-
-      {/* 2. Toggle Tab + Post Button */}
-      <div className="w-full max-w-[1200px] flex items-center justify-between">
-        <div className="flex-1 flex justify-center">
-          <ToggleTabComponent active={activeTab} setActive={setActiveTab} isDark={isDark} />
-        </div>
-        <ButtonPostComponent isDark={isDark} onClick={() => console.log("Post clicked")} />
-      </div>
-
-      {/* 3. Information Tab */}
-      {activeTab === "information" && (
-        <>
-          <div className="w-full max-w-[1200px]">
-            <CardInformationFreelancerComponent isDark={isDark} />
-          </div>
-          <div className="w-full max-w-[1200px]">
-            <h3 className={`text-lg font-bold mb-4 ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>All posts</h3>
-            <CardFreelancerPostComponent isDark={isDark} />
-          </div>
-        </>
-      )}
-
-      {/* 4. Favorites Tab */}
-      {activeTab === "favorites" && (
-        <FavoritesContent isDark={isDark} />
-      )}
-
-    </div>
-  )
+  );
 }
