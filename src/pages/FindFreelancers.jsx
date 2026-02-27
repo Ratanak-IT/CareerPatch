@@ -87,6 +87,7 @@ function ServiceCardWithAuthor({ service, searchText, category }) {
   );
 }
 
+
 export default function FindFreelancers() {
   const { data, isLoading, isError } = useGetServicesQuery();
 

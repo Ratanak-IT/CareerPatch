@@ -1,11 +1,11 @@
 import { useState } from "react";
-// import profilefreelancer from"../../../assets/profilefreelancer.jpg";
+
 
 export default function ProfileCardComponent() {
   const [imgError, setImgError] = useState(false);
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
+    <div >
       {/* Card Container: max 1200px wide, min 317px tall */}
       <div
         className="relative bg-white rounded-xl overflow-hidden shadow-lg w-full"

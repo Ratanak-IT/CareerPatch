@@ -99,7 +99,7 @@ function LeftCard({ data }) {
 // ── Middle Card ──────────────────────────────────────────────────
 function MiddleCard({ experiences }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-7 shadow-sm w-full lg:w-[488px] lg:flex-shrink-0 lg:h-[505px] flex flex-col overflow-hidden">
+    <div className="bg-white rounded-2xl border border-gray-200 p-6 md:p-7 shadow-sm w-full lg:w-[488px] lg:flex-shrink-0 lg:h-[317px] flex flex-col overflow-hidden">
       <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Work experience</h2>
       <div className="border-t border-gray-200 mb-2" />
       <div className="flex flex-col overflow-y-auto flex-1">
@@ -152,7 +152,7 @@ function RightCard({ skills }) {
  */
 export default function ProfileCardLayout({ data = profileData }) {
   return (
-    <div className="min-h-screen w-full  flex items-center justify-center p-4 sm:p-6 lg:p-8">
+    <div className="w-full">
 
       {/* ── Mobile: flex-col  |  Tablet: grid 2-col  |  Desktop: flex-row ── */}
       <div className="w-full max-w-[1200px]">
