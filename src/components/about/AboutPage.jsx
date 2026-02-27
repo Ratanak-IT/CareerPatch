@@ -52,8 +52,6 @@ const Icon = {
   ),
 };
 
-
-
 function Bullet({ children }) {
   return (
     <li className="flex gap-2 text-sm text-slate-600">
@@ -248,27 +246,35 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* MENTORS */}
-        <div className="mt-10 grid gap-6 grid-cols-1 lg:grid-cols-2">
-          <MentorCard
-            name="Chhaya Chan"
-            role="Lecturer · Web Development"
-            spec="Web Development"
-            img={MentorImg1}
-            socials={{ github: "#", facebook: "#", telegram: "#" }}
-          />
 
-          <MentorCard
-            name="Tara Kit"
-            role="Lecturer · Web Development"
-            spec="Web Development"
-            img={MentorImg2}
-            socials={{ github: "#", facebook: "#", telegram: "#" }}
-          />
+        {/* MENTORS */}
+        <div className="mt-12">
+          {/* Mobile Only Title */}
+          <h2 className="md:hidden text-2xl font-bold text-slate-900 mb-8 text-center">
+            Mentor / Supervisors
+          </h2>
+
+          <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+            <MentorCard
+              name="Chhaya Chan"
+              role="Lecturer · Web Development"
+              spec="Web Development"
+              img={MentorImg1}
+              socials={{ github: "#", facebook: "#", telegram: "#" }}
+            />
+
+            <MentorCard
+              name="Tara Kit"
+              role="Lecturer · Web Development"
+              spec="Web Development"
+              img={MentorImg2}
+              socials={{ github: "#", facebook: "#", telegram: "#" }}
+            />
+          </div>
         </div>
       </div>
 
-      <OurTeam/>
+      <OurTeam />
     </div>
   );
 }

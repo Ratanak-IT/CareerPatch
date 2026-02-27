@@ -24,36 +24,36 @@ const TelegramIcon = () => (
 
 export default function MentorCard({ name, role, spec, img, socials = {} }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white px-6 sm:px-8 py-7 shadow-sm overflow-hidden">
-      <h3 className="text-xl text-left font-semibold text-slate-900">
+    <div className="rounded-2xl border border-slate-200 bg-white px-6 sm:px-8 py-7 shadow-sm">
+      {/* show title only on tablet/desktop (inside card) */}
+      <h3 className="hidden md:block text-xl font-semibold text-slate-900 text-left">
         Mentor / Supervisors
       </h3>
 
-      {/* 360px -> column, 428px+ -> row */}
-      <div className="mt-7 flex flex-col items-center gap-6 min-[428px]:flex-row min-[428px]:items-center min-[428px]:gap-8">
+      {/* content: mobile = centered column, >=428 = row */}
+      <div className="mt-6 flex flex-col items-center text-center min-[428px]:flex-row min-[428px]:items-center min-[428px]:text-left min-[428px]:gap-8">
         {/* image */}
-        <div className="shrink-0 overflow-hidden rounded-xl bg-white w-[140px] h-[130px]">
+        <div className="shrink-0 overflow-hidden rounded-xl bg-white w-[170px] h-[150px] min-[428px]:w-[143px] min-[428px]:h-[133px]">
           <img src={img} alt={name} className="h-full w-full object-contain" />
         </div>
 
-        {/* text (IMPORTANT: min-w-0 prevents overflow) */}
-        <div className="min-w-0 flex-1 w-full text-left">
-          <div className="text-[28px] font-medium leading-tight text-slate-900 break-words">
+        {/* text */}
+        <div className="mt-6 min-[428px]:mt-0 min-w-0 flex-1 w-full">
+          <div className="text-[40px] min-[428px]:text-[28px] font-bold leading-tight text-slate-900">
             {name}
           </div>
 
-          <div className="mt-1 text-sm text-slate-500 break-words">{role}</div>
-
-          {/* make this wrap instead of pushing outside */}
-          <div className="mt-3 text-sm flex flex-wrap items-baseline gap-x-2 gap-y-1">
-            <span className="text-slate-500">Specializations</span>
-            <span className="font-semibold text-slate-900 break-words">
-              {spec}
-            </span>
+          <div className="mt-2 text-base min-[428px]:text-sm text-slate-500">
+            {role}
           </div>
 
-          {/* socials */}
-          <div className="mt-4 flex items-center justify-center md:justify-start gap-4">
+          <div className="mt-6 min-[428px]:mt-3 text-base min-[428px]:text-sm flex flex-wrap justify-center min-[428px]:justify-start gap-x-3 gap-y-2">
+            <span className="text-slate-500">Specializations</span>
+            <span className="font-semibold text-slate-900">{spec}</span>
+          </div>
+
+          {/* icons centered on mobile, left from tablet */}
+          <div className="mt-6 min-[428px]:mt-4 flex items-center justify-center md:justify-start gap-6">
             {socials.github && (
               <a
                 href={socials.github}
@@ -62,7 +62,6 @@ export default function MentorCard({ name, role, spec, img, socials = {} }) {
                 <GithubIcon />
               </a>
             )}
-
             {socials.facebook && (
               <a
                 href={socials.facebook}
@@ -71,7 +70,6 @@ export default function MentorCard({ name, role, spec, img, socials = {} }) {
                 <FacebookIcon />
               </a>
             )}
-
             {socials.telegram && (
               <a
                 href={socials.telegram}
@@ -86,9 +84,9 @@ export default function MentorCard({ name, role, spec, img, socials = {} }) {
 
       <div className="mt-7 h-px w-full bg-slate-200" />
 
-      <div className="mt-5 flex items-start gap-3 text-sm text-slate-600">
+      <div className="mt-5 flex items-start gap-3 text-sm text-slate-600 text-left">
         <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-[#2B6DFF]" />
-        <span className="break-words">Guided and reviewed the project.</span>
+        <span>Guided and reviewed the project.</span>
       </div>
     </div>
   );
