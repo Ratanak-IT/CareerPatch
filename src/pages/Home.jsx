@@ -9,6 +9,8 @@ import PeopleLoveWorking from "../components/section/PeopleLoveWorking";
 import { useGetFreelancersQuery } from "../services/freelancerApi";
 import ButtonComponent from "../components/button/ButtonComponent";
 import { Link } from "react-router";
+import CardBusinessPost from "../components/business/CardBusinessPostProjectComponent";
+
 
 
 // ✅ API hook (from src/services/freelancer.js)
@@ -25,6 +27,17 @@ export default function Home() {
       <MainSection />
       <HowIsWork />
       <FindTheBest />
+      <div>
+          <h2
+            className="text-3xl md:text-4xl text-center my-10 font-bold text-[#1E88E5]"
+            style={{ fontFamily: "'Poppins', sans-serif" }}
+          >
+            Browse talent by Freelancer
+          </h2>
+        </div>
+        {/* Card nusiness owner show */}
+        <CardBusinessPost/>
+
       <SectionSolutionForEveryNeed />
       <TalenCategories />
 

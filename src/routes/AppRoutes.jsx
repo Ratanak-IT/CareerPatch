@@ -10,6 +10,7 @@ import Register from "../pages/Register.jsx";
 import LoginPage from "../pages/Login.jsx";
 import Home from "../pages/Home.jsx";
 import FindFreelancers from "../pages/FindFreelancers.jsx";
+import CardDetailFreelancer from "../carddetail/CardDetailFreelancer.jsx";
 
 export default function AppRoutes() {
   return (
@@ -23,7 +24,7 @@ export default function AppRoutes() {
         <Route path="/findwork" element={<FindWork />} />
         <Route path="/findfreelan" element={<FindFreelancers />} />
         <Route path="/about" element={<About />} />
-
+ <Route path="/services/:serviceId" element={<CardDetailFreelancer />} />
         {/* Auth pages */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<Register />} />

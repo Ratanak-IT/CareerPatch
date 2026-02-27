@@ -1,3 +1,4 @@
+// src/pages/FindFreelancers.jsx
 import { useMemo, useState } from "react";
 import HeroSectionComponent from "../components/freelancer/HeroSectionComponent";
 import FreelancerCard from "../components/freelancer/FreelancerCard";
@@ -5,13 +6,28 @@ import { useGetServicesQuery } from "../services/freelancerPostApi";
 import { useGetUserByIdQuery } from "../services/userApi";
 
 const FALLBACK_IMAGE = "https://placehold.co/285x253?text=No+Image";
+const FALLBACK_AVATAR = "https://placehold.co/32x32?text=?";
 
 function formatDate(value) {
   if (!value) return "—";
-  // createdAt might be timestamp number
   const d = typeof value === "number" ? new Date(value) : new Date(value);
   if (Number.isNaN(d.getTime())) return "—";
   return d.toLocaleDateString();
+}
+
+/**
+ * IMPORTANT:
+ * - service id might be `id` OR `serviceId` OR `_id`.
+ * - We normalize it here so the card link never becomes /services/undefined
+ */
+function getServiceId(service) {
+  return (
+    service?.id ??
+    service?.serviceId ??
+    service?._id ??
+    service?.uuid ??
+    null
+  );
 }
 
 function ServiceCardWithAuthor({ service, searchText, category }) {
@@ -21,24 +37,24 @@ function ServiceCardWithAuthor({ service, searchText, category }) {
     skip: !userId,
   });
 
-  // user api might return { success, data: {...} } or just {...}
   const user = userRes?.data || userRes;
 
   const authorName = user?.fullName || "Freelancer";
-  const authorAvatar = user?.profileImageUrl || FALLBACK_IMAGE;
+  const authorAvatar = user?.profileImageUrl || FALLBACK_AVATAR;
+
+  const serviceId = getServiceId(service);
 
   // service fields
   const title = service?.title || "Untitled";
   const description = service?.description || "No description";
-  const categoryName = service?.category?.name || "—";
+  const categoryName = service?.category?.name || service?.categoryName || "—";
   const date = formatDate(service?.createdAt);
 
   const image =
     (Array.isArray(service?.jobImages) && service.jobImages[0]) ||
-    service?.jobImages ||
+    (typeof service?.jobImages === "string" ? service.jobImages : null) ||
     FALLBACK_IMAGE;
 
-  // tags: use category name as tag (or you can also show category.type)
   const tags = categoryName && categoryName !== "—" ? [categoryName] : [];
 
   // ===== filtering (title/category/author) =====
@@ -54,10 +70,12 @@ function ServiceCardWithAuthor({ service, searchText, category }) {
     category === "All" ||
     categoryName.toLowerCase().includes(String(category).toLowerCase());
 
-  if (!matchSearch || !matchCategory) return null;
+  // If no match or missing id => do not render card (prevents /undefined)
+  if (!matchSearch || !matchCategory || !serviceId) return null;
 
   return (
     <FreelancerCard
+      id={serviceId} // ✅ always a real id now
       image={image}
       title={title}
       description={description}
@@ -77,15 +95,10 @@ export default function FindFreelancers() {
 
   // ✅ normalize services list
   const services = useMemo(() => {
-    // your response example: { content: [...] }
     if (Array.isArray(data?.content)) return data.content;
-
-    // sometimes backend wraps: { data: { content: [...] } }
     if (Array.isArray(data?.data?.content)) return data.data.content;
-
-    // sometimes: { data: [...] }
     if (Array.isArray(data?.data)) return data.data;
-
+    if (Array.isArray(data)) return data;
     return [];
   }, [data]);
 
@@ -99,7 +112,7 @@ export default function FindFreelancers() {
             onChangeCategory={setCategory}
             onChangeSearch={setSearchText}
             onSubmitSearch={() => {
-              // keep button (same UI) but filtering is live
+              // filtering is live; keep button for UI
             }}
           />
         </div>
@@ -117,7 +130,7 @@ export default function FindFreelancers() {
             <section className="w-full px-4 py-8">
               <div
                 className="
-                  grid gap-x-[50px] justify-items-center
+                  grid gap-x-[50px] justify-items-center gap-y-6
                   grid-cols-1
                   sm:grid-cols-2
                   lg:grid-cols-3
@@ -127,7 +140,7 @@ export default function FindFreelancers() {
               >
                 {services.map((service) => (
                   <ServiceCardWithAuthor
-                    key={service?.id || crypto.randomUUID()}
+                    key={getServiceId(service) || service?.userId || service?.title}
                     service={service}
                     searchText={searchText}
                     category={category}

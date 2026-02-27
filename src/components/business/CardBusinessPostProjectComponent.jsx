@@ -151,7 +151,7 @@ function FreelancerCard({ image, title, description, tags, date, author, avatar 
 //   Tablet  (≥640px)  → 2 columns
 //   Desktop (≥1024px) → 3 columns
 //   Wide    (≥1280px) → 4 columns  ← your target
-export default function CardBusinessPostProjectComponent() {
+export default function CardBusinessPost() {
   return (
     <section className="w-full px-4 py-8">
       <div

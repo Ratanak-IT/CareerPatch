@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ButtonComponent from '../components/button/ButtonComponent';
 import { useDarkMode } from '../components/navbar/NavbarComponent';
 
-export default function CardDetailFreelancer() {
+export default function CardDetailBusiness() {
   const { darkMode } = useDarkMode();
   const [comment, setComment] = useState('');
   const [liked, setLiked] = useState(false);

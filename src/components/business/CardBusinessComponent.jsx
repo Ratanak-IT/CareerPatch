@@ -166,7 +166,7 @@ const cardsData = [
   // },
 ];
 
-export default function App() {
+export default function CardBusiness() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-7xl mx-auto">
       <div className="flex flex-wrap gap-6 justify-center">

@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { Link } from "react-router";
 
 export default function FreelancerCard({
+  id,
   image,
   title,
   description,
@@ -12,9 +14,10 @@ export default function FreelancerCard({
   const [liked, setLiked] = useState(false);
 
   return (
-    <div
+    <Link
+      to={`/services/${id}`}
       className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col flex-shrink-0"
-      style={{ width: 285, height: 487 }}
+      style={{ width: 285, height: 487, textDecoration: "none" }}
     >
       {/* Image */}
       <div className="relative flex-shrink-0" style={{ height: 253 }}>
@@ -27,7 +30,10 @@ export default function FreelancerCard({
           }}
         />
         <button
-          onClick={() => setLiked((prev) => !prev)}
+         onClick={(e) => {
+  e.stopPropagation();
+  setLiked((prev) => !prev);
+}}
           className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white bg-opacity-90 flex items-center justify-center shadow transition-transform hover:scale-110"
           aria-label={liked ? "Unlike" : "Like"}
         >
@@ -101,6 +107,6 @@ export default function FreelancerCard({
           </button>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

@@ -13,7 +13,10 @@ export const freelancerPostApi = createApi({
       // your endpoint
       query: () => "/api/jobs-service/services",
     }),
+     getServiceById: builder.query({
+      query: (serviceId) => `/api/jobs-service/services/${serviceId}`,
+    }),
   }),
 });
 
-export const { useGetServicesQuery } = freelancerPostApi;
+export const { useGetServicesQuery , useGetServiceByIdQuery } = freelancerPostApi;
