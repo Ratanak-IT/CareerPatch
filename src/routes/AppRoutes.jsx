@@ -3,12 +3,13 @@ import { Routes, Route, Navigate } from "react-router";
 import RootLayout from "../layouts/RootLayout.jsx";
 
 import About from "../pages/About.jsx";
-import FindFreelancers from "../pages/FindFreelancers.jsx";
-import FindWork from "../pages/FindWork.jsx";
+
+
 
 import Register from "../pages/Register.jsx";
 import LoginPage from "../pages/Login.jsx";
 import Home from "../pages/Home.jsx";
+import FindFreelancers from "../pages/FindFreelancers.jsx";
 
 export default function AppRoutes() {
   return (

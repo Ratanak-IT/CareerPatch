@@ -15,6 +15,8 @@ import { ToastContainer } from 'react-toastify'
 import "react-toastify/dist/ReactToastify.css";
 import LoginPage from './pages/Login.jsx'
 import Home from './pages/Home.jsx'
+import { setupListeners } from '@reduxjs/toolkit/query'
+setupListeners(store.dispatch);
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const categories = [
+  "All",
   "Freelancer",
+  "Python Programming",
   "Designer",
   "Developer",
   "Writer",
@@ -11,13 +13,25 @@ const categories = [
   "Videographer",
 ];
 
-export default function SearchBar() {
-  const [category, setCategory] = useState("Freelancer");
-  const [searchText, setSearchText] = useState("");
+export default function FreelancerSearchBarComponent({
+  category = "All",
+  searchText = "",
+  onChangeCategory,
+  onChangeSearch,
+  onSubmitSearch,
+}) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
+  // keep internal input synced with parent
+  const [localSearch, setLocalSearch] = useState(searchText);
+
+  useEffect(() => {
+    setLocalSearch(searchText);
+  }, [searchText]);
+
   const handleSearch = () => {
-    console.log("Searching:", { category, searchText });
+    onChangeSearch?.(localSearch);
+    onSubmitSearch?.();
   };
 
   const handleKeyDown = (e) => {
@@ -26,7 +40,6 @@ export default function SearchBar() {
 
   return (
     <div className="flex items-center justify-center w-full radius-2xl">
-      {/* Outer wrapper: 1200×100 on desktop, responsive on smaller screens */}
       <div className="relative w-full max-w-[1200px]">
         <div
           className="
@@ -40,8 +53,8 @@ export default function SearchBar() {
             overflow-visible
           "
         >
-          {/* ── Category Dropdown ── */}
-          <div className="relative ">
+          {/* Category Dropdown */}
+          <div className="relative">
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="
@@ -58,7 +71,6 @@ export default function SearchBar() {
                 whitespace-nowrap
               "
             >
-              {/* Search icon */}
               <svg
                 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0"
                 fill="none"
@@ -69,12 +81,13 @@ export default function SearchBar() {
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.35-4.35" />
               </svg>
+
               <span className="truncate max-w-[70px] sm:max-w-[90px] md:max-w-[120px]">
                 {category}
               </span>
-              {/* Chevron */}
+
               <svg
-                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400  transition-transform duration-200 ${
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 transition-transform duration-200 ${
                   dropdownOpen ? "rotate-180" : ""
                 }`}
                 fill="none"
@@ -86,14 +99,13 @@ export default function SearchBar() {
               </svg>
             </button>
 
-            {/* Dropdown menu */}
             {dropdownOpen && (
               <div className="absolute top-full left-0 mt-1 w-48 sm:w-52 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
                 {categories.map((cat) => (
                   <button
                     key={cat}
                     onClick={() => {
-                      setCategory(cat);
+                      onChangeCategory?.(cat);
                       setDropdownOpen(false);
                     }}
                     className={`
@@ -113,10 +125,10 @@ export default function SearchBar() {
             )}
           </div>
 
-          {/* ── Vertical Divider ── */}
+          {/* Divider */}
           <div className="w-px h-6 sm:h-7 md:h-8 bg-gray-300 flex-shrink-0" />
 
-          {/* ── Search Input ── */}
+          {/* Search Input */}
           <div className="flex items-center flex-1 px-3 sm:px-4 md:px-5 min-w-0">
             <svg
               className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0 mr-2 sm:mr-3"
@@ -128,12 +140,13 @@ export default function SearchBar() {
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.35-4.35" />
             </svg>
+
             <input
               type="text"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              value={localSearch}
+              onChange={(e) => setLocalSearch(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Search by title && skill"
+              placeholder="Search by title, category, freelancer name"
               className="
                 flex-1
                 bg-transparent
@@ -145,10 +158,13 @@ export default function SearchBar() {
                 min-w-0
               "
             />
-            {/* Clear button */}
-            {searchText && (
+
+            {localSearch && (
               <button
-                onClick={() => setSearchText("")}
+                onClick={() => {
+                  setLocalSearch("");
+                  onChangeSearch?.("");
+                }}
                 className="ml-2 text-gray-400 hover:text-gray-600 flex-shrink-0"
               >
                 <svg
@@ -164,7 +180,7 @@ export default function SearchBar() {
             )}
           </div>
 
-          {/* ── Search Button ── */}
+          {/* Search Button */}
           <div className="flex-shrink-0 pr-2 sm:pr-3">
             <button
               onClick={handleSearch}
@@ -189,12 +205,8 @@ export default function SearchBar() {
         </div>
       </div>
 
-      {/* Click outside overlay to close dropdown */}
       {dropdownOpen && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setDropdownOpen(false)}
-        />
+        <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
       )}
     </div>
   );

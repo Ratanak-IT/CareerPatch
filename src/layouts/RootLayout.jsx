@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectIsAuthed, setUser } from "../features/auth/authSlice";
 import { useMeQuery } from "../services/authApi";
 import { useEffect } from "react";
+import ScrollToTopButton from "../components/common/ScrollToTopButton";
 
 const RootLayout = () => {
    const dispatch = useDispatch();
@@ -27,6 +28,7 @@ const RootLayout = () => {
         <Outlet />
       
       <FooterComponent />
+      <ScrollToTopButton />
     </DarkModeProvider>
   );
 };

@@ -55,7 +55,7 @@ export default function TalentByFreelancer({
           onError={(e) => {
             e.currentTarget.src = defaultAvatar;
           }}
-          className="w-14 h-14 rounded-full object-cover flex-shrink-0"
+          className="w-14 h-14 rounded-full object-cover shrink-0"
           style={{
             border: `2px solid ${darkMode ? "#1e3a5f" : "#bfdbfe"}`,
           }}
@@ -70,7 +70,7 @@ export default function TalentByFreelancer({
             {name}
           </h3>
 
-          <p className="text-[#1E88E5] text-[12px] font-medium mt-0.5 flex items-center gap-1">
+          <p className="text-[#1E88E5] text-[12px] font-medium mt-0.5 flex items-center gap-1 line-clamp-1">
             <span>{categoryIcon}</span>
             {category}
           </p>
@@ -80,7 +80,7 @@ export default function TalentByFreelancer({
               darkMode ? "text-slate-400" : "text-gray-500"
             }`}
           >
-            <span className="w-2 h-2 rounded-full bg-green-400 inline-block flex-shrink-0" />
+            <span className="w-2 h-2 rounded-full bg-green-400 inline-block shrink-0" />
             {experienceYears}+ years experience
           </p>
         </div>

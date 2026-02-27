@@ -8,6 +8,7 @@ import TalenCategories from "../components/card/TalenCategories";
 import PeopleLoveWorking from "../components/section/PeopleLoveWorking";
 import { useGetFreelancersQuery } from "../services/freelancerApi";
 import ButtonComponent from "../components/button/ButtonComponent";
+import { Link } from "react-router";
 
 
 // ✅ API hook (from src/services/freelancer.js)
@@ -28,7 +29,7 @@ export default function Home() {
       <TalenCategories />
 
       <section className="w-full mt-8" style={{ background: "inherit" }}>
-        <div className="flex items-center justify-between max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-[120px] mb-10">
+        <div className="flex items-center justify-between max-w-360 mx-auto px-6 sm:px-10 lg:px-30 mb-10">
           <div>
           <h2
             className="text-3xl md:text-4xl  font-bold text-[#1E88E5]"
@@ -41,11 +42,14 @@ export default function Home() {
           </p>
         </div>
         <div>
-          <ButtonComponent text="All freelancer"/>
+
+          <Link to="/findfreelan">
+            <ButtonComponent text="All freelancer"/>
+          </Link>
         </div>
         </div>
 
-        <div className="max-w-[1440px] mx-auto px-6 lg:px-[120px]">
+        <div className="max-w-360 mx-auto px-6 lg:px-30">
           {/* Loading / Error */}
           {isLoading && (
             <p style={{ fontFamily: "'Poppins', sans-serif" }} className="text-gray-500">

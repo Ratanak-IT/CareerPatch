@@ -6,11 +6,20 @@ export const freelancerApi = createApi({
   reducerPath: "freelancerApi",
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_URL,
+    prepareHeaders: (headers) => {
+      // ✅ do NOT force content-type for GET
+      return headers;
+    },
   }),
   endpoints: (builder) => ({
     getFreelancers: builder.query({
-  query: () => "/api/users?userType=FREELANCER",
-}),
+      // ✅ public list
+      // If your backend is different, change URL only here.
+      query: () => ({
+        url: "/api/users?userType=FREELANCER",
+        method: "GET",
+      }),
+    }),
   }),
 });
 

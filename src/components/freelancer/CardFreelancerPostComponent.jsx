@@ -1,60 +1,21 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useGetAllServicesQuery } from "../../services/serviceApi";
 
+// fallback image
+const FALLBACK_IMAGE = "https://placehold.co/285x253?text=No+Image";
 
-// ── Safe image import — falls back to placeholder if asset missing ──
-let avatarImg = "";
-try {
-  avatarImg = new URL("../../assets/freelancerproject.jpg", import.meta.url).href;
-} catch {
-  avatarImg = "https://placehold.co/285x253?text=No+Image";
+function formatDate(value) {
+  if (!value) return "—";
+  if (typeof value === "number") return new Date(value).toLocaleDateString();
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? String(value) : d.toLocaleDateString();
 }
 
-const CARDS_DATA = [
-  {
-    id: 1,
-    image: avatarImg,
-    title: "UX/UI Designer",
-    description:
-      "Creative design solutions for web and mobile interfaces, focusing on user experience and modern aesthetics.",
-    tags: ["Figma", "Design"],
-    date: "Feb 21, 2026",
-    author: "Cristian",
-    avatar: avatarImg,
-  },
-  {
-    id: 2,
-    image: avatarImg,
-    title: "Frontend Developer",
-    description:
-      "Build performant, accessible web apps using React and Tailwind. Collaborate closely with design and backend teams.",
-    tags: ["React", "Tailwind"],
-    date: "Feb 22, 2026",
-    author: "Sophia",
-    avatar: avatarImg,
-  },
-  {
-    id: 3,
-    image: avatarImg,
-    title: "Data Analyst",
-    description:
-      "Analyze large datasets to provide actionable business insights using SQL and data visualization tools.",
-    tags: ["SQL", "Tableau"],
-    date: "Feb 23, 2026",
-    author: "Marcus",
-    avatar: avatarImg,
-  },
-  {
-    id: 4,
-    image: avatarImg,
-    title: "Backend Engineer",
-    description:
-      "Design and maintain scalable server-side APIs and microservices using Node.js and cloud infrastructure.",
-    tags: ["Node.js", "AWS"],
-    date: "Feb 24, 2026",
-    author: "Lena",
-    avatar: avatarImg,
-  },
-];
+function getFirstImage(jobImages) {
+  if (Array.isArray(jobImages) && jobImages.length > 0) return jobImages[0];
+  if (typeof jobImages === "string") return jobImages;
+  return FALLBACK_IMAGE;
+}
 
 function FreelancerCard({ image, title, description, tags, date, author, avatar }) {
   const [liked, setLiked] = useState(false);
@@ -70,7 +31,9 @@ function FreelancerCard({ image, title, description, tags, date, author, avatar 
           src={image}
           alt={title}
           className="w-full h-full object-cover"
-          onError={(e) => { e.target.src = "https://placehold.co/285x253?text=No+Image"; }}
+          onError={(e) => {
+            e.currentTarget.src = FALLBACK_IMAGE;
+          }}
         />
         <button
           onClick={() => setLiked((prev) => !prev)}
@@ -97,6 +60,7 @@ function FreelancerCard({ image, title, description, tags, date, author, avatar 
       {/* Body */}
       <div className="p-4 flex flex-col flex-1 overflow-hidden">
         <h2 className="text-blue-500 font-bold text-sm mb-1 truncate">{title}</h2>
+
         <p
           className="text-gray-500 text-xs leading-relaxed mb-4 overflow-hidden"
           style={{
@@ -110,7 +74,7 @@ function FreelancerCard({ image, title, description, tags, date, author, avatar 
 
         <div className="flex items-center justify-between mb-4 flex-wrap gap-y-1">
           <div className="flex flex-wrap gap-1">
-            {tags.map((tag) => (
+            {(tags || []).slice(0, 2).map((tag) => (
               <span
                 key={tag}
                 className="bg-blue-500 text-white text-xs font-medium px-2.5 py-0.5 rounded-full"
@@ -130,10 +94,13 @@ function FreelancerCard({ image, title, description, tags, date, author, avatar 
               src={avatar}
               alt={author}
               className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100"
-              onError={(e) => { e.target.src = "https://placehold.co/32x32?text=?"; }}
+              onError={(e) => {
+                e.currentTarget.src = "https://placehold.co/32x32?text=?";
+              }}
             />
             <span className="text-gray-700 text-xs font-medium">{author}</span>
           </div>
+
           <button className="bg-blue-500 hover:bg-blue-600 active:scale-95 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200">
             Message
           </button>
@@ -143,23 +110,92 @@ function FreelancerCard({ image, title, description, tags, date, author, avatar 
   );
 }
 
-export default function CardFreelancerPostComponent() {
+// ✅ This component receives filters from SearchBar via props
+export default function CardFreelancerPostComponent({ category = "Freelancer", searchText = "" }) {
+  const { data, isLoading, isError } = useGetAllServicesQuery();
+
+  // ✅ normalize: API returns { content: [...] }
+  const services = useMemo(() => {
+    const raw = data?.content ?? data?.data?.content ?? data?.data ?? data;
+    return Array.isArray(raw) ? raw : [];
+  }, [data]);
+
+  // ✅ filter: title + description + category.name
+  const filtered = useMemo(() => {
+    const q = String(searchText || "").trim().toLowerCase();
+    const cat = String(category || "").trim().toLowerCase();
+
+    return services.filter((s) => {
+      const title = String(s?.title || "").toLowerCase();
+      const desc = String(s?.description || "").toLowerCase();
+      const catName = String(s?.category?.name || "").toLowerCase();
+
+      const matchSearch = !q || title.includes(q) || desc.includes(q) || catName.includes(q);
+
+      // "Freelancer" means All
+      const matchCategory = !cat || cat === "freelancer" || cat === "all" || catName.includes(cat);
+
+      return matchSearch && matchCategory;
+    });
+  }, [services, searchText, category]);
+
+  // ✅ map API -> Card data
+  const cards = useMemo(() => {
+    return filtered.map((s) => {
+      const image = getFirstImage(s?.jobImages);
+      const title = s?.title || "Untitled";
+      const description = s?.description || "No description";
+      const tags = [
+        s?.category?.name || "Service",
+        s?.status || "ACTIVE",
+      ].filter(Boolean);
+      const date = formatDate(s?.createdAt);
+
+      // You don't have author profile in this endpoint.
+      // If you later join user data, replace these.
+      const author = "Freelancer";
+      const avatar = "https://placehold.co/32x32?text=F";
+
+      return {
+        id: s?.id,
+        image,
+        title,
+        description,
+        tags,
+        date,
+        author,
+        avatar,
+      };
+    });
+  }, [filtered]);
+
   return (
     <section className="w-full px-4 py-8">
-      <div
-        className="
-          grid gap-x-[50px] gap-y-[px] justify-items-center
-          grid-cols-1
-          sm:grid-cols-2
-          lg:grid-cols-3
-          xl:grid-cols-4
-          max-w-[1240px] mx-auto
-        "
-      >
-        {CARDS_DATA.map((card) => (
-          <FreelancerCard key={card.id} {...card} />
-        ))}
-      </div>
+      {isLoading && <p className="text-gray-500 text-center">Loading posts...</p>}
+      {isError && <p className="text-red-500 text-center">Failed to load posts.</p>}
+
+      {!isLoading && !isError && (
+        <>
+          <div
+            className="
+              grid gap-x-[50px] justify-items-center
+              grid-cols-1
+              sm:grid-cols-2
+              lg:grid-cols-3
+              xl:grid-cols-4
+              max-w-[1240px] mx-auto
+            "
+          >
+            {cards.map((card) => (
+              <FreelancerCard key={card.id} {...card} />
+            ))}
+          </div>
+
+          {cards.length === 0 && (
+            <p className="text-gray-500 text-center mt-6">No services found.</p>
+          )}
+        </>
+      )}
     </section>
   );
 }
