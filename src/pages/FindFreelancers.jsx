@@ -6,6 +6,7 @@ import FooterComponent from "../components/footer/FooterComponent";
 import CardFreelancerPostComponent from "../components/freelancer/CardFreelancerPostComponent";
 
 
+
 export default function FindFreelancers() {
   return (
     <> 
@@ -24,6 +25,8 @@ export default function FindFreelancers() {
         </div>
       </div>
     </div>
+
+   
     
     <FooterComponent/>
     </>

@@ -1,7 +1,10 @@
 import { useState } from "react";
 
-export default function ToggleTabComponent() {
-  const [active, setActive] = useState("information");
+export default function ToggleTabComponent({ active, setActive }) {
+  // fallback to internal state if no props passed
+  const [internalActive, setInternalActive] = useState("information");
+  const currentActive = active ?? internalActive;
+  const handleSet = setActive ?? setInternalActive;
 
   return (
     <div
@@ -19,7 +22,7 @@ export default function ToggleTabComponent() {
     >
       {/* Information Tab */}
       <button
-        onClick={() => setActive("information")}
+        onClick={() => handleSet("information")}
         style={{
           flex: 1,
           height: "100%",
@@ -29,11 +32,11 @@ export default function ToggleTabComponent() {
           fontSize: "14px",
           fontWeight: 600,
           transition: "all 0.25s ease",
-          background: active === "information"
+          background: currentActive === "information"
             ? "linear-gradient(135deg, #7C3AED, #8B5CF6)"
             : "transparent",
-          color: active === "information" ? "#fff" : "#7C3AED",
-          boxShadow: active === "information"
+          color: currentActive === "information" ? "#fff" : "#7C3AED",
+          boxShadow: currentActive === "information"
             ? "0 2px 10px rgba(124,58,237,0.35)"
             : "none",
           letterSpacing: "0.01em",
@@ -44,7 +47,7 @@ export default function ToggleTabComponent() {
 
       {/* Favorites Tab */}
       <button
-        onClick={() => setActive("favorites")}
+        onClick={() => handleSet("favorites")}
         style={{
           flex: 1,
           height: "100%",
@@ -54,11 +57,11 @@ export default function ToggleTabComponent() {
           fontSize: "14px",
           fontWeight: 600,
           transition: "all 0.25s ease",
-          background: active === "favorites"
+          background: currentActive === "favorites"
             ? "linear-gradient(135deg, #7C3AED, #8B5CF6)"
             : "transparent",
-          color: active === "favorites" ? "#fff" : "#7C3AED",
-          boxShadow: active === "favorites"
+          color: currentActive === "favorites" ? "#fff" : "#7C3AED",
+          boxShadow: currentActive === "favorites"
             ? "0 2px 10px rgba(124,58,237,0.35)"
             : "none",
           letterSpacing: "0.01em",

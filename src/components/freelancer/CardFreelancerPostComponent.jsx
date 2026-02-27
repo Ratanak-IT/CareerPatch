@@ -143,7 +143,7 @@ function FreelancerCard({ image, title, description, tags, date, author, avatar 
   );
 }
 
-export default function CardFreelancerPostComponent() {
+export default function CardFreelancerPostComponent({ isDark = false }) {
   return (
     <section className="w-full px-4 py-8">
       <div
