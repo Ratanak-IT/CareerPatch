@@ -1,12 +1,22 @@
 import './App.css'
-import ProfileFreelancer from './pages/ProfileFreelancer'
+
+
+import ProfileBusiness from './pages/ProfileBusiness'
+
+
+
+
+
 
 
 
 export default function App() {
   return (
     <>
-    <ProfileFreelancer/>
+    <ProfileBusiness/>
+    
+    
+    
     
     
       
