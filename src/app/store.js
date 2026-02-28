@@ -7,6 +7,7 @@ import { freelancerPostApi } from "../services/freelancerPostApi";
 import favoritesReducer from "../features/favorites/favoritesSlice";
 import { profileApi } from "../services/profileApi";
 import { serviceApi } from "../services/servicesApi";
+import { categoriesApi } from "../services/categoriesApi";
 
 
 
@@ -20,6 +21,7 @@ export const store = configureStore({
      [userApi.reducerPath]: userApi.reducer,
      [profileApi.reducerPath]: profileApi.reducer,
      [serviceApi.reducerPath]: serviceApi.reducer,
+     [categoriesApi.reducerPath]: categoriesApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -29,6 +31,7 @@ export const store = configureStore({
           freelancerPostApi.middleware,
           userApi.middleware,
           profileApi.middleware,
-          serviceApi.middleware
+          serviceApi.middleware,
+          categoriesApi.middleware,
         ),
 });

@@ -6,6 +6,11 @@ export const freelancerPostApi = createApi({
   reducerPath: "freelancerPostApi",
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_URL,
+    prepareHeaders: (headers, { getState }) => {
+  const token = getState().auth.accessToken;
+  if (token) headers.set("authorization", `Bearer ${token}`);
+  return headers;
+}
   }),
   endpoints: (builder) => ({
     // GET ALL SERVICES

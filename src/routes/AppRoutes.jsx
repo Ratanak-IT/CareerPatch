@@ -1,17 +1,14 @@
-import { Routes, Route, Navigate } from "react-router";
-
+import { Routes, Route } from "react-router";
 import RootLayout from "../layouts/RootLayout.jsx";
-
 import About from "../pages/About.jsx";
-
-
-
 import Register from "../pages/Register.jsx";
 import LoginPage from "../pages/Login.jsx";
 import Home from "../pages/Home.jsx";
 import FindFreelancers from "../pages/FindFreelancers.jsx";
-import CardDetailFreelancer from "../carddetail/CardDetailFreelancer.jsx";
+import CardDetailFreelancer from "../components/carddetail/CardDetailFreelancer.jsx";
 import ProfileFreelancer from "../pages/ProfileFreelancer.jsx";
+import FindWork from "../pages/FindWork.jsx";
+import CardDetailBusiness from "../components/carddetail/CarddetailBusiness.jsx";
 
 export default function AppRoutes() {
   return (
@@ -27,6 +24,7 @@ export default function AppRoutes() {
         <Route path="/about" element={<About />} />
         <Route path="/profile" element={<ProfileFreelancer />} />
  <Route path="/services/:serviceId" element={<CardDetailFreelancer />} />
+ <Route path="/jobs/:jobId" element={<CardDetailBusiness />} />
         {/* Auth pages */}
 
         <Route path="/login" element={<LoginPage />} />

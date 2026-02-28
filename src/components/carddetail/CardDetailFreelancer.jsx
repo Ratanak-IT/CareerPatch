@@ -1,17 +1,16 @@
-// src/carddetail/CardDetailFreelancer.jsx
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import ButtonComponent from "../components/button/ButtonComponent";
-import { useDarkMode } from "../components/navbar/NavbarComponent";
+import ButtonComponent from "../button/ButtonComponent";
+import { useDarkMode } from "../navbar/NavbarComponent";
 import {
   useGetServicesQuery,
   useGetServiceByIdQuery,
-} from "../services/freelancerPostApi";
-import { useGetUserByIdQuery } from "../services/userApi";
+} from "../../services/freelancerPostApi";
+import { useGetUserByIdQuery } from "../../services/userApi";
 
 const FALLBACK_COVER = "https://placehold.co/1100x420?text=No+Image";
 const FALLBACK_THUMB = "https://placehold.co/80x56?text=No";
-const FALLBACK_AVATAR = "https://placehold.co/32x32?text=?";
+const FALLBACK_AVATAR = "https://placehold.co/64x64?text=?";
 
 function formatDateDDMMYYYY(value) {
   if (!value) return "—";
@@ -23,13 +22,13 @@ function formatDateDDMMYYYY(value) {
   return `${day}/${month}/${year}`;
 }
 
-// Handles string[] OR object[] skills safely
-function getFirstSkill(service) {
-  const s0 = service?.skills?.[0];
-  if (!s0) return null;
-  if (typeof s0 === "string") return s0;
-  if (typeof s0 === "object") return s0?.name || s0?.title || null;
-  return null;
+function normalizeListResponse(resp) {
+  const raw = resp?.data ?? resp;
+  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw?.content)) return raw.content; // pagination
+  if (Array.isArray(raw?.items)) return raw.items;
+  if (Array.isArray(raw?.results)) return raw.results;
+  return [];
 }
 
 export default function CardDetailFreelancer() {
@@ -39,7 +38,7 @@ export default function CardDetailFreelancer() {
 
   const [comment, setComment] = useState("");
 
-  // Theme vars (same style as your page)
+  // Theme vars (same style)
   const bg = darkMode
     ? "linear-gradient(160deg, #0d1b2e 0%, #0f2240 50%, #0d1520 100%)"
     : "#f0f4f8";
@@ -49,7 +48,7 @@ export default function CardDetailFreelancer() {
   const textSecondary = darkMode ? "text-slate-400" : "text-gray-500";
   const divider = darkMode ? "#1e3a5f" : "#e8f0fe";
 
-  // 1) Preferred: GET detail by serviceId (if backend supports)
+  // 1) Prefer: get by id
   const {
     data: byIdResp,
     isLoading: byIdLoading,
@@ -57,7 +56,7 @@ export default function CardDetailFreelancer() {
     error: byIdErrObj,
   } = useGetServiceByIdQuery(serviceId, { skip: !serviceId });
 
-  // 2) Fallback: GET list and find by id locally (prevents blocking if GET-by-id not available)
+  // 2) Fallback: list then find
   const {
     data: listResp,
     isLoading: listLoading,
@@ -69,17 +68,14 @@ export default function CardDetailFreelancer() {
     const byId = byIdResp?.data ?? byIdResp;
     if (byId && typeof byId === "object" && !Array.isArray(byId)) return byId;
 
-    const list = listResp?.data ?? listResp;
-    const items = Array.isArray(list)
-      ? list
-      : list?.content ?? list?.items ?? list?.results ?? list?.data ?? [];
-
+    const items = normalizeListResponse(listResp);
     return items.find(
-      (x) => String(x?.id ?? x?.serviceId ?? x?._id ?? x?.uuid) === String(serviceId)
+      (x) =>
+        String(x?.id ?? x?.serviceId ?? x?._id ?? x?.uuid) === String(serviceId)
     );
   }, [byIdResp, listResp, serviceId]);
 
-  // Fetch freelancer/account info
+  // Fetch user (creator)
   const userId = service?.userId;
   const { data: userRes } = useGetUserByIdQuery(userId, { skip: !userId });
   const user = userRes?.data ?? userRes;
@@ -89,8 +85,7 @@ export default function CardDetailFreelancer() {
   const freelancerAvatar =
     user?.profileImageUrl || service?.profileImageUrl || FALLBACK_AVATAR;
 
-  // Loading & error
-  const loading = byIdLoading && listLoading;
+  const loading = (byIdLoading && !byIdError) || (listLoading && !listError);
 
   if (!serviceId) {
     return (
@@ -186,28 +181,37 @@ export default function CardDetailFreelancer() {
     );
   }
 
-  // Service fields
+  // Service fields (from API)
   const title = service?.title ?? "Untitled";
-  const description = service?.description ?? "-";
+  const description = service?.description ?? "No description";
   const status = service?.status ?? "—";
   const posted = formatDateDDMMYYYY(service?.createdAt);
-  const firstSkill = getFirstSkill(service);
 
-  // Images
+  // Category
+  const categoryName =
+    service?.category?.name ||
+    service?.categoryName ||
+    service?.category ||
+    "—";
+
+  // Images: jobImages is usually string[]
   const images =
     Array.isArray(service?.jobImages)
-      ? service.jobImages
-      : Array.isArray(service?.imageUrls)
-        ? service.imageUrls
-        : typeof service?.jobImages === "string"
-          ? [service.jobImages]
+      ? service.jobImages.filter(Boolean)
+      : typeof service?.jobImages === "string" && service.jobImages
+        ? [service.jobImages]
+        : Array.isArray(service?.imageUrls)
+          ? service.imageUrls.filter(Boolean)
           : [];
 
   const coverImage = images?.[0] || FALLBACK_COVER;
 
-  // Optional arrays
-  const skills = Array.isArray(service?.skills) ? service.skills : [];
-  const tools = Array.isArray(service?.tools) ? service.tools : [];
+  // Skills (if exist)
+  const skillsArr = Array.isArray(service?.skills)
+    ? service.skills
+    : Array.isArray(user?.skills)
+      ? user.skills
+      : [];
 
   return (
     <div
@@ -215,9 +219,9 @@ export default function CardDetailFreelancer() {
       style={{ fontFamily: "'Poppins', sans-serif", background: bg }}
     >
       <div className="max-w-[1100px] mx-auto flex flex-col lg:flex-row gap-6 items-start">
-        {/* ── LEFT COLUMN ── */}
+        {/* LEFT COLUMN */}
         <div className="w-full lg:w-[60%] flex flex-col gap-5">
-          {/* Header card (Freelancer name + skill[0] + dd/mm/yyyy) */}
+          {/* Header card */}
           <div
             className="rounded-2xl p-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4"
             style={{
@@ -227,30 +231,26 @@ export default function CardDetailFreelancer() {
             }}
           >
             <div className="flex items-start gap-4">
-              {/* Skill badge */}
               <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 ring-2 ring-[#e8f0fe]">
-  <img
-    src={freelancerAvatar}
-    alt={freelancerName}
-    className="w-full h-full object-cover"
-    onError={(e) => {
-      e.currentTarget.src = "https://placehold.co/64x64?text=?";
-    }}
-  />
-</div>
+                <img
+                  src={freelancerAvatar}
+                  alt={freelancerName}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = FALLBACK_AVATAR;
+                  }}
+                />
+              </div>
 
               <div>
-                {/* Freelancer name */}
                 <p className={`text-[14px] font-semibold ${textPrimary}`}>
                   {freelancerName}
                 </p>
 
-                {/* Service Title */}
                 <h1 className="text-[#1E88E5] text-[24px] font-bold leading-tight mt-1">
                   {title}
                 </h1>
 
-                {/* Meta */}
                 <div
                   className={`flex flex-wrap items-center gap-4 mt-2 text-[13px] ${textSecondary}`}
                 >
@@ -275,17 +275,19 @@ export default function CardDetailFreelancer() {
                     <span
                       className="w-2 h-2 rounded-full"
                       style={{
-                        background:
-                          status === "ACTIVE" ? "#22c55e" : "#f59e0b",
+                        background: status === "ACTIVE" ? "#22c55e" : "#f59e0b",
                       }}
                     />
                     {status}
+                  </span>
+
+                  <span className="flex items-center gap-2">
+                    <span className="font-semibold">Category:</span> {categoryName}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Message button */}
             <div className="flex-shrink-0">
               <ButtonComponent
                 text={
@@ -362,7 +364,7 @@ export default function CardDetailFreelancer() {
             </div>
           </div>
 
-          {/* Tools & Skills */}
+          {/* Skills */}
           <div
             className="rounded-2xl p-6"
             style={{
@@ -371,68 +373,36 @@ export default function CardDetailFreelancer() {
               boxShadow: "0 8px 32px rgba(30,136,229,0.07)",
             }}
           >
-            <div className="flex flex-col sm:flex-row gap-8">
-              {/* Tools */}
-              <div className="flex-1">
-                <h2 className={`text-[15px] font-bold mb-3 ${textPrimary}`}>
-                  Tools & Technologies
-                </h2>
-                {tools.length === 0 ? (
-                  <p className={`text-[13px] ${textSecondary}`}>—</p>
-                ) : (
-                  <ul
-                    className={`text-[13px] leading-7 ${textSecondary} space-y-1`}
-                  >
-                    {tools.map((t, i) => (
-                      <li key={i} className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-[#1E88E5] flex-shrink-0" />
-                        {t}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+            <h2 className={`text-[15px] font-bold mb-3 ${textPrimary}`}>Skills</h2>
 
-              {/* Skills */}
-              <div className="flex-1">
-                <h2 className={`text-[15px] font-bold mb-3 ${textPrimary}`}>
-                  Skills
-                </h2>
-                {skills.length === 0 ? (
-                  <p className={`text-[13px] ${textSecondary}`}>—</p>
-                ) : (
-                  <div className="flex flex-wrap gap-2">
-                    {skills.map((s, i) => {
-                      const label =
-                        typeof s === "string" ? s : s?.name || s?.title || "—";
-                      return (
-                        <span
-                          key={i}
-                          className="text-[12px] px-3 py-1 rounded-full font-medium"
-                          style={{
-                            background: darkMode
-                              ? "rgba(30,136,229,0.12)"
-                              : "#e8f0fe",
-                            color: darkMode ? "#90caf9" : "#1E88E5",
-                            border: `1px solid ${
-                              darkMode ? "#1e3a5f" : "#bfdbfe"
-                            }`,
-                          }}
-                        >
-                          {label}
-                        </span>
-                      );
-                    })}
-                  </div>
-                )}
+            {skillsArr.length === 0 ? (
+              <p className={`text-[13px] ${textSecondary}`}>—</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {skillsArr.map((s, i) => {
+                  const label = typeof s === "string" ? s : s?.name || s?.title || "—";
+                  return (
+                    <span
+                      key={i}
+                      className="text-[12px] px-3 py-1 rounded-full font-medium"
+                      style={{
+                        background: darkMode ? "rgba(30,136,229,0.12)" : "#e8f0fe",
+                        color: darkMode ? "#90caf9" : "#1E88E5",
+                        border: `1px solid ${darkMode ? "#1e3a5f" : "#bfdbfe"}`,
+                      }}
+                    >
+                      {label}
+                    </span>
+                  );
+                })}
               </div>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* ── RIGHT COLUMN ── */}
+        {/* RIGHT COLUMN */}
         <div className="w-full lg:w-[40%] flex flex-col gap-5">
-          {/* Quotation card (placeholder if not provided by API) */}
+          {/* Quotation card */}
           <div
             className="rounded-2xl p-6"
             style={{
@@ -444,7 +414,7 @@ export default function CardDetailFreelancer() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-baseline gap-2">
                 <span className={`text-[28px] font-extrabold ${textPrimary}`}>
-                  {service?.budget ?? service?.price ?? "—"}
+                  {service?.budget ?? service?.price ?? "$xxx"}
                 </span>
                 <span className={`text-[13px] ${textSecondary}`}>Quotation</span>
               </div>
@@ -467,7 +437,6 @@ export default function CardDetailFreelancer() {
               </button>
             </div>
 
-            {/* Freelancer preview */}
             <div
               className="flex items-center gap-3 p-3 rounded-xl"
               style={{
@@ -500,7 +469,7 @@ export default function CardDetailFreelancer() {
             </button>
           </div>
 
-          {/* Comments card (UI only) */}
+          {/* Comments UI */}
           <div
             className="rounded-2xl p-6"
             style={{
@@ -522,7 +491,7 @@ export default function CardDetailFreelancer() {
                     {freelancerName}
                   </span>
                 </div>
-                <span className={`text-[11px] ${textSecondary}`}>2 hours ago</span>
+                <span className={`text-[11px] ${textSecondary}`}>—</span>
               </div>
 
               <p
@@ -532,7 +501,7 @@ export default function CardDetailFreelancer() {
                   color: "#1E88E5",
                 }}
               >
-                So amazing
+                —
               </p>
             </div>
 

@@ -1,9 +1,9 @@
 import React from 'react'
-import CardDetailFreelancer from '../carddetail/CardDetailFreelancer'
+import CardDetailFreelancer from '../components/carddetail/CardDetailFreelancer'
 
 
 export default function FindWork() {
   return (
-   <div></div>
+   <div>hello</div>
   )
 }

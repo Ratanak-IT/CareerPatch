@@ -31,7 +31,7 @@ export default function ProfileCardComponent() {
           <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-4">
             {/* Avatar: 141x137, lifted over the cover */}
             <div
-              className="relative flex-shrink-0 rounded-lg border-4 border-white overflow-hidden shadow-md"
+              className="relative shrink-0 rounded-lg border-4 border-white overflow-hidden shadow-md"
               style={{
                 width: "141px",
                 height: "137px",

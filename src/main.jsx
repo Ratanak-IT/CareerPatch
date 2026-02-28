@@ -16,8 +16,9 @@ import "react-toastify/dist/ReactToastify.css";
 import LoginPage from './pages/Login.jsx'
 import Home from './pages/Home.jsx'
 import { setupListeners } from '@reduxjs/toolkit/query'
-import CardDetailFreelancer from './carddetail/CardDetailFreelancer.jsx'
+import CardDetailFreelancer from './components/carddetail/CardDetailFreelancer.jsx'
 import ProfileFreelancer from './pages/ProfileFreelancer.jsx'
+import CardDetailBusiness from './components/carddetail/CarddetailBusiness.jsx'
 setupListeners(store.dispatch);
 
 createRoot(document.getElementById('root')).render(
@@ -34,14 +35,14 @@ createRoot(document.getElementById('root')).render(
             <Route path="/findfreelan" element={<FindFreelancers />} />
             <Route path="/findwork" element={<FindWork />} />
             <Route path="/profile" element={<ProfileFreelancer />} />
-<Route path="/services/:serviceId" element={<CardDetailFreelancer />} />
+            <Route path="/services/:serviceId" element={<CardDetailFreelancer />} />
+            <Route path="/jobs/:jobId" element={<CardDetailBusiness />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<Register />} />
-
           </Route>
         </Routes>
       </DarkModeProvider>
-      <ToastContainer position="top-right" autoClose={2000} />
+      <ToastContainer position="top-right" autoClose={800} />
     </BrowserRouter>
     </Provider>
     </React.StrictMode>

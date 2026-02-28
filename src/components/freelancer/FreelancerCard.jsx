@@ -2,6 +2,19 @@ import { Link } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleFavorite, selectIsFavorite } from "../../features/favorites/favoritesSlice";
 
+const FALLBACK_IMAGE = "https://placehold.co/285x253?text=No+Image";
+
+// ✅ dd/mm/yyyy
+function formatDate(value) {
+  if (!value) return "—";
+  const d = typeof value === "number" ? new Date(value) : new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+
 export default function FreelancerCard({
   id,
   image,
@@ -23,17 +36,15 @@ export default function FreelancerCard({
     >
       <div className="relative flex-shrink-0" style={{ height: 253 }}>
         <img
-          src={image}
+          src={image || FALLBACK_IMAGE}
           alt={title}
           className="w-full h-full object-cover"
-          onError={(e) => {
-            e.currentTarget.src = "https://placehold.co/285x253?text=No+Image";
-          }}
+          onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
         />
 
         <button
           onClick={(e) => {
-            e.preventDefault();     // prevent link navigation
+            e.preventDefault();
             e.stopPropagation();
             dispatch(toggleFavorite(id));
           }}
@@ -61,8 +72,8 @@ export default function FreelancerCard({
         <h2 className="text-blue-500 font-bold text-sm mb-1 truncate">{title}</h2>
 
         <p
-          className="text-gray-500 text-xs leading-relaxed mb-4 overflow-hidden"
-          style={{ display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical" }}
+          className="text-gray-500 text-xs leading-relaxed mb-4 overflow-hidden line-clamp-3"
+          style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}
         >
           {description}
         </p>
@@ -70,15 +81,12 @@ export default function FreelancerCard({
         <div className="flex items-center justify-between mb-4 flex-wrap gap-y-1">
           <div className="flex flex-wrap gap-1">
             {(Array.isArray(tags) ? tags : []).filter(Boolean).slice(0, 2).map((t) => (
-              <span
-                key={t}
-                className="bg-blue-500 text-white text-xs font-medium px-2.5 py-0.5 rounded-full"
-              >
+              <span key={t} className="bg-blue-500 text-white text-xs font-medium px-2.5 py-0.5 rounded-full">
                 {t}
               </span>
             ))}
           </div>
-
+          {/* ✅ already formatted dd/mm/yyyy by parent, just display */}
           <span className="text-gray-400 text-xs">{date}</span>
         </div>
 
@@ -87,22 +95,16 @@ export default function FreelancerCard({
         <div className="flex items-center justify-between mt-auto">
           <div className="flex items-center gap-2">
             <img
-              src={avatar}
+              src={avatar || "https://placehold.co/32x32?text=?"}
               alt={author}
               className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100"
-              onError={(e) => {
-                e.currentTarget.src = "https://placehold.co/32x32?text=?";
-              }}
+              onError={(e) => { e.currentTarget.src = "https://placehold.co/32x32?text=?"; }}
             />
             <span className="text-gray-700 text-xs font-medium">{author}</span>
           </div>
 
           <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              // open chat later
-            }}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
             className="bg-blue-500 hover:bg-blue-600 active:scale-95 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200"
           >
             Message
