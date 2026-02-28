@@ -1,4 +1,4 @@
-import React from "react";
+
 import AboutImg from "../../assets/about.avif";
 import MentorCard from "./Mentor";
 import MentorImg1 from "../../assets/mentor1.png";
