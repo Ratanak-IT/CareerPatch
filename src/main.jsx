@@ -17,34 +17,40 @@ import LoginPage from './pages/Login.jsx'
 import Home from './pages/Home.jsx'
 import { setupListeners } from '@reduxjs/toolkit/query'
 import CardDetailFreelancer from './components/carddetail/CardDetailFreelancer.jsx'
-import ProfileFreelancer from './pages/ProfileFreelancer.jsx'
 import CardDetailBusiness from './components/carddetail/CarddetailBusiness.jsx'
+import ProfileBusinessPage from './pages/ProfileBusiness.jsx'
+import ProfileRouter from './routes/ProfileRouter.jsx'
+
+
 setupListeners(store.dispatch);
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-      <React.StrictMode>
-         <Provider store={store}>
-    <BrowserRouter>
-      <DarkModeProvider>
-        <Routes>
-          <Route element={<RootLayout />}>
+    <React.StrictMode>
+      <Provider store={store}>
+        <BrowserRouter>
+          <DarkModeProvider>
+            <Routes>
+              <Route element={<RootLayout />}>
+                <Route path="/"            element={<Home />} />
+                <Route path="/about"       element={<About />} />
+                <Route path="/findfreelan" element={<FindFreelancers />} />
+                <Route path="/findwork"    element={<FindWork />} />
 
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/findfreelan" element={<FindFreelancers />} />
-            <Route path="/findwork" element={<FindWork />} />
-            <Route path="/profile" element={<ProfileFreelancer />} />
-            <Route path="/services/:serviceId" element={<CardDetailFreelancer />} />
-            <Route path="/jobs/:jobId" element={<CardDetailBusiness />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<Register />} />
-          </Route>
-        </Routes>
-      </DarkModeProvider>
-      <ToastContainer position="top-right" autoClose={800} />
-    </BrowserRouter>
-    </Provider>
+                {/* /profile auto-routes to correct page based on userType */}
+                <Route path="/profile" element={<ProfileRouter />} />
+
+                <Route path="/profile-business" element={<ProfileBusinessPage />} />
+                <Route path="/services/:serviceId" element={<CardDetailFreelancer />} />
+                <Route path="/jobs/:jobId"         element={<CardDetailBusiness />} />
+                <Route path="/login"               element={<LoginPage />} />
+                <Route path="/register"            element={<Register />} />
+              </Route>
+            </Routes>
+          </DarkModeProvider>
+          <ToastContainer position="top-right" autoClose={800} />
+        </BrowserRouter>
+      </Provider>
     </React.StrictMode>
   </StrictMode>,
 )

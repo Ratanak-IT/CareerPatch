@@ -1,19 +1,9 @@
+// 5) src/components/freelancer/FreelancerCard.jsx
 import { Link } from "react-router";
-import { useDispatch, useSelector } from "react-redux";
-import { toggleFavorite, selectIsFavorite } from "../../features/favorites/favoritesSlice";
+import { useBookmarks } from "../../hooks/useBookmarks";
 
-const FALLBACK_IMAGE = "https://placehold.co/285x253?text=No+Image";
-
-// ✅ dd/mm/yyyy
-function formatDate(value) {
-  if (!value) return "—";
-  const d = typeof value === "number" ? new Date(value) : new Date(value);
-  if (Number.isNaN(d.getTime())) return "—";
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const yyyy = d.getFullYear();
-  return `${dd}/${mm}/${yyyy}`;
-}
+const FALLBACK_IMAGE  = "https://placehold.co/285x253?text=No+Image";
+const FALLBACK_AVATAR = "https://placehold.co/32x32?text=?";
 
 export default function FreelancerCard({
   id,
@@ -24,32 +14,36 @@ export default function FreelancerCard({
   date,
   author,
   avatar,
+  postType = "service", // "service" | "job"
 }) {
-  const dispatch = useDispatch();
-  const liked = useSelector(selectIsFavorite(id));
+  const { liked, toggle } = useBookmarks({ id, type: postType });
+  const linkTo = postType === "job" ? `/jobs/${id}` : `/services/${id}`;
 
   return (
     <Link
-      to={`/services/${id}`}
-      className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col flex-shrink-0"
-      style={{ width: 285, height: 487, textDecoration: "none" }}
+      to={linkTo}
+      className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 flex flex-col w-full"
     >
-      <div className="relative flex-shrink-0" style={{ height: 253 }}>
+      <div className="relative shrink-0">
         <img
           src={image || FALLBACK_IMAGE}
           alt={title}
-          className="w-full h-full object-cover"
+          className="w-full h-48 object-cover"
           onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
         />
 
+        {/* ✅ FIX: prevent Link navigation */}
         <button
+          type="button"
           onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            dispatch(toggleFavorite(id));
-          }}
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white bg-opacity-90 flex items-center justify-center shadow transition-transform hover:scale-110"
-          aria-label={liked ? "Unlike" : "Like"}
+    e.preventDefault();
+    e.stopPropagation();
+    toggle();
+  }}
+          className={`absolute top-3 right-3 w-8 h-8 rounded-full bg-white bg-opacity-90 flex items-center justify-center shadow transition-transform hover:scale-110 active:scale-95 ${
+            liked ? "ring-2 ring-blue-200" : ""
+          }`}
+          aria-label={liked ? "Remove bookmark" : "Bookmark"}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -72,7 +66,7 @@ export default function FreelancerCard({
         <h2 className="text-blue-500 font-bold text-sm mb-1 truncate">{title}</h2>
 
         <p
-          className="text-gray-500 text-xs leading-relaxed mb-4 overflow-hidden line-clamp-3"
+          className="text-gray-500 text-xs leading-relaxed mb-4 overflow-hidden"
           style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}
         >
           {description}
@@ -86,7 +80,6 @@ export default function FreelancerCard({
               </span>
             ))}
           </div>
-          {/* ✅ already formatted dd/mm/yyyy by parent, just display */}
           <span className="text-gray-400 text-xs">{date}</span>
         </div>
 
@@ -95,15 +88,16 @@ export default function FreelancerCard({
         <div className="flex items-center justify-between mt-auto">
           <div className="flex items-center gap-2">
             <img
-              src={avatar || "https://placehold.co/32x32?text=?"}
+              src={avatar || FALLBACK_AVATAR}
               alt={author}
               className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100"
-              onError={(e) => { e.currentTarget.src = "https://placehold.co/32x32?text=?"; }}
+              onError={(e) => { e.currentTarget.src = FALLBACK_AVATAR; }}
             />
             <span className="text-gray-700 text-xs font-medium">{author}</span>
           </div>
 
           <button
+            type="button"
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
             className="bg-blue-500 hover:bg-blue-600 active:scale-95 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200"
           >

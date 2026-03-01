@@ -8,6 +8,7 @@ import favoritesReducer from "../features/favorites/favoritesSlice";
 import { profileApi } from "../services/profileApi";
 import { serviceApi } from "../services/servicesApi";
 import { categoriesApi } from "../services/categoriesApi";
+import { apiSlice } from "../services/apiSlice";
 
 
 
@@ -22,6 +23,7 @@ export const store = configureStore({
      [profileApi.reducerPath]: profileApi.reducer,
      [serviceApi.reducerPath]: serviceApi.reducer,
      [categoriesApi.reducerPath]: categoriesApi.reducer,
+      [apiSlice.reducerPath]: apiSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -33,5 +35,6 @@ export const store = configureStore({
           profileApi.middleware,
           serviceApi.middleware,
           categoriesApi.middleware,
+          apiSlice.middleware
         ),
 });
