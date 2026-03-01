@@ -1,7 +1,9 @@
 import React from 'react'
+import CardDetailFreelancer from '../components/carddetail/CardDetailFreelancer'
+
 
 export default function FindWork() {
   return (
-    <div className='text-6xl font-bold text-red-400 text-center'>This is Find Work page</div>
+   <div>hello</div>
   )
 }

@@ -1,7 +1,9 @@
 import React from 'react';
 import imgMain from '../../assets/imgmainsection.png';
+import avatar1 from '../../assets/chhor pong.png';
+import avatar2 from '../../assets/khim.png';
+import avatar3 from '../../assets/ratanalkkh.png';
 import { useDarkMode } from '../navbar/NavbarComponent';
-
 
 export default function MainSection() {
   const { darkMode } = useDarkMode();
@@ -31,11 +33,12 @@ export default function MainSection() {
             </span>
           </div>
 
-          {/* Heading */}
-          <h1 className="text-[#1E88E5] font-bold leading-[1.1] text-[40px] md:text-[52px] lg:text-[64px] m-0">
-            Freelance Jobs<br />
-            and Talents at<br />
-            Your Fingertips
+          {/* Heading — blue + white in dark, blue + dark in light */}
+          <h1 className="font-bold leading-[1.1] text-[40px] md:text-[52px] lg:text-[64px] m-0">
+            <span className="text-[#1E88E5]">Freelance Jobs</span><br />
+            <span className={darkMode ? "text-white" : "text-gray-900"}>and Talents at</span><br />
+            <span className={darkMode ? "text-white" : "text-gray-900"}>Your </span>
+            <span className="text-[#1E88E5]">Fingertips</span>
           </h1>
 
           {/* Description */}
@@ -47,17 +50,13 @@ export default function MainSection() {
           {/* Avatars + stat */}
           <div className="flex items-center gap-4 pt-2">
             <div className="flex -space-x-3">
-              {[
-                { color: "bg-blue-400",   initials: "CP" },
-                { color: "bg-purple-400", initials: "KH" },
-                { color: "bg-pink-400",   initials: "RT" },
-              ].map(({ color, initials }, i) => (
-                <div
+              {[avatar1, avatar2, avatar3].map((src, i) => (
+                <img
                   key={i}
-                  className={`w-10 h-10 rounded-full ${color} flex items-center justify-center text-white text-xs font-bold border-2 ${darkMode ? "border-[#0f172a]" : "border-white"}`}
-                >
-                  {initials}
-                </div>
+                  src={src}
+                  alt="freelancer"
+                  className={`w-10 h-10 rounded-full object-cover border-2 ${darkMode ? "border-[#0f172a]" : "border-white"}`}
+                />
               ))}
             </div>
             <p className={`text-[12px] leading-snug m-0 ${darkMode ? "text-slate-400" : "text-gray-400"}`}>
@@ -69,7 +68,6 @@ export default function MainSection() {
         {/* ── RIGHT: Image + floating card ── */}
         <div className="w-full lg:w-[52%] relative flex justify-center lg:justify-end items-end self-end">
 
-          {/* ✅ Correct: imported image — works in Vite/React */}
           <img
             src={imgMain}
             alt="Professional with Laptop"
