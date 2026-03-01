@@ -40,13 +40,6 @@ const defaultData = {
   },
 };
 
-// ── DetailWork — Main Page ────────────────────────────────────────────────────
-/**
- * Responsive layout:
- *  📱 Mobile  (< 640px)   — single column: Panel on top, Job detail below
- *  📟 Tablet  (640–1023px) — single column: Panel on top (3-col info grid), Job detail below
- *  🖥  Desktop (1024px+)   — two columns side by side: Job (716px) left, Panel (420px) right
- */
 export default function DetailWork({ data = defaultData }) {
   return (
     <div
