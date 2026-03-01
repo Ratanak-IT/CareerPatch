@@ -19,6 +19,8 @@ import { setupListeners } from '@reduxjs/toolkit/query'
 import CardDetailFreelancer from './components/carddetail/CardDetailFreelancer.jsx'
 import ProfileFreelancer from './pages/ProfileFreelancer.jsx'
 import CardDetailBusiness from './components/carddetail/CarddetailBusiness.jsx'
+import DetailWork from './pages/DetailWork.jsx'
+
 setupListeners(store.dispatch);
 
 createRoot(document.getElementById('root')).render(
@@ -39,6 +41,8 @@ createRoot(document.getElementById('root')).render(
             <Route path="/jobs/:jobId" element={<CardDetailBusiness />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/detailwork" element={<DetailWork />} />
+           
           </Route>
         </Routes>
       </DarkModeProvider>
