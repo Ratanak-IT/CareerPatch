@@ -371,7 +371,6 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
               </div>
             </div>
 
-            {/* All Posts (PUBLIC) - same section but no Post button */}
             <div className="mt-8 flex items-center justify-between">
               <p className="text-blue-500 font-bold text-xl">All posts</p>
             </div>
