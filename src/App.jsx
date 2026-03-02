@@ -1,3 +1,4 @@
+import JobDetailComponent from "./components/detailwork/JobDetailComponent";
 import AppRoutes from "./routes/AppRoutes";
 
 
