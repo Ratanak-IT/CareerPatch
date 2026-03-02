@@ -1,8 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router";
 import { useDarkMode } from "../navbar/NavbarComponent";
-import defaultAvatar from "../../assets/ratanak.png";
+import defaultAvatar from "../../assets/anonimus.png";
 
 export default function TalentByFreelancer({
+  userId,
   name = "Thai Ratanak",
   skills = [],
   experienceYears = 0,
@@ -10,6 +12,7 @@ export default function TalentByFreelancer({
   avatar,
 }) {
   const { darkMode } = useDarkMode();
+  const navigate = useNavigate();
 
   // ===== Skill Mapping =====
   const category = skills?.[0] || "No skill";
@@ -32,8 +35,20 @@ export default function TalentByFreelancer({
 
   const categoryIcon = getCategoryIcon(category);
 
-  // ===== Avatar Fallback =====
-  const avatarSrc = avatar || defaultAvatar;
+  const API_BASE = import.meta.env.VITE_API_URL; // set in .env
+
+const normalizeUrl = (u) => {
+  if (!u) return "";
+  if (u.startsWith("http://") || u.startsWith("https://")) return u;
+  return `${API_BASE}${u.startsWith("/") ? "" : "/"}${u}`;
+};
+
+const avatarSrc = normalizeUrl(avatar) || defaultAvatar;
+
+  const onViewProfile = () => {
+    if (!userId) return; // avoid crash
+    navigate(`/freelancers/${userId}`);
+  };
 
   return (
     <div
@@ -91,9 +106,7 @@ export default function TalentByFreelancer({
         <span
           className="inline-block text-[11px] font-semibold px-3 py-1 rounded-full text-[#1E88E5]"
           style={{
-            background: darkMode
-              ? "rgba(30,136,229,0.15)"
-              : "#dbeafe",
+            background: darkMode ? "rgba(30,136,229,0.15)" : "#dbeafe",
           }}
         >
           {tag}
@@ -109,31 +122,21 @@ export default function TalentByFreelancer({
       />
 
       {/* Location */}
-      <p
-        className={`text-[12px] ${
-          darkMode ? "text-slate-400" : "text-gray-500"
-        }`}
-      >
+      <p className={`text-[12px] ${darkMode ? "text-slate-400" : "text-gray-500"}`}>
         Location:{" "}
-        <span
-          className={`font-semibold ${
-            darkMode ? "text-white" : "text-gray-900"
-          }`}
-        >
+        <span className={`font-semibold ${darkMode ? "text-white" : "text-gray-900"}`}>
           {location || "Unknown"}
         </span>
       </p>
 
       {/* View Profile */}
       <button
+        type="button"
         className="w-full py-2.5 rounded-xl text-white text-[13px] font-semibold transition-colors duration-200"
         style={{ background: "#1E88E5" }}
-        onMouseEnter={(e) =>
-          (e.currentTarget.style.background = "#2563EB")
-        }
-        onMouseLeave={(e) =>
-          (e.currentTarget.style.background = "#1E88E5")
-        }
+        onMouseEnter={(e) => (e.currentTarget.style.background = "#2563EB")}
+        onMouseLeave={(e) => (e.currentTarget.style.background = "#1E88E5")}
+        onClick={onViewProfile} // ✅ navigate
       >
         View Profile
       </button>

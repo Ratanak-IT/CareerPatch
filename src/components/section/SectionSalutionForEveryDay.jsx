@@ -14,7 +14,7 @@ export default function SectionSolutionForEveryNeed() {
 
   return (
     <section
-      className="w-full py-16 lg:py-24 transition-colors duration-300"
+      className="w-full mt-10 transition-colors duration-300"
       style={{
         fontFamily: "'Poppins', sans-serif",
         background: darkMode
