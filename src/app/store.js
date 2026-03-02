@@ -24,6 +24,7 @@ export const store = configureStore({
      [serviceApi.reducerPath]: serviceApi.reducer,
      [categoriesApi.reducerPath]: categoriesApi.reducer,
       [apiSlice.reducerPath]: apiSlice.reducer,
+      
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
