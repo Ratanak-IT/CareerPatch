@@ -11,10 +11,11 @@ import CardDetailFreelancer from "../components/carddetail/CardDetailFreelancer.
 import ProfileFreelancer from "../pages/ProfileFreelancer.jsx";
 import ProfileBusiness from "../pages/ProfileBusiness.jsx";
 import FindWork from "../pages/FindWork.jsx";
-import CardDetailBusiness from "../components/carddetail/CarddetailBusiness.jsx";
+
 import { selectIsAuthed, selectAuthUser } from "../features/auth/authSlice.js";
 import { useMeQuery } from "../services/authApi.js"; // ← MUST use authApi, not profileApi
 import FreelancerPublicProfile from "../pages/FreelancerPublicProfile.jsx";
+import CardDetailBusiness from "../components/carddetail/CarddetailBusiness.jsx";
 
 function ProfileRouter() {
   const isAuthed  = useSelector(selectIsAuthed);
@@ -58,7 +59,7 @@ export default function AppRoutes() {
 <Route path="/freelancers/:userId" element={<FreelancerPublicProfile />} />
 
         <Route path="/services/:serviceId" element={<CardDetailFreelancer />} />
-        <Route path="/jobs/:jobId"         element={<CardDetailBusiness />} />
+        <Route path="/jobs/:jobId" element={<CardDetailBusiness />} />
 
         <Route path="/login"    element={<LoginPage />} />
         <Route path="/register" element={<Register />} />
