@@ -1,3 +1,4 @@
+// src/main.jsx
 import React, { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
@@ -22,8 +23,6 @@ import ProfileBusinessPage from './pages/ProfileBusiness.jsx'
 import ProfileRouter from './routes/ProfileRouter.jsx'
 import DetailWork from './pages/DetailWork.jsx'
 
-
-
 setupListeners(store.dispatch);
 
 createRoot(document.getElementById('root')).render(
@@ -39,19 +38,17 @@ createRoot(document.getElementById('root')).render(
                 <Route path="/findfreelan" element={<FindFreelancers />} />
                 <Route path="/findwork"    element={<FindWork />} />
 
-                <Route path="/jobs/:jobId"         element={<DetailWork />} />
-                {/* <Route path="/services/:serviceId" element={<DetailService />} /> */}
-                
+                {/* ✅ Uncommented — clicking a job card navigates here */}
+                <Route path="/jobs/:jobId" element={<DetailWork />} />
 
-                
                 {/* /profile auto-routes to correct page based on userType */}
                 <Route path="/profile" element={<ProfileRouter />} />
 
-                <Route path="/profile-business" element={<ProfileBusinessPage />} />
-                <Route path="/services/:serviceId" element={<CardDetailFreelancer />} />
-                <Route path="/business/jobs/:jobId"         element={<CardDetailBusiness />} />
-                <Route path="/login"               element={<LoginPage />} />
-                <Route path="/register"            element={<Register />} />
+                <Route path="/profile-business"      element={<ProfileBusinessPage />} />
+                <Route path="/services/:serviceId"   element={<CardDetailFreelancer />} />
+                <Route path="/business/jobs/:jobId"  element={<CardDetailBusiness />} />
+                <Route path="/login"                 element={<LoginPage />} />
+                <Route path="/register"              element={<Register />} />
               </Route>
             </Routes>
           </DarkModeProvider>

@@ -1,11 +1,11 @@
 
 
-
+import { useParams } from "react-router";
 import JobDetailComponent from "../components/detailwork/JobDetailComponent";
 import CommentSectionComponent from "../components/detailwork/CommentSectionComponent";
 import { useGetJobByIdQuery } from "../services/detailworkApi";
 import { useGetUserByIdQuery } from "../services/userApi";
-import { useParams } from "react-router";
+
 
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
