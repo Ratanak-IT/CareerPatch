@@ -144,7 +144,6 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
   // Mutations (OWNER ONLY)
   // =======================
   const [updateProfile, { isLoading: saving }] = useUpdateFreelancerProfileMutation();
-  const [uploadImage, { isLoading: uploading }] = useUploadProfileImageMutation();
 
   // =======================
   // UI state
@@ -184,33 +183,26 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
 
   const onRemoveSkill = (val) => setSkills((p) => p.filter((x) => x !== val));
 
-  const onSaveProfile = async () => {
-    if (!isOwner) return;
-    try {
-      await updateProfile({
-        fullName: form.fullName,
-        phone: form.phone,
-        address: form.address,
-        bio: form.bio,
-        experienceYears: form.experienceYears,
-        gender: user?.gender || "",
-        portfolioUrl: user?.portfolioUrl || "",
-        skills,
-      }).unwrap();
-      setEditOpen(false);
-    } catch (e) {
-      console.error("update profile error:", e);
-    }
-  };
+  const onSaveProfile = async (profileImageUrl) => {
+  if (!isOwner) return;
+  try {
+    await updateProfile({
+      fullName: form.fullName,
+      phone: form.phone,
+      address: form.address,
+      bio: form.bio,
+      experienceYears: form.experienceYears,
+      gender: user?.gender || "",
+      portfolioUrl: user?.portfolioUrl || "",
+      skills,
+      ...(profileImageUrl ? { profileImageUrl } : {}),
+    }).unwrap();
 
-  const onPickProfileImage = async (file) => {
-    if (!isOwner || !file) return;
-    try {
-      await uploadImage(file).unwrap();
-    } catch (e) {
-      console.error("upload image error:", e);
-    }
-  };
+    setEditOpen(false);
+  } catch (e) {
+    console.error("update profile error:", e);
+  }
+};
 
   // Categories
   const { data: categories = [] } = useGetCategoriesQuery();
@@ -287,16 +279,6 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
                     >
                       Edit Profile
                     </button>
-
-                    <label className="cursor-pointer text-xs font-semibold px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50">
-                      {uploading ? "Uploading..." : "Change Photo"}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => onPickProfileImage(e.target.files?.[0])}
-                      />
-                    </label>
                   </div>
                 )}
               </div>
