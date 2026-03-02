@@ -50,7 +50,6 @@ const CARDS_DATA = [
   },
 ];
 
-// ─── Single Card ─────────────────────────────────────────────────────────────
 function FreelancerCard({ image, title, description, tags, date, author, avatar }) {
   const [liked, setLiked] = useState(false);
 
