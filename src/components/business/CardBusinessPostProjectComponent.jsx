@@ -144,12 +144,6 @@ function FreelancerCard({ image, title, description, tags, date, author, avatar 
   );
 }
 
-// ─── Grid Container ───────────────────────────────────────────────────────────
-// Responsive breakpoints:
-//   Mobile  (<640px)  → 1 column  (centered)
-//   Tablet  (≥640px)  → 2 columns
-//   Desktop (≥1024px) → 3 columns
-//   Wide    (≥1280px) → 4 columns  ← your target
 export default function CardBusinessPost() {
   return (
     <section className="w-full px-4 py-8">
