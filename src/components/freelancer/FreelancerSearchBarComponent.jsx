@@ -39,13 +39,13 @@ export default function FreelancerSearchBarComponent({
   };
 
   return (
-    <div className="flex items-center justify-center w-full radius-2xl">
-      <div className="relative w-full max-w-[1200px]">
+    <div className="flex items-center justify-center w-full ">
+      <div className="relative w-full">
         <div
           className="
             flex items-center
             w-full
-            h-[60px] sm:h-[80px] md:h-[100px]
+            
             bg-white
             border border-gray-200
             rounded-lg

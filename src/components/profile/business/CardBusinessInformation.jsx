@@ -109,30 +109,12 @@ function ContactCard({ data }) {
 }
 
 // ── Main Component ────────────────────────────────────────────────
-/**
- * Responsive breakpoints:
- * 📱 Mobile  (< 640px)   — single column, full width, stacked
- * 📟 Tablet  (640–1023px) — two-column grid, cards auto-sized
- * 🖥  Desktop (≥ 1024px)  — fixed 240px wide single column, centered on page
- */
 export default function CardBusinessInformationComponent({ data = companyData }) {
   return (
-    <div className="min-h-screen w-full bg-gray-100 flex items-center justify-center p-4 sm:p-8">
-
-      {/* ── Mobile: single col | Tablet: 2-col grid | Desktop: fixed 240px column ── */}
-      <div
-        className="
-          w-full
-          flex flex-col gap-5
-          sm:grid sm:grid-cols-2 sm:gap-5 sm:max-w-xl
-          lg:flex lg:flex-col lg:gap-5 lg:w-[240px]
-        "
-      >
-        <AboutCard data={data.aboutCompany} />
-        <WhyWorkCard data={data.whyWorkWithUs} />
-        <ContactCard data={data.contactInfo} />
-      </div>
-
+    <div className="flex flex-col gap-5 w-[240px]">
+      <AboutCard data={data.aboutCompany} />
+      <WhyWorkCard data={data.whyWorkWithUs} />
+      <ContactCard data={data.contactInfo} />
     </div>
   );
 }

@@ -29,26 +29,21 @@ export const profileApi = createApi({
     }),
 
     updateFreelancerProfile: builder.mutation({
-      // body: JSON fields (fullName, phone, address, bio, skills, experienceYears, etc.)
-      query: (body) => ({
-        url: "/api/users/update-freelancer-profile",
-        method: "PUT",
-        body,
-      }),
+      query: (body) => ({ url: "/api/users/update-freelancer-profile", method: "PUT", body }),
+      invalidatesTags: ["Me"],
+    }),
+
+    // ── Business owner profile update ────────────────────────────
+    updateBusinessProfile: builder.mutation({
+      query: (body) => ({ url: "/api/users/update-business-profile", method: "PUT", body }),
       invalidatesTags: ["Me"],
     }),
 
     uploadProfileImage: builder.mutation({
-      // upload real file -> server returns URL in response (common pattern)
       query: (file) => {
         const formData = new FormData();
         formData.append("file", file);
-
-        return {
-          url: "/api/users/upload-profile-image", // ✅ change to your real upload endpoint
-          method: "POST",
-          body: formData,
-        };
+        return { url: "/api/users/upload-profile-image", method: "POST", body: formData };
       },
       invalidatesTags: ["Me"],
     }),
@@ -58,5 +53,6 @@ export const profileApi = createApi({
 export const {
   useMeQuery,
   useUpdateFreelancerProfileMutation,
+  useUpdateBusinessProfileMutation,
   useUploadProfileImageMutation,
 } = profileApi;

@@ -135,10 +135,18 @@ export default function SignUpPage() {
   const onSubmit = async (e) => {
   e.preventDefault();
 
-  if (!form.email || !form.password || !form.firstName || !form.lastName || !form.gender) {
+  if (
+    !form.email ||
+    !form.password ||
+    !form.firstName ||
+    !form.lastName ||
+    !form.gender ||
+    !form.username
+  ) {
     toast.error("Please fill in all fields.");
     return;
   }
+
   if (form.password !== form.confirmPassword) {
     toast.error("Passwords do not match.");
     return;
@@ -146,14 +154,23 @@ export default function SignUpPage() {
 
   const userType = form.role === "business" ? "BUSINESS_OWNER" : "FREELANCER";
 
-  const body = {
-    fullName: `${form.firstName} ${form.lastName}`.trim(),
-    username: form.username || form.email.split("@")[0],
-    gender: form.gender,
-    email: form.email,
-    password: form.password,
-    userType, // ✅ EXACT ENUM
-  };
+  const base = form.email
+  .split("@")[0]
+  .replace(/[^a-zA-Z0-9_]/g, "");
+
+const uniqueSuffix = Math.random().toString(36).slice(2, 6);
+
+const username =
+  form.username?.trim() || `${base}_${uniqueSuffix}`;
+
+const body = {
+  fullName: `${form.firstName} ${form.lastName}`.trim(),
+  username,
+  gender: form.gender,
+  email: form.email,
+  password: form.password,
+  userType,
+};
 
   try {
     if (userType === "BUSINESS_OWNER") {
@@ -164,11 +181,26 @@ export default function SignUpPage() {
 
     toast.success("Register successful! Please login.");
     navigate("/login", { replace: true });
-  } catch (err) {
-    console.log("REGISTER ERROR:", err);
-    const msg = err?.data?.message || "Register failed";
-    toast.error(msg);
+ } catch (err) {
+  console.log("REGISTER ERROR raw:", err);
+
+  const status = err?.status;
+  const data = err?.data;
+
+  const msg =
+    data?.message ||
+    data?.error ||
+    data?.msg ||
+    (typeof data === "string" ? data : null) ||
+    `Register failed (${status || "unknown"})`;
+
+  if (status === 409) {
+    toast.error(msg || "Email or username already exists.");
+    return;
   }
+
+  toast.error(msg);
+}
 };
 
   return (
