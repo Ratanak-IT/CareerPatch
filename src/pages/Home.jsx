@@ -9,7 +9,8 @@ import PeopleLoveWorking from "../components/section/PeopleLoveWorking";
 import { useGetFreelancersQuery } from "../services/freelancerApi";
 import ButtonComponent from "../components/button/ButtonComponent";
 import { Link } from "react-router";
-import CardBusinessPost from "../components/business/CardBusinessPostProjectComponent";
+import CardBusiness from "../components/business/CardBusinessPostProjectComponent";
+
 
 // ✅ API hook (from src/services/freelancer.js)
 
@@ -33,7 +34,9 @@ export default function Home() {
         </h2>
       </div>
       {/* Card nusiness owner show */}
-      <CardBusinessPost />
+    <CardBusiness/>
+    
+      
 
       <SectionSolutionForEveryNeed />
       <TalenCategories />

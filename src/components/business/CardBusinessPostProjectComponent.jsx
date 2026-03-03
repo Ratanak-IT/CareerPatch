@@ -1,60 +1,11 @@
 import { useState } from "react";
-
+import { useGetJobsQuery } from "../../services/freelancerApi";
 import avatarImg from "../../assets/freelancerproject.jpg";
-
-// ─── Static card data (swap with API data as needed) ────────────────────────
-const CARDS_DATA = [
-  {
-    id: 1,
-    image: avatarImg,
-    title: "UX/UI Designer",
-    description:
-      "Creative design solutions for web and mobile interfaces, focusing on user experience and modern aesthetics.",
-    tags: ["Figma", "Design"],
-    date: "Feb 21, 2026",
-    author: "Cristian",
-    avatar: avatarImg,
-  },
-  {
-    id: 2,
-    image: avatarImg,
-    title: "Frontend Developer",
-    description:
-      "Build performant, accessible web apps using React and Tailwind. Collaborate closely with design and backend teams.",
-    tags: ["React", "Tailwind"],
-    date: "Feb 22, 2026",
-    author: "Sophia",
-    avatar: avatarImg,
-  },
-  {
-    id: 3,
-    image: avatarImg,
-    title: "Data Analyst",
-    description:
-      "Analyze large datasets to provide actionable business insights using SQL and data visualization tools.",
-    tags: ["SQL", "Tableau"],
-    date: "Feb 23, 2026",
-    author: "Marcus",
-    avatar: avatarImg,
-  },
-  {
-    id: 4,
-    image: avatarImg,
-    title: "Backend Engineer",
-    description:
-      "Design and maintain scalable server-side APIs and microservices using Node.js and cloud infrastructure.",
-    tags: ["Node.js", "AWS"],
-    date: "Feb 24, 2026",
-    author: "Lena",
-    avatar: avatarImg,
-  },
-];
 
 function FreelancerCard({ image, title, description, tags, date, author, avatar }) {
   const [liked, setLiked] = useState(false);
 
   return (
-    // Fixed size: w-[285px] h-[487px] — no shrink, no grow
     <div
       className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col flex-shrink-0"
       style={{ width: 285, height: 487 }}
@@ -62,12 +13,11 @@ function FreelancerCard({ image, title, description, tags, date, author, avatar 
       {/* ── Image ─────────────────────────────────────── */}
       <div className="relative flex-shrink-0" style={{ height: 253 }}>
         <img
-          src={image}
+          src={image || avatarImg}
           alt={title}
-          className="w-full h-full  object-cover"
+          className="w-full h-full object-cover"
+          onError={(e) => { e.target.src = avatarImg; }}
         />
-
-        {/* Heart toggle */}
         <button
           onClick={() => setLiked((prev) => !prev)}
           className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white bg-opacity-90 flex items-center justify-center shadow transition-transform hover:scale-110"
@@ -92,10 +42,7 @@ function FreelancerCard({ image, title, description, tags, date, author, avatar 
 
       {/* ── Body ──────────────────────────────────────── */}
       <div className="p-4 flex flex-col flex-1 overflow-hidden">
-        {/* Job title */}
         <h2 className="text-blue-500 font-bold text-sm mb-1 truncate">{title}</h2>
-
-        {/* Description — clamp to 4 lines */}
         <p
           className="text-gray-500 text-xs leading-relaxed mb-4 overflow-hidden"
           style={{
@@ -106,8 +53,6 @@ function FreelancerCard({ image, title, description, tags, date, author, avatar 
         >
           {description}
         </p>
-
-        {/* Tags + Date */}
         <div className="flex items-center justify-between mb-4 flex-wrap gap-y-1">
           <div className="flex flex-wrap gap-1">
             {tags.map((tag) => (
@@ -121,17 +66,14 @@ function FreelancerCard({ image, title, description, tags, date, author, avatar 
           </div>
           <span className="text-gray-400 text-xs">{date}</span>
         </div>
-
-        {/* Divider */}
         <div className="border-t border-gray-100 mb-3" />
-
-        {/* Author + CTA */}
         <div className="flex items-center justify-between mt-auto">
           <div className="flex items-center gap-2">
             <img
-              src={avatar}
+              src={avatar || avatarImg}
               alt={author}
               className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100"
+              onError={(e) => { e.target.src = avatarImg; }}
             />
             <span className="text-gray-700 text-xs font-medium">{author}</span>
           </div>
@@ -144,7 +86,38 @@ function FreelancerCard({ image, title, description, tags, date, author, avatar 
   );
 }
 
+function formatDate(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
 export default function CardBusinessPost() {
+  const { data, isLoading, isError } = useGetJobsQuery();
+
+  // Handles common response shapes: { data: { content: [] } } or { data: [] } or { content: [] }
+  const jobs = data?.data?.content ?? data?.data ?? data?.content ?? [];
+
+  if (isLoading) {
+    return (
+      <section className="w-full px-4 py-8">
+        <p className="text-center text-gray-500" style={{ fontFamily: "'Poppins', sans-serif" }}>
+          Loading jobs...
+        </p>
+      </section>
+    );
+  }
+
+  if (isError) {
+    return (
+      <section className="w-full px-4 py-8">
+        <p className="text-center text-red-500" style={{ fontFamily: "'Poppins', sans-serif" }}>
+          Failed to load jobs.
+        </p>
+      </section>
+    );
+  }
+
   return (
     <section className="w-full px-4 py-8">
       <div
@@ -157,8 +130,17 @@ export default function CardBusinessPost() {
           max-w-[1240px] mx-auto
         "
       >
-        {CARDS_DATA.map((card) => (
-          <FreelancerCard key={card.id} {...card} />
+        {jobs.slice(0, 4).map((job) => (
+          <FreelancerCard
+            key={job.id}
+            image={job.imageUrl ?? job.companyLogoUrl ?? null}
+            title={job.title}
+            description={job.description}
+            tags={job.skills ?? job.tags ?? job.requirements ?? []}
+            date={formatDate(job.createdAt ?? job.postedAt ?? job.date)}
+            author={job.businessOwnerName ?? job.ownerName ?? job.companyName ?? "Business Owner"}
+            avatar={job.ownerProfileImageUrl ?? job.avatarUrl ?? null}
+          />
         ))}
       </div>
     </section>

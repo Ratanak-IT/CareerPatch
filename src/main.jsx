@@ -23,6 +23,7 @@ import FreelancerPublicProfile from './pages/FreelancerPublicProfile.jsx'
 import DetailWork from './pages/DetailWork.jsx'
 import DetailWorkPage from './pages/DetailWork.jsx'
 
+
 setupListeners(store.dispatch);
 
 createRoot(document.getElementById('root')).render(
@@ -50,6 +51,7 @@ createRoot(document.getElementById('root')).render(
                
                 <Route path="/login"                 element={<LoginPage />} />
                 <Route path="/register"              element={<Register />} />
+                
               </Route>
             </Routes>
           </DarkModeProvider>

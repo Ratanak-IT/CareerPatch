@@ -14,13 +14,19 @@ export const freelancerApi = createApi({
   endpoints: (builder) => ({
     getFreelancers: builder.query({
       // ✅ public list
-      // If your backend is different, change URL only here.
       query: () => ({
         url: "/api/users?userType=FREELANCER",
+        method: "GET",
+      }),
+    }),
+    getJobs: builder.query({
+      // ✅ public list of business owner job posts
+      query: () => ({
+        url: "/api/jobs-service/jobs",
         method: "GET",
       }),
     }),
   }),
 });
 
-export const { useGetFreelancersQuery } = freelancerApi;
+export const { useGetFreelancersQuery, useGetJobsQuery } = freelancerApi;
