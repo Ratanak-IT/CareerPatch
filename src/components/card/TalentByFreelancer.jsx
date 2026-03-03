@@ -12,38 +12,32 @@ export default function TalentByFreelancer({
 }) {
   const navigate = useNavigate();
 
-  // ===== Skill Mapping =====
   const category = skills?.[0] || "No skill";
   const tag = skills?.[1] || skills?.[0] || "General";
 
-  // ===== Dynamic Icon Based on Skill =====
   const getCategoryIcon = (skill) => {
     if (!skill) return "💼";
     const s = String(skill).toLowerCase();
-
     if (s.includes("design")) return "🎨";
     if (s.includes("java")) return "☕";
     if (s.includes("react")) return "⚛️";
     if (s.includes("node")) return "🟢";
     if (s.includes("marketing")) return "📢";
     if (s.includes("ui") || s.includes("ux")) return "🖌️";
-
     return "💼";
   };
 
   const categoryIcon = getCategoryIcon(category);
 
-  // ✅ Avatar normalize (API url + relative path)
   const API_BASE = import.meta.env.VITE_API_URL;
 
   const avatarSrc = useMemo(() => {
     const normalizeUrl = (u) => {
       if (!u) return "";
       if (u.startsWith("http://") || u.startsWith("https://")) return u;
-      if (!API_BASE) return u; // if env missing, keep raw
+      if (!API_BASE) return u;
       return `${API_BASE}${u.startsWith("/") ? "" : "/"}${u}`;
     };
-
     return normalizeUrl(avatar) || defaultAvatar;
   }, [avatar, API_BASE]);
 
@@ -54,11 +48,9 @@ export default function TalentByFreelancer({
 
   return (
     <div
-      className={[
-        "rounded-2xl p-5 flex flex-col gap-4 transition-transform duration-300 hover:-translate-y-1",
-        "bg-white border border-[#e8f0fe] shadow-[0_8px_32px_rgba(30,136,229,0.07)]",
-        "dark:bg-[rgba(15,34,64,0.85)] dark:border-[#1e3a5f] dark:shadow-[0_8px_32px_rgba(0,0,0,0.3)]",
-      ].join(" ")}
+      className="rounded-2xl p-5 flex flex-col gap-4 transition-transform duration-300 hover:-translate-y-1
+        bg-white border border-[#e8f0fe] shadow-[0_8px_32px_rgba(30,136,229,0.07)]
+        dark:bg-[#0f2240] dark:border-[#1e3a5f] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
       style={{ fontFamily: "'Poppins', sans-serif" }}
     >
       {/* Top row */}
@@ -66,9 +58,7 @@ export default function TalentByFreelancer({
         <img
           src={avatarSrc}
           alt={name}
-          onError={(e) => {
-            e.currentTarget.src = defaultAvatar;
-          }}
+          onError={(e) => { e.currentTarget.src = defaultAvatar; }}
           className="w-14 h-14 rounded-full object-cover shrink-0 border-2 border-[#bfdbfe] dark:border-[#1e3a5f]"
         />
 
@@ -82,7 +72,7 @@ export default function TalentByFreelancer({
             {category}
           </p>
 
-          <p className="text-[12px] mt-0.5 flex items-center gap-1.5 text-gray-500 dark:text-slate-400">
+          <p className="text-[12px] mt-0.5 flex items-center gap-1.5 text-gray-500 dark:text-slate-300">
             <span className="w-2 h-2 rounded-full bg-green-400 inline-block shrink-0" />
             {experienceYears}+ years experience
           </p>
@@ -91,7 +81,7 @@ export default function TalentByFreelancer({
 
       {/* Skill Tag */}
       <div>
-        <span className="inline-block text-[11px] font-semibold px-3 py-1 rounded-full text-[#1E88E5] bg-[#dbeafe] dark:bg-[rgba(30,136,229,0.15)]">
+        <span className="inline-block text-[11px] font-semibold px-3 py-1 rounded-full text-[#1E88E5] bg-[#dbeafe] dark:bg-[rgba(30,136,229,0.2)] dark:text-[#60a5fa]">
           {tag}
         </span>
       </div>
@@ -100,7 +90,7 @@ export default function TalentByFreelancer({
       <div className="w-full h-px bg-[#e8f0fe] dark:bg-[#1e3a5f]" />
 
       {/* Location */}
-      <p className="text-[12px] text-gray-500 dark:text-slate-400">
+      <p className="text-[12px] text-gray-500 dark:text-slate-300">
         Location:{" "}
         <span className="font-semibold text-gray-900 dark:text-white">
           {location || "Unknown"}
@@ -110,7 +100,7 @@ export default function TalentByFreelancer({
       {/* View Profile */}
       <button
         type="button"
-        className="w-full py-2.5 rounded-xl text-white text-[13px] font-semibold transition-colors duration-200 bg-[#1E88E5] hover:bg-[#2563EB]"
+        className="w-full py-2.5 rounded-xl text-white text-[13px] font-semibold transition-colors duration-200 bg-[#1E88E5] hover:bg-[#2563EB] active:bg-blue-700"
         onClick={onViewProfile}
       >
         View Profile

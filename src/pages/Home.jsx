@@ -10,6 +10,7 @@ import { useGetFreelancersQuery } from "../services/freelancerApi";
 import ButtonComponent from "../components/button/ButtonComponent";
 import { Link } from "react-router";
 import CardBusinessPost from "../components/business/CardBusinessPostProjectComponent";
+import FreelancerCard from "../components/freelancer/FreelancerCard";
 
 // ✅ API hook (from src/services/freelancer.js)
 
@@ -34,6 +35,7 @@ export default function Home() {
       </div>
       {/* Card nusiness owner show */}
       <CardBusinessPost />
+  
 
       <SectionSolutionForEveryNeed />
       <TalenCategories />
