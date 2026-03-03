@@ -100,7 +100,7 @@ export default function HeroSection({
       </div>
 
       {/* Search bar floated at bottom */}
-      <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-6">
+      <div className="absolute bottom-7 left-0 right-0">
         <SearchBar
           searchText={searchText}
           onChangeSearch={onChangeSearch}

@@ -108,6 +108,7 @@ const FloatingSelect = ({ label, name, value, onChange, options }) => {
 
 export default function SignUpPage() {
   const navigate = useNavigate();
+
   const [registerFreelancer, { isLoading: loadingFreelancer }] =
     useRegisterFreelancerMutation();
   const [registerBusinessOwner, { isLoading: loadingBusiness }] =
@@ -118,16 +119,24 @@ export default function SignUpPage() {
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
-    username: "", // ✅ add this input
+    username: "",
     gender: "",
     email: "",
     password: "",
     confirmPassword: "",
-    role: "freelancer", // ✅ not "personal"
+    role: "freelancer",
   });
 
+  // ✅ clear username when switching to business
   const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+
+    setForm((prev) => {
+      if (name === "role" && value === "business") {
+        return { ...prev, role: value, username: "" };
+      }
+      return { ...prev, [name]: value };
+    });
   };
 
   const handleBack = () => window.history.back();
@@ -135,13 +144,20 @@ export default function SignUpPage() {
   const onSubmit = async (e) => {
   e.preventDefault();
 
+  const isBusiness = form.role === "business";
+  const userType = isBusiness ? "BUSINESS_OWNER" : "FREELANCER";
+
+  // normalize email
+  const email = form.email.trim().toLowerCase();
+
+  // basic validation
   if (
-    !form.email ||
+    !email ||
     !form.password ||
     !form.firstName ||
     !form.lastName ||
     !form.gender ||
-    !form.username
+    (!isBusiness && !form.username)
   ) {
     toast.error("Please fill in all fields.");
     return;
@@ -152,25 +168,21 @@ export default function SignUpPage() {
     return;
   }
 
-  const userType = form.role === "business" ? "BUSINESS_OWNER" : "FREELANCER";
+  // ✅ Build base body (NO username yet)
+  const body = {
+    fullName: `${form.firstName} ${form.lastName}`.trim(),
+    gender: form.gender,
+    email,
+    password: form.password,
+    userType,
+  };
 
-  const base = form.email
-  .split("@")[0]
-  .replace(/[^a-zA-Z0-9_]/g, "");
-
-const uniqueSuffix = Math.random().toString(36).slice(2, 6);
-
-const username =
-  form.username?.trim() || `${base}_${uniqueSuffix}`;
-
-const body = {
-  fullName: `${form.firstName} ${form.lastName}`.trim(),
-  username,
-  gender: form.gender,
-  email: form.email,
-  password: form.password,
-  userType,
-};
+  // ✅ ADD THIS RIGHT HERE
+  if (!isBusiness) {
+    const base = email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "");
+    const uniqueSuffix = Math.random().toString(36).slice(2, 6);
+    body.username = form.username?.trim() || `${base}_${uniqueSuffix}`;
+  }
 
   try {
     if (userType === "BUSINESS_OWNER") {
@@ -181,26 +193,16 @@ const body = {
 
     toast.success("Register successful! Please login.");
     navigate("/login", { replace: true });
- } catch (err) {
-  console.log("REGISTER ERROR raw:", err);
+  } catch (err) {
+    console.log("REGISTER ERROR raw:", err);
 
-  const status = err?.status;
-  const data = err?.data;
+    const msg =
+      err?.data?.message ||
+      err?.data?.error ||
+      `Register failed (${err?.status || "unknown"})`;
 
-  const msg =
-    data?.message ||
-    data?.error ||
-    data?.msg ||
-    (typeof data === "string" ? data : null) ||
-    `Register failed (${status || "unknown"})`;
-
-  if (status === 409) {
-    toast.error(msg || "Email or username already exists.");
-    return;
+    toast.error(msg);
   }
-
-  toast.error(msg);
-}
 };
 
   return (
@@ -259,12 +261,16 @@ const body = {
                 onChange={handleChange}
                 options={["Male", "Female", "Other"]}
               />
-              <FloatingInput
-                label="Username"
-                name="username"
-                value={form.username}
-                onChange={handleChange}
-              />
+
+              {/* ✅ Hide username when Business */}
+              {form.role !== "business" && (
+                <FloatingInput
+                  label="Username"
+                  name="username"
+                  value={form.username}
+                  onChange={handleChange}
+                />
+              )}
 
               <FloatingInput
                 label="Email"
@@ -311,7 +317,11 @@ const body = {
                       }`}
                   >
                     <span
-                      className={`${form.role === "business" ? "bg-[#4A72C4]" : "bg-transparent"} rounded-full transition`}
+                      className={`${
+                        form.role === "business"
+                          ? "bg-[#4A72C4]"
+                          : "bg-transparent"
+                      } rounded-full transition`}
                     />
                   </span>
                   <span className="text-lg text-slate-700">Business Owner</span>
@@ -336,7 +346,11 @@ const body = {
                       }`}
                   >
                     <span
-                      className={`${form.role === "freelancer" ? "bg-[#4A72C4]" : "bg-transparent"} rounded-full transition`}
+                      className={`${
+                        form.role === "freelancer"
+                          ? "bg-[#4A72C4]"
+                          : "bg-transparent"
+                      } rounded-full transition`}
                     />
                   </span>
                   <span className="text-lg text-slate-700">Freelancer</span>
@@ -368,6 +382,7 @@ const body = {
                 <button
                   type="button"
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border rounded-md text-sm text-gray-600 hover:bg-gray-100"
+                  onClick={() => toast.info("Google sign up not implemented yet")}
                 >
                   <GoogleIcon />
                   Google
@@ -376,6 +391,7 @@ const body = {
                 <button
                   type="button"
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border rounded-md text-sm text-gray-600 hover:bg-gray-100"
+                  onClick={() => toast.info("Facebook sign up not implemented yet")}
                 >
                   <FacebookIcon />
                   Facebook

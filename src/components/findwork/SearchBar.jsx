@@ -13,7 +13,7 @@ export default function SearchBar({
   const budgets = ["All Budgets", "$0–$500", "$500–$1000", "$1000–$2000", "$2000+"];
 
   return (
-    <div className="w-full bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col sm:flex-row items-stretch sm:items-center gap-0 overflow-hidden">
+    <div className="w-full bg-white rounded-lg shadow-lg border border-gray-100 flex flex-col sm:flex-row items-stretch sm:items-center gap-0 overflow-hidden">
       {/* Search input */}
       <div className="flex items-center flex-1 px-4 py-3 sm:py-0 gap-2 border-b sm:border-b-0 sm:border-r border-gray-100">
         <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
