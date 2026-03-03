@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -10,6 +10,7 @@ import {
   useDeleteServiceMutation,
   useGetCategoriesQuery,
 } from "../../services/servicesApi";
+import { uploadImageToCloudinary } from "../../utils/uploadToCloudinary";
 
 const FALLBACK_IMAGE = "https://placehold.co/285x253?text=No+Image";
 
@@ -49,6 +50,7 @@ function getCategoryName(s) {
 // ─── Edit Modal ───────────────────────────────────────────────────────────────
 function EditServiceModal({ service, onClose }) {
   const { data: categories = [] } = useGetCategoriesQuery();
+
   const [form, setForm] = useState({
     title: service?.title || "",
     description: service?.description || "",
@@ -57,12 +59,22 @@ function EditServiceModal({ service, onClose }) {
     imageUrls: Array.isArray(service?.imageUrls)
       ? service.imageUrls
       : Array.isArray(service?.jobImages)
-        ? service.jobImages.map((img) => img.imageUrl || img)
-        : [],
+      ? service.jobImages.map((img) => img.imageUrl || img)
+      : [],
   });
+
   const [imageInput, setImageInput] = useState("");
+  const [pickedFile, setPickedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [uploading, setUploading] = useState(false);
+
+  const fileRef = useRef(null);
+
   const [updateService, { isLoading }] = useUpdateServiceMutation();
 
+  const busy = isLoading || uploading;
+
+  // ── Add image from URL
   const handleAddImage = () => {
     const url = imageInput.trim();
     if (!url) return;
@@ -76,12 +88,44 @@ function EditServiceModal({ service, onClose }) {
       imageUrls: p.imageUrls.filter((_, i) => i !== idx),
     }));
 
+  // ── Pick file
+  const handleFileChange = (file) => {
+    if (!file) return;
+    setPickedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const handleRemovePicked = () => {
+    setPickedFile(null);
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  // ── Save
   const handleSave = async () => {
     try {
-      await updateService({ id: service.id, ...form }).unwrap();
+      let imageUrls = form.imageUrls;
+
+      // 1️⃣ Upload file to Cloudinary if selected
+      if (pickedFile) {
+        setUploading(true);
+        const url = await uploadImageToCloudinary(pickedFile);
+        imageUrls = [...imageUrls, url];
+        setUploading(false);
+      }
+
+      // 2️⃣ Update service
+      await updateService({
+        id: service.id,
+        ...form,
+        imageUrls,
+      }).unwrap();
+
       onClose();
     } catch (e) {
       console.error("update service error:", e);
+      setUploading(false);
     }
   };
 
@@ -92,6 +136,7 @@ function EditServiceModal({ service, onClose }) {
           <h2 className="text-lg font-bold text-gray-900">Edit Post</h2>
           <button
             onClick={onClose}
+            disabled={busy}
             className="bg-red-500 hover:bg-red-600 text-white rounded-lg w-8 h-8 flex items-center justify-center font-bold transition-colors"
           >
             ✕
@@ -99,160 +144,133 @@ function EditServiceModal({ service, onClose }) {
         </div>
 
         <div className="px-6 py-4 flex flex-col gap-4">
+
           {/* Title */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Title</label>
-            <input
-              className="bg-slate-100 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-blue-400 transition"
-              placeholder="Service title"
-              value={form.title}
-              onChange={(e) =>
-                setForm((p) => ({ ...p, title: e.target.value }))
-              }
-            />
-          </div>
+          <input
+            className="bg-slate-100 rounded-lg px-3.5 py-2.5 text-sm"
+            value={form.title}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, title: e.target.value }))
+            }
+          />
 
           {/* Description */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">
-              Description
-            </label>
-            <textarea
-              className="bg-slate-100 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-blue-400 transition resize-none"
-              placeholder="Describe your service..."
-              rows={4}
-              value={form.description}
-              onChange={(e) =>
-                setForm((p) => ({ ...p, description: e.target.value }))
-              }
-            />
-          </div>
+          <textarea
+            className="bg-slate-100 rounded-lg px-3.5 py-2.5 text-sm"
+            rows={4}
+            value={form.description}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, description: e.target.value }))
+            }
+          />
 
-          {/* Category dropdown (real data from API) */}
-          <div className="flex flex-col gap-1.5">
+          {/* Category */}
+          <select
+            className="bg-slate-100 rounded-lg px-3.5 py-2.5 text-sm"
+            value={form.categoryId}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, categoryId: e.target.value }))
+            }
+          >
+            <option value="">— Select a category —</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Upload from device */}
+          <div className="flex flex-col gap-2">
             <label className="text-sm font-medium text-gray-700">
-              Category
+              Upload Image
             </label>
-            <select
-              className="bg-slate-100 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-blue-400 transition"
-              value={form.categoryId}
-              onChange={(e) =>
-                setForm((p) => ({ ...p, categoryId: e.target.value }))
-              }
+
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="border-2 border-dashed border-gray-300 rounded-xl py-6 text-sm text-gray-500 hover:border-blue-400"
             >
-              <option value="">— Select a category —</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </div>
+              Choose image from device
+            </button>
 
-          {/* Status */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Status</label>
-            <div className="flex gap-3">
-              {["ACTIVE", "INACTIVE"].map((s) => (
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleFileChange(e.target.files?.[0])}
+            />
+
+            {pickedFile && (
+              <div className="flex items-center gap-3 bg-slate-50 border rounded-xl px-3 py-2">
+                <img
+                  src={previewUrl}
+                  className="w-12 h-12 object-cover rounded"
+                />
+                <span className="flex-1 text-xs truncate">
+                  {pickedFile.name}
+                </span>
                 <button
-                  key={s}
-                  onClick={() => setForm((p) => ({ ...p, status: s }))}
-                  className={`flex-1 py-2 rounded-lg text-xs font-semibold border transition-colors ${
-                    form.status === s
-                      ? "bg-blue-500 text-white border-blue-500"
-                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                  }`}
+                  onClick={handleRemovePicked}
+                  className="text-red-500"
                 >
-                  {s}
+                  ✕
                 </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Image URLs */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">
-              Image URLs
-            </label>
-            <div className="flex gap-2">
-              <input
-                className="flex-1 bg-slate-100 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-blue-400 transition"
-                placeholder="Paste image URL then press Add"
-                value={imageInput}
-                onChange={(e) => setImageInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddImage();
-                  }
-                }}
-              />
-              <button
-                onClick={handleAddImage}
-                className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors"
-              >
-                Add
-              </button>
-            </div>
-            {form.imageUrls.length > 0 && (
-              <div className="flex flex-col gap-2 mt-1">
-                {form.imageUrls.map((url, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"
-                  >
-                    <img
-                      src={url}
-                      alt={`img-${idx}`}
-                      className="w-12 h-12 rounded-lg object-cover shrink-0"
-                      onError={(e) => {
-                        e.currentTarget.src = FALLBACK_IMAGE;
-                      }}
-                    />
-                    <span className="flex-1 text-xs text-gray-500 truncate">
-                      {url}
-                    </span>
-                    <button
-                      onClick={() => handleRemoveImage(idx)}
-                      className="text-red-500 hover:text-red-700 transition-colors shrink-0"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={2}
-                      >
-                        <path
-                          d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
               </div>
             )}
           </div>
+
+          {/* URL input */}
+          <div className="flex gap-2">
+            <input
+              className="flex-1 bg-slate-100 rounded-lg px-3.5 py-2.5 text-sm"
+              placeholder="Paste image URL"
+              value={imageInput}
+              onChange={(e) => setImageInput(e.target.value)}
+            />
+            <button
+              onClick={handleAddImage}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm"
+            >
+              Add
+            </button>
+          </div>
+
+          {/* Existing images */}
+          {form.imageUrls.map((url, idx) => (
+            <div
+              key={idx}
+              className="flex items-center gap-3 bg-slate-50 border rounded-xl px-3 py-2"
+            >
+              <img
+                src={url}
+                className="w-12 h-12 object-cover rounded"
+              />
+              <span className="flex-1 text-xs truncate">{url}</span>
+              <button
+                onClick={() => handleRemoveImage(idx)}
+                className="text-red-500"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
         </div>
 
         <div className="px-6 pb-6 flex justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-6 py-2.5 rounded-full border border-slate-300 text-sm font-semibold text-gray-600 hover:bg-slate-50 transition-colors"
-          >
+          <button onClick={onClose} className="px-6 py-2 border rounded-full">
             Cancel
           </button>
           <button
             onClick={handleSave}
-            disabled={isLoading}
-            className="px-8 py-2.5 rounded-full bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white text-sm font-semibold transition-colors flex items-center gap-2"
+            disabled={busy}
+            className="px-8 py-2 rounded-full bg-blue-500 text-white"
           >
-            {isLoading && (
-              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            )}
-            {isLoading ? "Saving..." : "Save"}
+            {uploading
+              ? "Uploading..."
+              : isLoading
+              ? "Saving..."
+              : "Save"}
           </button>
         </div>
       </div>

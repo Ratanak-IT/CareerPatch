@@ -4,7 +4,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
 import logo from "../../assets/logo.png";
-import { useDarkMode } from "./NavbarComponent";
 import defaultProfileImg from "../../assets/userdefault.png";
 
 import senghourImg from "../../assets/seanghour.png";
@@ -28,8 +27,8 @@ function NavItem({ to, label, active, darkMode }) {
         active
           ? "font-medium text-blue-500"
           : darkMode
-            ? "font-normal text-slate-300 hover:text-blue-400 hover:bg-blue-900/20"
-            : "font-normal text-gray-600 hover:text-blue-500 hover:bg-blue-50",
+          ? "font-normal text-slate-300 hover:text-blue-400 hover:bg-blue-900/20"
+          : "font-normal text-gray-600 hover:text-blue-500 hover:bg-blue-50",
       ].join(" ")}
     >
       {label}
@@ -113,10 +112,36 @@ const NOTIFICATIONS = [
 ];
 
 export default function NavbarAfterLogin() {
-  const { darkMode, toggleDark } = useDarkMode();
+  // ✅ DARK MODE (NO CONTEXT)
+  const [darkMode, setDarkMode] = useState(() =>
+    document.documentElement.classList.contains("dark")
+  );
+
+  // init from localStorage once
+  useEffect(() => {
+    const saved = localStorage.getItem("theme"); // "dark" | "light" | null
+    if (saved === "dark") {
+      document.documentElement.classList.add("dark");
+      setDarkMode(true);
+    } else if (saved === "light") {
+      document.documentElement.classList.remove("dark");
+      setDarkMode(false);
+    } else {
+      // no saved -> keep current html class (or follow system if you want)
+      setDarkMode(document.documentElement.classList.contains("dark"));
+    }
+  }, []);
+
+  const toggleDark = () => {
+    const next = !darkMode;
+    setDarkMode(next);
+    if (next) document.documentElement.classList.add("dark");
+    else document.documentElement.classList.remove("dark");
+    localStorage.setItem("theme", next ? "dark" : "light");
+  };
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const user = useSelector(selectAuthUser);
 
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -134,17 +159,14 @@ export default function NavbarAfterLogin() {
 
   useEffect(() => {
     function handler(e) {
-      if (notifRef.current && !notifRef.current.contains(e.target))
-        setNotifOpen(false);
-      if (profileRef.current && !profileRef.current.contains(e.target))
-        setProfileOpen(false);
+      if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false);
+      if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
     }
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const markAllRead = () =>
-    setNotifications((n) => n.map((x) => ({ ...x, read: true })));
+  const markAllRead = () => setNotifications((n) => n.map((x) => ({ ...x, read: true })));
 
   const navLinks = [
     { path: "/", label: "Home" },
@@ -180,21 +202,18 @@ export default function NavbarAfterLogin() {
 
   const displayRole = useMemo(() => {
     if (!user) return "Member";
-    // try common backend shapes
-    const raw =
-      user.userType || user.role || user.accountType || user.type || "Member";
-
-    // normalize a bit
+    const raw = user.userType || user.role || user.accountType || user.type || "Member";
     const v = String(raw).toUpperCase();
     if (v.includes("FREELANCER")) return "Freelancer";
     if (v.includes("BUSINESS")) return "Business Owner";
     return String(raw);
   }, [user]);
 
+  // ✅ Profile image normalize (relative url fix)
   const profileSrc = useMemo(() => {
-    // if API returns an URL, use it
     const url = user?.profileImageUrl;
-    return url && typeof url === "string" ? url : defaultProfileImg;
+    if (url && typeof url === "string") return url;
+    return defaultProfileImg;
   }, [user]);
 
   const onLogout = () => {
@@ -308,10 +327,7 @@ export default function NavbarAfterLogin() {
                     {unreadCount > 0 && (
                       <span
                         className="ml-2 px-2 py-0.5 rounded-full text-white text-xs font-semibold"
-                        style={{
-                          background: "#3b82f6",
-                          fontFamily: "'Poppins', sans-serif",
-                        }}
+                        style={{ background: "#3b82f6", fontFamily: "'Poppins', sans-serif" }}
                       >
                         {unreadCount} new
                       </span>
@@ -345,8 +361,8 @@ export default function NavbarAfterLogin() {
                         background: n.read
                           ? "transparent"
                           : darkMode
-                            ? "rgba(59,130,246,0.08)"
-                            : "rgba(239,246,255,0.8)",
+                          ? "rgba(59,130,246,0.08)"
+                          : "rgba(239,246,255,0.8)",
                         borderBottom: `1px solid ${darkMode ? "#1e293b" : "#f8fafc"}`,
                       }}
                       onMouseEnter={(e) =>
@@ -358,24 +374,19 @@ export default function NavbarAfterLogin() {
                         (e.currentTarget.style.background = n.read
                           ? "transparent"
                           : darkMode
-                            ? "rgba(59,130,246,0.08)"
-                            : "rgba(239,246,255,0.8)")
+                          ? "rgba(59,130,246,0.08)"
+                          : "rgba(239,246,255,0.8)")
                       }
                       onClick={() =>
                         setNotifications((prev) =>
-                          prev.map((x) =>
-                            x.id === n.id ? { ...x, read: true } : x,
-                          ),
+                          prev.map((x) => (x.id === n.id ? { ...x, read: true } : x))
                         )
                       }
                     >
                       <div className="flex-shrink-0 w-9 h-9 rounded-full overflow-hidden">
-                        <img
-                          src={n.image}
-                          alt="avatar"
-                          className="w-full h-full object-cover"
-                        />
+                        <img src={n.image} alt="avatar" className="w-full h-full object-cover" />
                       </div>
+
                       <div className="flex-1 min-w-0">
                         <p
                           style={{
@@ -409,11 +420,9 @@ export default function NavbarAfterLogin() {
                           {n.time}
                         </p>
                       </div>
+
                       {!n.read && (
-                        <div
-                          className="flex-shrink-0 w-2 h-2 rounded-full mt-2"
-                          style={{ background: "#3b82f6" }}
-                        />
+                        <div className="flex-shrink-0 w-2 h-2 rounded-full mt-2" style={{ background: "#3b82f6" }} />
                       )}
                     </div>
                   ))}
@@ -421,9 +430,7 @@ export default function NavbarAfterLogin() {
 
                 <div
                   className="px-5 py-3 text-center"
-                  style={{
-                    borderTop: `1px solid ${darkMode ? "#334155" : "#f1f5f9"}`,
-                  }}
+                  style={{ borderTop: `1px solid ${darkMode ? "#334155" : "#f1f5f9"}` }}
                 >
                   <Link
                     to="/notifications"
@@ -489,19 +496,13 @@ export default function NavbarAfterLogin() {
                 {/* User header */}
                 <div
                   className="flex items-center gap-3 px-5 py-4"
-                  style={{
-                    borderBottom: `1px solid ${darkMode ? "#334155" : "#f1f5f9"}`,
-                  }}
+                  style={{ borderBottom: `1px solid ${darkMode ? "#334155" : "#f1f5f9"}` }}
                 >
                   <img
                     src={profileSrc}
                     alt="Profile"
                     className="rounded-full object-cover flex-shrink-0"
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      border: "2px solid #3b82f6",
-                    }}
+                    style={{ width: "40px", height: "40px", border: "2px solid #3b82f6" }}
                     onError={(e) => {
                       e.currentTarget.src = defaultProfileImg;
                     }}
@@ -538,26 +539,16 @@ export default function NavbarAfterLogin() {
                   className="flex items-center gap-3 px-5 py-3 no-underline transition-all duration-150"
                   style={{ color: darkMode ? "#cbd5e1" : "#374151" }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = darkMode
-                      ? "rgba(255,255,255,0.05)"
-                      : "#f8fafc";
+                    e.currentTarget.style.background = darkMode ? "rgba(255,255,255,0.05)" : "#f8fafc";
                     e.currentTarget.style.color = "#3b82f6";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = "transparent";
-                    e.currentTarget.style.color = darkMode
-                      ? "#cbd5e1"
-                      : "#374151";
+                    e.currentTarget.style.color = darkMode ? "#cbd5e1" : "#374151";
                   }}
                 >
                   <span style={{ fontSize: "16px" }}>👤</span>
-                  <span
-                    style={{
-                      fontFamily: "'Poppins', sans-serif",
-                      fontSize: "14px",
-                      fontWeight: 500,
-                    }}
-                  >
+                  <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: "14px", fontWeight: 500 }}>
                     My Profile
                   </span>
                 </Link>
@@ -581,18 +572,10 @@ export default function NavbarAfterLogin() {
                         ? "rgba(239,68,68,0.08)"
                         : "rgba(254,242,242,0.8)")
                     }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.background = "transparent")
-                    }
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                   >
                     <span style={{ fontSize: "16px" }}>🚪</span>
-                    <span
-                      style={{
-                        fontFamily: "'Poppins', sans-serif",
-                        fontSize: "14px",
-                        fontWeight: 500,
-                      }}
-                    >
+                    <span style={{ fontFamily: "'Poppins', sans-serif", fontSize: "14px", fontWeight: 500 }}>
                       Log out
                     </span>
                   </button>
@@ -633,11 +616,9 @@ export default function NavbarAfterLogin() {
               <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
               <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
+
             {unreadCount > 0 && (
-              <span
-                className="absolute top-1 right-1 w-2 h-2 rounded-full"
-                style={{ background: "#ef4444" }}
-              />
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full" style={{ background: "#ef4444" }} />
             )}
           </button>
 
@@ -653,11 +634,7 @@ export default function NavbarAfterLogin() {
               src={profileSrc}
               alt="Profile"
               className="object-cover rounded-full"
-              style={{
-                width: "34px",
-                height: "34px",
-                border: "2px solid #3b82f6",
-              }}
+              style={{ width: "34px", height: "34px", border: "2px solid #3b82f6" }}
               onError={(e) => {
                 e.currentTarget.src = defaultProfileImg;
               }}
@@ -668,35 +645,17 @@ export default function NavbarAfterLogin() {
             onClick={() => setMobileOpen(!mobileOpen)}
             className={[
               "w-10 h-10 flex items-center justify-center rounded-lg border-0 bg-transparent cursor-pointer transition-colors duration-200",
-              darkMode
-                ? "text-slate-300 hover:bg-slate-800"
-                : "text-gray-600 hover:bg-gray-100",
+              darkMode ? "text-slate-300 hover:bg-slate-800" : "text-gray-600 hover:bg-gray-100",
             ].join(" ")}
             aria-label="Toggle menu"
           >
             {mobileOpen ? (
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             ) : (
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <line x1="3" y1="12" x2="15" y2="12" />
                 <line x1="3" y1="18" x2="21" y2="18" />
@@ -724,11 +683,7 @@ export default function NavbarAfterLogin() {
                 style={{
                   fontFamily: "'Poppins', sans-serif",
                   fontSize: "17px",
-                  color: isActive(path)
-                    ? "#3b82f6"
-                    : darkMode
-                      ? "#cbd5e1"
-                      : "#4b5563",
+                  color: isActive(path) ? "#3b82f6" : darkMode ? "#cbd5e1" : "#4b5563",
                   fontWeight: isActive(path) ? 600 : 400,
                 }}
                 className="py-3 no-underline transition-colors duration-200 border-b"
@@ -741,19 +696,13 @@ export default function NavbarAfterLogin() {
           {/* Mobile user info */}
           <div
             className="flex items-center gap-3 px-4 sm:px-8 py-4"
-            style={{
-              borderTop: `1px solid ${darkMode ? "#1e293b" : "#f1f5f9"}`,
-            }}
+            style={{ borderTop: `1px solid ${darkMode ? "#1e293b" : "#f1f5f9"}` }}
           >
             <img
               src={profileSrc}
               alt="Profile"
               className="rounded-full object-cover flex-shrink-0"
-              style={{
-                width: "44px",
-                height: "44px",
-                border: "2px solid #3b82f6",
-              }}
+              style={{ width: "44px", height: "44px", border: "2px solid #3b82f6" }}
               onError={(e) => {
                 e.currentTarget.src = defaultProfileImg;
               }}
@@ -781,6 +730,7 @@ export default function NavbarAfterLogin() {
                 {displayRole}
               </p>
             </div>
+
             <button
               onClick={() => {
                 setMobileOpen(false);

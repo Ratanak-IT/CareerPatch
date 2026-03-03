@@ -1,8 +1,8 @@
-// 5) src/components/freelancer/FreelancerCard.jsx
-import { Link } from "react-router";
+// src/components/freelancer/FreelancerCard.jsx
+import { Link, useNavigate } from "react-router";
 import { useBookmarks } from "../../hooks/useBookmarks";
 
-const FALLBACK_IMAGE  = "https://placehold.co/285x253?text=No+Image";
+const FALLBACK_IMAGE = "https://placehold.co/285x253?text=No+Image";
 const FALLBACK_AVATAR = "https://placehold.co/32x32?text=?";
 
 export default function FreelancerCard({
@@ -14,10 +14,21 @@ export default function FreelancerCard({
   date,
   author,
   avatar,
+
+  // ✅ NEW: userId of the freelancer/business who posted this post
+  authorId,
+
   postType = "service", // "service" | "job"
 }) {
   const { liked, toggle } = useBookmarks({ id, type: postType });
   const linkTo = postType === "job" ? `/jobs/${id}` : `/services/${id}`;
+  const navigate = useNavigate();
+
+  const goProfile = (e) => {
+    e.preventDefault(); // stop outer Link
+    e.stopPropagation();
+    if (authorId) navigate(`/freelancers/${authorId}`);
+  };
 
   return (
     <Link
@@ -29,17 +40,19 @@ export default function FreelancerCard({
           src={image || FALLBACK_IMAGE}
           alt={title}
           className="w-full h-48 object-cover"
-          onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
+          onError={(e) => {
+            e.currentTarget.src = FALLBACK_IMAGE;
+          }}
         />
 
-        {/* ✅ FIX: prevent Link navigation */}
+        {/* ✅ prevent Link navigation */}
         <button
           type="button"
           onClick={(e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    toggle();
-  }}
+            e.preventDefault();
+            e.stopPropagation();
+            toggle();
+          }}
           className={`absolute top-3 right-3 w-8 h-8 rounded-full bg-white bg-opacity-90 flex items-center justify-center shadow transition-transform hover:scale-110 active:scale-95 ${
             liked ? "ring-2 ring-blue-200" : ""
           }`}
@@ -67,18 +80,28 @@ export default function FreelancerCard({
 
         <p
           className="text-gray-500 text-xs leading-relaxed mb-4 overflow-hidden"
-          style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}
+          style={{
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+          }}
         >
           {description}
         </p>
 
         <div className="flex items-center justify-between mb-4 flex-wrap gap-y-1">
           <div className="flex flex-wrap gap-1">
-            {(Array.isArray(tags) ? tags : []).filter(Boolean).slice(0, 2).map((t) => (
-              <span key={t} className="bg-blue-500 text-white text-xs font-medium px-2.5 py-0.5 rounded-full">
-                {t}
-              </span>
-            ))}
+            {(Array.isArray(tags) ? tags : [])
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((t) => (
+                <span
+                  key={t}
+                  className="bg-blue-500 text-white text-xs font-medium px-2.5 py-0.5 rounded-full"
+                >
+                  {t}
+                </span>
+              ))}
           </div>
           <span className="text-gray-400 text-xs">{date}</span>
         </div>
@@ -86,19 +109,30 @@ export default function FreelancerCard({
         <div className="border-t border-gray-100 mb-3" />
 
         <div className="flex items-center justify-between mt-auto">
-          <div className="flex items-center gap-2">
+          {/* ✅ Click avatar/name -> go profile */}
+          <button
+            type="button"
+            onClick={goProfile}
+            className="flex items-center gap-2 text-left"
+            aria-label="View profile"
+          >
             <img
               src={avatar || FALLBACK_AVATAR}
               alt={author}
               className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100"
-              onError={(e) => { e.currentTarget.src = FALLBACK_AVATAR; }}
+              onError={(e) => {
+                e.currentTarget.src = FALLBACK_AVATAR;
+              }}
             />
             <span className="text-gray-700 text-xs font-medium">{author}</span>
-          </div>
+          </button>
 
           <button
             type="button"
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
             className="bg-blue-500 hover:bg-blue-600 active:scale-95 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200"
           >
             Message

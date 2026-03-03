@@ -1,25 +1,149 @@
-// src/pages/CarddetailBusiness.jsx (or wherever you put it)
+// src/components/carddetail/CardDetailBusiness.jsx
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import ButtonComponent from "../button/ButtonComponent";
 import { useDarkMode } from "../navbar/NavbarComponent";
+import { useGetAllJobsQuery, useGetJobByIdQuery } from "../../services/detailworkApi";
 
-import { useGetUserByIdQuery } from "../../services/userApi";
-import { useGetAllServicesQuery, useGetServiceByIdQuery } from "../../services/servicesApi";
-
-const FALLBACK_COVER = "https://placehold.co/1100x420?text=No+Image";
-const FALLBACK_THUMB = "https://placehold.co/80x56?text=No";
-const FALLBACK_AVATAR = "https://placehold.co/32x32?text=?";
-
-function formatDateDDMMYYYY(value) {
+/* ─── helpers ───────────────────────────────────────────────────────────── */
+function timeAgo(value) {
   if (!value) return "—";
-  const d = new Date(value);
+  let v = value;
+  if (typeof v === "string" && /^\d+$/.test(v)) v = Number(v);
+  if (typeof v === "number" && v < 1e12) v = v * 1000;
+
+  const d = new Date(v);
   if (Number.isNaN(d.getTime())) return "—";
-  const day = String(d.getDate()).padStart(2, "0");
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const year = String(d.getFullYear());
-  return `${day}/${month}/${year}`;
+
+  const sec = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (sec < 60) return "just now";
+  if (sec < 3600) return `${Math.floor(sec / 60)}m ago`;
+  if (sec < 86400) return `${Math.floor(sec / 3600)}h ago`;
+  if (sec < 604800) return `${Math.floor(sec / 86400)}d ago`;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
+
+function normalizeList(resp) {
+  const raw = resp?.data ?? resp;
+  if (Array.isArray(raw)) return raw;
+  if (Array.isArray(raw?.content)) return raw.content;
+  if (Array.isArray(raw?.items)) return raw.items;
+  if (Array.isArray(raw?.results)) return raw.results;
+  return [];
+}
+
+function normalizeOne(resp) {
+  const raw = resp?.data ?? resp;
+  if (!raw) return null;
+  if (Array.isArray(raw)) return raw[0] ?? null;
+  if (Array.isArray(raw?.content)) return raw.content[0] ?? null;
+  if (Array.isArray(raw?.items)) return raw.items[0] ?? null;
+  if (Array.isArray(raw?.results)) return raw.results[0] ?? null;
+  if (typeof raw === "object") return raw;
+  return null;
+}
+
+function getJobId(job) {
+  return job?.id ?? job?.jobId ?? job?._id ?? null;
+}
+
+function asText(x, fallback = "—") {
+  if (x == null) return fallback;
+  if (typeof x === "string") return x;
+  if (typeof x === "number") return String(x);
+  return fallback;
+}
+
+/* ─── icons (same style) ───────────────────────────────────────────────── */
+const IconClock = () => (
+  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </svg>
+);
+const IconLocation = () => (
+  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+    <circle cx="12" cy="10" r="3" />
+  </svg>
+);
+const IconSend = () => (
+  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+    <line x1="22" y1="2" x2="11" y2="13" />
+    <polygon points="22 2 15 22 11 13 2 9 22 2" />
+  </svg>
+);
+const IconBookmark = ({ filled }) => (
+  <svg
+    className="w-[18px] h-[18px]"
+    fill={filled ? "#3B82F6" : "none"}
+    stroke={filled ? "#3B82F6" : "currentColor"}
+    strokeWidth={2}
+    viewBox="0 0 24 24"
+  >
+    <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+  </svg>
+);
+const IconBriefcase = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+    <rect x="2" y="7" width="20" height="14" rx="2" />
+    <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
+    <path d="M2 12h20" />
+  </svg>
+);
+const IconBack = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+  </svg>
+);
+
+/* ─── Skeleton / Error (same style) ─────────────────────────────────────── */
+function Skeleton() {
+  return (
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-5xl mx-auto animate-pulse space-y-5">
+        <div className="h-7 w-24 bg-gray-200 rounded-lg" />
+        <div className="h-36 bg-gray-200 rounded-2xl" />
+        <div className="flex gap-5">
+          <div className="flex-1 space-y-4">
+            <div className="h-64 bg-gray-200 rounded-2xl" />
+            <div className="h-32 bg-gray-200 rounded-2xl" />
+          </div>
+          <div className="w-72 space-y-4">
+            <div className="h-48 bg-gray-200 rounded-2xl" />
+            <div className="h-40 bg-gray-200 rounded-2xl" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ErrorState({ message, onBack }) {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="bg-white rounded-2xl shadow border border-gray-100 p-8 max-w-md w-full text-center">
+        <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
+          <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <p className="text-sm font-semibold text-gray-800 mb-1">Could not load</p>
+        <p className="text-xs text-gray-400 mb-5">{message}</p>
+        <button onClick={onBack} className="px-5 py-2 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors">
+          Go Back
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Main ─────────────────────────────────────────────────────────────── */
+const MOCK_PANEL = {
+  projectCost: "$1500",
+  experience: "Expert",
+  duration: "1–2 months",
+  deadline: "Mar 1, 2026",
+};
 
 export default function CardDetailBusiness() {
   const { darkMode } = useDarkMode();
@@ -27,344 +151,373 @@ export default function CardDetailBusiness() {
   const { jobId } = useParams();
 
   const [comment, setComment] = useState("");
-  const [liked, setLiked] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [comments, setComments] = useState([]);
 
-  const bg = darkMode
-    ? "linear-gradient(160deg, #0d1b2e 0%, #0f2240 50%, #0d1520 100%)"
-    : "#f0f4f8";
-  const cardBg = darkMode ? "#0f2240" : "#ffffff";
-  const cardBorder = darkMode ? "#1e3a5f" : "#e8f0fe";
-  const textPrimary = darkMode ? "text-white" : "text-gray-900";
-  const textSecondary = darkMode ? "text-slate-400" : "text-gray-500";
-  const divider = darkMode ? "#1e3a5f" : "#e8f0fe";
+  // fetch detail by id
+  const { data: byIdResp, isLoading: byIdLoading, isError: byIdError, error: byIdErrObj } =
+    useGetJobByIdQuery(jobId, { skip: !jobId });
 
-  // 1) Prefer by-id endpoint
-  const {
-    data: byIdResp,
-    isLoading: byIdLoading,
-    isError: byIdError,
-    error: byIdErrObj,
-  } = useGetServiceByIdQuery(jobId, { skip: !jobId });
+  // fallback fetch list (useful if backend returns weird structure)
+  const { data: listResp, isLoading: listLoading, isError: listError, error: listErrObj } =
+    useGetAllJobsQuery(undefined, { skip: !jobId });
 
-  // 2) Fallback: list + find by id (useful if backend sometimes fails on by-id)
-  const {
-    data: listResp,
-    isLoading: listLoading,
-    isError: listError,
-    error: listErrObj,
-  } = useGetAllServicesQuery(undefined, { skip: !jobId });
-
+  // resolve job
   const job = useMemo(() => {
-    const byId = byIdResp?.data ?? byIdResp;
-    if (byId && typeof byId === "object" && !Array.isArray(byId)) return byId;
-
-    const list = listResp?.data ?? listResp;
-    const items = Array.isArray(list)
-      ? list
-      : list?.content ?? list?.items ?? list?.results ?? [];
-
-    return items.find((x) => String(x?.id) === String(jobId));
+    const byId = normalizeOne(byIdResp);
+    if (byId) return byId;
+    const list = normalizeList(listResp);
+    return list.find((x) => String(getJobId(x)) === String(jobId)) ?? null;
   }, [byIdResp, listResp, jobId]);
 
-  // Creator user
-  const userId = job?.userId;
-  const { data: userRes } = useGetUserByIdQuery(userId, { skip: !userId });
-  const creator = userRes?.data ?? userRes;
+  const loading = (byIdLoading && !byIdError) || (listLoading && !listError);
 
-  const creatorName = creator?.fullName || creator?.username || "Business Owner";
-  const creatorAvatar = creator?.profileImageUrl || FALLBACK_AVATAR;
-
-  const loading = byIdLoading && listLoading;
-
-  if (!jobId) {
-    return (
-      <div className="min-h-screen w-full flex items-center justify-center px-4" style={{ background: bg }}>
-        <div className="p-6 rounded-2xl" style={{ background: cardBg, border: `1px solid ${cardBorder}` }}>
-          <p className={`text-sm ${textPrimary}`}>Missing job id in URL.</p>
-          <button
-            className="mt-4 px-4 py-2 rounded-xl text-white text-sm font-semibold"
-            style={{ background: "#1E88E5" }}
-            onClick={() => navigate(-1)}
-          >
-            Go Back
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen w-full flex items-center justify-center px-4" style={{ background: bg }}>
-        <div className="p-6 rounded-2xl" style={{ background: cardBg, border: `1px solid ${cardBorder}` }}>
-          <p className={`text-sm ${textPrimary}`}>Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!job) {
-    const errMsg =
-      (byIdError && byIdErrObj && JSON.stringify(byIdErrObj)) ||
-      (listError && listErrObj && JSON.stringify(listErrObj)) ||
-      "Job not found";
-
-    return (
-      <div className="min-h-screen w-full flex items-center justify-center px-4" style={{ background: bg }}>
-        <div
-          className="w-full max-w-[560px] p-6 rounded-2xl"
-          style={{ background: cardBg, border: `1px solid ${cardBorder}`, boxShadow: "0 8px 32px rgba(30,136,229,0.07)" }}
-        >
-          <p className={`text-[15px] font-bold ${textPrimary}`}>Could not load job</p>
-          <p className={`mt-2 text-[13px] ${textSecondary}`} style={{ wordBreak: "break-word" }}>
-            {errMsg}
-          </p>
-
-          <div className="mt-5 flex gap-2">
-            <button
-              className="px-4 py-2 rounded-xl text-white text-[13px] font-semibold"
-              style={{ background: "#1E88E5" }}
-              onClick={() => navigate(-1)}
-            >
-              Go Back
-            </button>
-            <button
-              className="px-4 py-2 rounded-xl text-[13px] font-semibold"
-              style={{
-                background: darkMode ? "rgba(255,255,255,0.06)" : "#f8fafc",
-                border: `1px solid ${cardBorder}`,
-                color: darkMode ? "#fff" : "#111827",
-              }}
-              onClick={() => navigate("/findwork")}
-            >
-              Back to list
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // derived fields (map job api -> UI)
+  const companyName = job?.company?.name || job?.companyName || job?.company || "Company";
+  const companyLogoText =
+    (job?.company?.logo || companyName?.slice(0, 2) || "CO").toString().slice(0, 2).toUpperCase();
+  const logoColor = job?.company?.logoColor || "#2B5F75";
 
   const title = job?.title ?? "Untitled";
-  const description = job?.description ?? "-";
-  const status = job?.status ?? "—";
-  const budget = job?.budget ?? "—";
-  const posted = formatDateDDMMYYYY(job?.createdAt);
+  const loc = job?.location ?? job?.address ?? null;
+  const posted = timeAgo(job?.createdAt);
+  const desc = job?.description ?? "No description.";
 
-  const images = Array.isArray(job?.jobImages) ? job.jobImages : [];
-  const coverImage = images?.[0] || FALLBACK_COVER;
+  const responsibilities = Array.isArray(job?.responsibilities) ? job.responsibilities : [];
+  const requirements = Array.isArray(job?.requirements) ? job.requirements : [];
 
-  // Right-side info rows (dynamic)
-  const infoRows = [
-    { label: "Status", value: status },
-    { label: "Posted", value: posted },
-    { label: "Budget", value: typeof budget === "number" ? `$${budget}` : String(budget) },
-  ];
+  const skillsArr = Array.isArray(job?.skills)
+    ? job.skills
+    : Array.isArray(job?.skill)
+      ? job.skill
+      : [];
+
+  // Right panel (you can replace MOCK_PANEL with real job fields later)
+  const budget =
+    job?.budget ?? job?.salary ?? job?.price ?? job?.projectCost ?? null;
+
+  const exp =
+    job?.experienceLevel ?? job?.experience ?? MOCK_PANEL.experience;
+
+  const duration =
+    job?.duration ?? MOCK_PANEL.duration;
+
+  const deadline =
+    job?.deadline ?? job?.endDate ?? MOCK_PANEL.deadline;
+
+  const postComment = () => {
+    if (!comment.trim()) return;
+    setComments((p) => [...p, { text: comment.trim(), time: "just now", name: "You" }]);
+    setComment("");
+  };
+
+  // guards
+  if (!jobId) return <ErrorState message="Missing job ID." onBack={() => navigate(-1)} />;
+  if (loading) return <Skeleton />;
+  if (!job) {
+    const msg =
+      (byIdError && JSON.stringify(byIdErrObj)) ||
+      (listError && JSON.stringify(listErrObj)) ||
+      "Not found.";
+    return <ErrorState message={msg} onBack={() => navigate(-1)} />;
+  }
+
+  // theme helpers (same pattern as freelancer)
+  const dm = darkMode;
+  const bg = dm ? "bg-[#0f172a]" : "bg-slate-50";
+  const cardBg = dm ? "bg-[#1e293b]" : "bg-white";
+  const border = dm ? "border-[#334155]" : "border-slate-100";
+  const t1 = dm ? "text-white" : "text-slate-900";
+  const t2 = dm ? "text-slate-400" : "text-slate-500";
+  const divLine = dm ? "border-[#334155]" : "border-slate-100";
+  const infoTag = `${cardBg} border ${border} rounded-2xl p-5 sm:p-6 shadow-sm`;
 
   return (
-    <div className="min-h-screen w-full py-10 px-4 md:px-8 lg:px-16 transition-colors duration-300" style={{ fontFamily: "'Poppins', sans-serif", background: bg }}>
-      <div className="max-w-[1100px] mx-auto flex flex-col lg:flex-row gap-6 items-start">
-        {/* LEFT */}
-        <div className="w-full lg:w-[60%] flex flex-col gap-5">
-          {/* Header */}
-          <div
-            className="rounded-2xl p-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4"
-            style={{ background: cardBg, border: `1px solid ${cardBorder}`, boxShadow: "0 8px 32px rgba(30,136,229,0.07)" }}
-          >
-            <div className="flex items-start gap-4">
-              <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 ring-2 ring-[#e8f0fe]">
-                <img
-                  src={creatorAvatar}
-                  alt={creatorName}
-                  className="w-full h-full object-cover"
-                  onError={(e) => (e.currentTarget.src = "https://placehold.co/56x56?text=?")}
-                />
-              </div>
+    <div className={`min-h-screen ${bg} transition-colors duration-300`} style={{ fontFamily: "'Poppins', sans-serif" }}>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-              <div>
-                <p className={`text-[13px] font-semibold ${textPrimary}`}>{creatorName}</p>
-                <h1 className="text-[#1E88E5] text-[20px] md:text-[24px] font-bold leading-tight mt-1">{title}</h1>
+        {/* Back */}
+        <button
+          onClick={() => navigate(-1)}
+          className={`inline-flex items-center gap-2 text-sm font-medium mb-7 px-4 py-2 rounded-xl transition-all
+            ${dm ? "text-slate-400 hover:text-white hover:bg-white/5" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"}`}
+        >
+          <IconBack /> Back
+        </button>
 
-                <div className={`flex flex-wrap items-center gap-3 mt-2 text-[12px] ${textSecondary}`}>
-                  <span className="flex items-center gap-1">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="12" cy="12" r="10" />
-                      <polyline points="12 6 12 12 16 14" />
-                    </svg>
-                    Posted {posted}
-                  </span>
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
 
-                  <span className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full" style={{ background: status === "OPEN" ? "#22c55e" : "#f59e0b" }} />
-                    {status}
-                  </span>
+          {/* LEFT */}
+          <div className="w-full lg:w-[62%] flex flex-col gap-5">
+
+            {/* Header card (same style) */}
+            <div className={infoTag}>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-4 min-w-0">
+                  <div className="relative shrink-0">
+                    <div
+                      className="w-14 h-14 rounded-2xl overflow-hidden ring-2 ring-blue-100 flex items-center justify-center text-white font-extrabold text-sm"
+                      style={{ background: logoColor }}
+                    >
+                      {companyLogoText}
+                    </div>
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                        {companyLogoText}
+                      </div>
+                      <span className={`text-[13px] font-semibold truncate ${t1}`}>{companyName}</span>
+                    </div>
+
+                    <h1 className="text-blue-500 text-xl sm:text-[22px] font-bold leading-snug mb-2">
+                      {title}
+                    </h1>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                      {loc && (
+                        <span className={`flex items-center gap-1.5 text-[12px] ${t2}`}>
+                          <IconLocation />
+                          {loc}
+                        </span>
+                      )}
+                      <span className={`flex items-center gap-1.5 text-[12px] ${t2}`}>
+                        <IconClock />
+                        Posted {posted}
+                      </span>
+                    </div>
+                  </div>
                 </div>
+
+                <button className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold
+                                   text-white bg-blue-500 hover:bg-blue-600 active:scale-95 transition-all shadow-sm shadow-blue-200">
+                  <IconSend />
+                  <span className="hidden sm:inline">Message</span>
+                </button>
+              </div>
+
+              <div className={`my-4 border-t ${divLine}`} />
+
+              {/* optional chips */}
+              <div className="flex flex-wrap gap-2">
+                {job?.category?.name && (
+                  <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
+                    {job.category.name}
+                  </span>
+                )}
+                {job?.status && (
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full
+                                   bg-emerald-50 text-emerald-600 border border-emerald-100">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                    {job.status}
+                  </span>
+                )}
               </div>
             </div>
 
-            <div className="flex-shrink-0">
-              <ButtonComponent
-                text={
-                  <span className="flex items-center gap-2">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="22" y1="2" x2="11" y2="13" />
-                      <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                    </svg>
-                    Message
-                  </span>
-                }
-                onClick={() => console.log("Message clicked")}
-              />
-            </div>
-          </div>
-
-          {/* Cover */}
-          <div className="rounded-2xl overflow-hidden" style={{ background: cardBg, border: `1px solid ${cardBorder}`, boxShadow: "0 8px 32px rgba(30,136,229,0.07)" }}>
-            <div className="relative w-full" style={{ height: 260 }}>
-              <img src={coverImage} alt={title} className="w-full h-full object-cover" onError={(e) => (e.currentTarget.src = FALLBACK_COVER)} />
+            {/* Description */}
+            <div className={infoTag}>
+              <h2 className={`text-[14px] font-bold mb-3 ${t1}`}>Job Description</h2>
+              <p className={`text-[13px] leading-[1.75] whitespace-pre-line ${t2}`}>{desc}</p>
             </div>
 
-            {images.length > 1 && (
-              <div className="p-4 flex gap-2 overflow-x-auto">
-                {images.slice(0, 6).map((url, i) => (
-                  <img
-                    key={i}
-                    src={url}
-                    alt={`thumb-${i}`}
-                    className="w-20 h-14 rounded-xl object-cover border"
-                    style={{ borderColor: cardBorder }}
-                    onError={(e) => (e.currentTarget.src = FALLBACK_THUMB)}
-                  />
-                ))}
+            {/* Responsibilities */}
+            {responsibilities.length > 0 && (
+              <div className={infoTag}>
+                <h2 className={`text-[14px] font-bold mb-4 ${t1}`}>Responsibilities</h2>
+                <ul className="space-y-3">
+                  {responsibilities.map((r, i) => (
+                    <li key={i} className={`flex items-start gap-2.5 text-[13px] ${t2}`}>
+                      <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0 mt-2" />
+                      {asText(r)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Requirements + Skills (same layout like freelancer Tools/Skills block) */}
+            {(requirements.length > 0 || skillsArr.length > 0) && (
+              <div className={infoTag}>
+                <div className="flex gap-0">
+                  {/* LEFT: Requirements */}
+                  <div style={{ width: "45%", paddingRight: "24px" }}>
+                    <h2 className={`text-[14px] font-bold mb-4 ${t1}`}>Requirements</h2>
+                    {requirements.length > 0 ? (
+                      <ul className="space-y-3">
+                        {requirements.map((req, i) => (
+                          <li key={i} className={`flex items-start gap-2.5 text-[13px] ${t2}`}>
+                            <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0 mt-2" />
+                            {asText(req)}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className={`text-[12px] italic opacity-40 ${t2}`}>Static</p>
+                    )}
+                  </div>
+
+                  {/* Divider */}
+                  <div style={{ width: "1px", background: dm ? "#334155" : "#f1f5f9", flexShrink: 0 }} />
+
+                  {/* RIGHT: Skills */}
+                  <div style={{ flex: 1, paddingLeft: "24px" }}>
+                    <h2 className={`text-[14px] font-bold mb-4 ${t1}`}>Skills</h2>
+                    <div className="flex flex-wrap gap-2">
+                      {skillsArr.map((s, i) => {
+                        const label = typeof s === "string" ? s : s?.name || s?.title || "—";
+                        return (
+                          <span
+                            key={i}
+                            style={{ whiteSpace: "nowrap" }}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-medium cursor-default transition-colors
+                              ${dm
+                                ? "bg-indigo-950/60 text-indigo-300 border border-indigo-800 hover:bg-indigo-900/60"
+                                : "bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-100"
+                              }`}
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
+                            {label}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
 
-          {/* Description */}
-          <div className="rounded-2xl p-6" style={{ background: cardBg, border: `1px solid ${cardBorder}`, boxShadow: "0 8px 32px rgba(30,136,229,0.07)" }}>
-            <h2 className={`text-[15px] font-bold mb-3 ${textPrimary}`}>Description</h2>
-            <div className={`text-[13px] leading-6 ${textSecondary}`}>{description}</div>
-          </div>
-        </div>
+          {/* RIGHT */}
+          <div className="w-full lg:w-[38%] flex flex-col gap-5 lg:sticky lg:top-6">
 
-        {/* RIGHT */}
-        <div className="w-full lg:w-[40%] flex flex-col gap-5">
-          {/* Cost / Info */}
-          <div className="rounded-2xl p-6" style={{ background: cardBg, border: `1px solid ${cardBorder}`, boxShadow: "0 8px 32px rgba(30,136,229,0.07)" }}>
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-baseline gap-2">
-                <span className={`text-[28px] font-extrabold ${textPrimary}`}>
-                  {typeof budget === "number" ? `$${budget}` : "$xxx"}
-                </span>
-                <span className={`text-[13px] ${textSecondary}`}>Project cost</span>
-              </div>
+            {/* Quotation card (same as freelancer) */}
+            <div className={infoTag}>
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <p className={`text-[11px] font-medium mb-0.5 ${t2}`}>Project Cost</p>
+                  <span className={`text-[28px] font-extrabold leading-none ${t1}`}>
+                    {budget != null ? `$${Number(budget).toLocaleString()}` : MOCK_PANEL.projectCost}
+                  </span>
+                </div>
 
-              <button
-                onClick={() => setLiked((p) => !p)}
-                className="transition-colors duration-200"
-                style={{ color: liked ? "#1E88E5" : darkMode ? "#475569" : "#d1d5db" }}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill={liked ? "#1E88E5" : "none"} stroke={liked ? "#1E88E5" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-3 mb-6">
-              {infoRows.map((row, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-3 p-3 rounded-xl"
-                  style={{
-                    background: darkMode ? "rgba(30,136,229,0.08)" : "#f0f7ff",
-                    border: `1px solid ${darkMode ? "#1e3a5f" : "#dbeafe"}`,
-                  }}
+                <button
+                  onClick={() => setBookmarked((b) => !b)}
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all
+                    ${bookmarked
+                      ? "bg-blue-50 text-blue-500"
+                      : `${dm ? "text-slate-500 hover:text-slate-300 hover:bg-white/5" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"}`
+                    }`}
                 >
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: darkMode ? "rgba(30,136,229,0.15)" : "#dbeafe" }}>
-                    <span className="text-[#1E88E5] font-bold text-[12px]">i</span>
-                  </div>
-                  <div>
-                    <p className={`text-[11px] ${textSecondary}`}>{row.label}</p>
-                    <p className="text-[13px] font-semibold text-[#1E88E5]">{row.value}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <button
-              className="w-full py-3 rounded-xl text-white text-[14px] font-semibold transition-colors duration-200"
-              style={{ background: "#1E88E5" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#2563EB")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "#1E88E5")}
-            >
-              Apply Now
-            </button>
-
-            <button
-              className="mt-3 w-full py-3 rounded-xl text-[14px] font-semibold transition-colors duration-200"
-              style={{
-                background: darkMode ? "rgba(255,255,255,0.06)" : "#f8fafc",
-                border: `1px solid ${cardBorder}`,
-                color: darkMode ? "#fff" : "#111827",
-              }}
-              onClick={() => navigate(-1)}
-            >
-              Back
-            </button>
-          </div>
-
-          {/* Comments */}
-          <div className="rounded-2xl p-6" style={{ background: cardBg, border: `1px solid ${cardBorder}`, boxShadow: "0 8px 32px rgba(30,136,229,0.07)" }}>
-            <div className="mb-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <img
-                    src={creatorAvatar}
-                    alt={creatorName}
-                    className="w-9 h-9 rounded-full object-cover"
-                    onError={(e) => (e.currentTarget.src = FALLBACK_AVATAR)}
-                  />
-                  <span className={`text-[13px] font-semibold ${textPrimary}`}>{creatorName}</span>
-                </div>
-                <span className={`text-[11px] ${textSecondary}`}>2 hours ago</span>
+                  <IconBookmark filled={bookmarked} />
+                </button>
               </div>
 
-              <span
-                className="inline-block text-[13px] font-medium px-4 py-1.5 rounded-full"
-                style={{
-                  background: darkMode ? "rgba(30,136,229,0.12)" : "#e8f0fe",
-                  color: darkMode ? "#90caf9" : "#1E88E5",
-                }}
+              <div className={`border-t ${divLine} mb-4`} />
+
+              {/* Experience */}
+              <div className={`flex items-center gap-3 p-3 rounded-xl mb-3
+                ${dm ? "bg-blue-950/50 border border-blue-900/40" : "bg-blue-50 border border-blue-100"}`}
               >
-                So amazing
-              </span>
-            </div>
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
+                  ${dm ? "bg-blue-900/60 text-blue-300" : "bg-blue-100 text-blue-600"}`}
+                >
+                  <IconBriefcase />
+                </div>
+                <div>
+                  <p className={`text-[10px] uppercase tracking-wider font-semibold mb-0.5 ${t2}`}>Experience</p>
+                  <p className={`text-[13px] font-bold ${t1}`}>{exp || "—"}</p>
+                </div>
+              </div>
 
-            <div className="w-full h-px mb-4" style={{ background: divider }} />
+              {/* Duration + deadline */}
+              <div className={`p-3 rounded-xl mb-5 ${dm ? "bg-slate-700/50 border border-slate-700" : "bg-slate-50 border border-slate-100"}`}>
+                <p className={`text-[10px] uppercase tracking-wider font-semibold mb-1 ${t2}`}>Duration</p>
+                <p className={`text-[13px] font-semibold ${t1}`}>{duration || "—"}</p>
 
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Write a comment..."
-                className={`flex-1 text-[13px] px-4 py-2.5 rounded-xl outline-none ${textPrimary}`}
-                style={{
-                  background: darkMode ? "rgba(255,255,255,0.05)" : "#f8fafc",
-                  border: `1px solid ${darkMode ? "#1e3a5f" : "#e8f0fe"}`,
-                  fontFamily: "'Poppins', sans-serif",
-                }}
-              />
+                <div className={`mt-3 border-t ${divLine}`} />
+
+                <p className={`mt-3 text-[10px] uppercase tracking-wider font-semibold mb-1 ${t2}`}>Deadline</p>
+                <p className={`text-[13px] font-semibold text-blue-500`}>{deadline || "—"}</p>
+              </div>
+
               <button
-                className="px-5 py-2.5 rounded-xl text-white text-[13px] font-semibold transition-colors duration-200"
-                style={{ background: "#1E88E5" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#2563EB")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "#1E88E5")}
-                onClick={() => setComment("")}
+                onClick={() => navigate(-1)}
+                className="w-full py-3 rounded-xl text-[13px] font-semibold text-white
+                           bg-blue-500 hover:bg-blue-600 active:scale-[0.98] transition-all shadow-sm shadow-blue-200"
               >
-                Post
+                ← Go Back
               </button>
             </div>
+
+            {/* Comments card (same) */}
+            <div className={infoTag}>
+              <h2 className={`text-[14px] font-bold mb-4 ${t1}`}>
+                Comments
+                {comments.length > 0 && (
+                  <span className="ml-2 text-[11px] font-semibold text-blue-500 bg-blue-50 px-2 py-0.5 rounded-full">
+                    {comments.length}
+                  </span>
+                )}
+              </h2>
+
+              <div className="space-y-4 mb-4 max-h-56 overflow-y-auto pr-1">
+                {comments.length === 0 ? (
+                  <div className={`flex flex-col items-center justify-center py-6 rounded-xl ${dm ? "bg-slate-800/60" : "bg-slate-50"}`}>
+                    <p className={`text-[12px] ${t2} opacity-60`}>No comments yet</p>
+                  </div>
+                ) : (
+                  comments.map((c, i) => (
+                    <div key={i} className="flex items-start gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white text-[11px] font-bold shrink-0">
+                        {(c.name || "Y").slice(0, 1).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className={`text-[12px] font-semibold ${t1}`}>{c.name}</span>
+                          <span className={`text-[10px] shrink-0 ${t2}`}>{c.time}</span>
+                        </div>
+                        <p
+                          className={`text-[12px] px-3 py-1.5 rounded-xl inline-block max-w-full break-words
+                            ${dm ? "bg-indigo-950/60 text-indigo-300 border border-indigo-900/40" : "bg-indigo-50 text-indigo-600 border border-indigo-100"}`}
+                        >
+                          {c.text}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className={`border-t ${divLine} mb-4`} />
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") postComment();
+                  }}
+                  placeholder="Write a comment..."
+                  className={`flex-1 text-[12px] px-4 py-2.5 rounded-xl outline-none transition-all
+                    ${dm
+                      ? "bg-slate-800 border border-slate-700 text-white placeholder:text-slate-500 focus:border-blue-500"
+                      : "bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-slate-400 focus:border-blue-400"
+                    }`}
+                />
+                <button
+                  onClick={postComment}
+                  disabled={!comment.trim()}
+                  className="px-4 py-2.5 rounded-xl text-white text-[12px] font-semibold whitespace-nowrap
+                             bg-blue-500 hover:bg-blue-600 active:scale-95 disabled:opacity-40 transition-all"
+                >
+                  Post
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>

@@ -58,17 +58,17 @@ function ServiceCardWithAuthor({ service, searchText, category }) {
 
   return (
     <FreelancerCard
-      id={serviceId}
-      image={image}
-      title={title}
-      description={description}
-      tags={tags}
-      date={date}
-      author={authorName}
-      avatar={authorAvatar}
-      postType="service"
-      
-    />
+    id={serviceId}
+    image={image}
+    title={title}
+    description={description}
+    tags={tags}
+    date={date}
+    author={authorName}
+    avatar={authorAvatar}
+    postType="service"
+    authorId={service?.userId}
+  />
   );
 }
 

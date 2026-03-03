@@ -15,12 +15,10 @@ export const detailworkApi = createApi({
   }),
   endpoints: (builder) => ({
 
-    // ── Get all jobs (used in FindWork page) ─────────────────────────
     getAllJobs: builder.query({
       query: () => "/api/jobs-service/jobs",
     }),
 
-    // ── Get single job by ID (used in DetailWork page) ───────────────
     getJobById: builder.query({
       query: (jobId) => `/api/jobs-service/jobs?jobId=${jobId}`,
     }),
