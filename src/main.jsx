@@ -1,3 +1,4 @@
+// src/main.jsx
 import React, { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
@@ -36,15 +37,18 @@ createRoot(document.getElementById('root')).render(
                 <Route path="/findfreelan" element={<FindFreelancers />} />
                 <Route path="/findwork"    element={<FindWork />} />
 
+                
+                <Route path="/jobs/:jobId" element={<DetailWork />} />
+
                 {/* /profile auto-routes to correct page based on userType */}
                 <Route path="/profile" element={<ProfileRouter />} />
                 <Route path="/freelancers/:userId" element={<FreelancerPublicProfile />} />
 
-                <Route path="/profile-business" element={<ProfileBusinessPage />} />
-                <Route path="/services/:serviceId" element={<CardDetailFreelancer />} />
-                <Route path="/jobs/:jobId"         element={<CardDetailBusiness />} />
-                <Route path="/login"               element={<LoginPage />} />
-                <Route path="/register"            element={<Register />} />
+                <Route path="/profile-business"      element={<ProfileBusinessPage />} />
+                <Route path="/services/:serviceId"   element={<CardDetailFreelancer />} />
+                <Route path="/business/jobs/:jobId"  element={<CardDetailBusiness />} />
+                <Route path="/login"                 element={<LoginPage />} />
+                <Route path="/register"              element={<Register />} />
               </Route>
             </Routes>
           </DarkModeProvider>

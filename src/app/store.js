@@ -9,6 +9,7 @@ import { profileApi } from "../services/profileApi";
 import { serviceApi } from "../services/servicesApi";
 import { categoriesApi } from "../services/categoriesApi";
 import { apiSlice } from "../services/apiSlice";
+import { detailworkApi } from "../services/detailworkApi";
 
 
 
@@ -25,6 +26,9 @@ export const store = configureStore({
      [categoriesApi.reducerPath]: categoriesApi.reducer,
       [apiSlice.reducerPath]: apiSlice.reducer,
       
+    
+      [detailworkApi.reducerPath]: detailworkApi.reducer,
+      
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -37,5 +41,8 @@ export const store = configureStore({
           serviceApi.middleware,
           categoriesApi.middleware,
           apiSlice.middleware
-        ),
+        )
+        
+      
+        .concat(detailworkApi.middleware), 
 });
