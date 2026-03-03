@@ -17,6 +17,7 @@ import { useMeQuery } from "../services/authApi.js"; // ← MUST use authApi, no
 import FreelancerPublicProfile from "../pages/FreelancerPublicProfile.jsx";
 import CardDetailBusiness from "../components/carddetail/CarddetailBusiness.jsx";
 import DetailWorkPage from "../pages/DetailWork.jsx";
+import ContactPage from "../pages/ContactPage.jsx";
 
 function ProfileRouter() {
   const isAuthed  = useSelector(selectIsAuthed);
@@ -56,6 +57,8 @@ export default function AppRoutes() {
         <Route path="/about"       element={<About />} />
 
         {/* Dynamic profile — reads userType from Redux + authApi cache */}
+
+        <Route path="/contact" element={<ContactPage />} />
         <Route path="/profile" element={<ProfileRouter />} />
 <Route path="/freelancers/:userId" element={<FreelancerPublicProfile />} />
 <Route path="/jobs/:jobId" element={<DetailWorkPage />} />
