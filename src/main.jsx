@@ -23,6 +23,7 @@ import ProfileBusinessPage from './pages/ProfileBusiness.jsx'
 import ProfileRouter from './routes/ProfileRouter.jsx'
 import DetailWork from './pages/DetailWork.jsx'
 
+
 setupListeners(store.dispatch);
 
 createRoot(document.getElementById('root')).render(
@@ -38,7 +39,7 @@ createRoot(document.getElementById('root')).render(
                 <Route path="/findfreelan" element={<FindFreelancers />} />
                 <Route path="/findwork"    element={<FindWork />} />
 
-                {/* ✅ Uncommented — clicking a job card navigates here */}
+                
                 <Route path="/jobs/:jobId" element={<DetailWork />} />
 
                 {/* /profile auto-routes to correct page based on userType */}
