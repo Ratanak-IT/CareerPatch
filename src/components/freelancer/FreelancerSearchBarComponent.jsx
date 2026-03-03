@@ -38,58 +38,48 @@ export default function FreelancerSearchBarComponent({
     if (e.key === "Enter") handleSearch();
   };
 
+  // ✅ match Job SearchBar height
+  const HEIGHT = "h-[56px]";
+
   return (
-    <div className="flex items-center justify-center w-full ">
+    <div className="flex items-center justify-center w-full">
       <div className="relative w-full">
         <div
           className="
             flex items-center
             w-full
-            
             bg-white
-            border border-gray-200
+            border border-gray-100
             rounded-lg
-            shadow-sm
+            shadow-lg
             overflow-visible
           "
         >
           {/* Category Dropdown */}
           <div className="relative">
             <button
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="
-                flex items-center gap-1.5 sm:gap-2
-                px-3 sm:px-4 md:px-5
-                h-[60px] sm:h-[80px] md:h-[100px]
-                text-gray-700
-                text-sm sm:text-base
-                font-normal
+              type="button"
+              onClick={() => setDropdownOpen((s) => !s)}
+              className={`
+                flex items-center gap-2
+                px-4
+                ${HEIGHT}
+                text-gray-700 text-sm font-normal
                 bg-transparent
-                border-none
                 outline-none
                 cursor-pointer
                 whitespace-nowrap
-              "
+              `}
             >
-              <svg
-                className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <circle cx="11" cy="11" r="8" />
                 <path d="m21 21-4.35-4.35" />
               </svg>
 
-              <span className="truncate max-w-[70px] sm:max-w-[90px] md:max-w-[120px]">
-                {category}
-              </span>
+              <span className="truncate max-w-[110px]">{category}</span>
 
               <svg
-                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 transition-transform duration-200 ${
-                  dropdownOpen ? "rotate-180" : ""
-                }`}
+                className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={2}
@@ -100,22 +90,19 @@ export default function FreelancerSearchBarComponent({
             </button>
 
             {dropdownOpen && (
-              <div className="absolute top-full left-0 mt-1 w-48 sm:w-52 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
+              <div className="absolute top-full left-0 mt-1 w-52 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
                 {categories.map((cat) => (
                   <button
                     key={cat}
+                    type="button"
                     onClick={() => {
                       onChangeCategory?.(cat);
                       setDropdownOpen(false);
                     }}
                     className={`
-                      w-full text-left px-4 py-2 sm:py-2.5 text-sm
+                      w-full text-left px-4 py-2 text-sm
                       hover:bg-gray-50 transition-colors
-                      ${
-                        cat === category
-                          ? "text-blue-600 font-medium bg-blue-50"
-                          : "text-gray-700"
-                      }
+                      ${cat === category ? "text-blue-600 font-medium bg-blue-50" : "text-gray-700"}
                     `}
                   >
                     {cat}
@@ -126,17 +113,11 @@ export default function FreelancerSearchBarComponent({
           </div>
 
           {/* Divider */}
-          <div className="w-px h-6 sm:h-7 md:h-8 bg-gray-300 flex-shrink-0" />
+          <div className="w-px h-6 bg-gray-300 shrink-0" />
 
           {/* Search Input */}
-          <div className="flex items-center flex-1 px-3 sm:px-4 md:px-5 min-w-0">
-            <svg
-              className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 flex-shrink-0 mr-2 sm:mr-3"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
-            >
+          <div className={`flex items-center flex-1 px-4 min-w-0 ${HEIGHT}`}>
+            <svg className="w-4 h-4 text-gray-400 shrink-0 mr-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.35-4.35" />
             </svg>
@@ -148,32 +129,24 @@ export default function FreelancerSearchBarComponent({
               onKeyDown={handleKeyDown}
               placeholder="Search by title, category, freelancer name"
               className="
-                flex-1
+                flex-1 min-w-0
                 bg-transparent
-                border-none
-                outline-none
-                text-gray-500
-                text-sm sm:text-base
+                border-none outline-none
+                text-gray-700 text-sm
                 placeholder-gray-400
-                min-w-0
               "
             />
 
             {localSearch && (
               <button
+                type="button"
                 onClick={() => {
                   setLocalSearch("");
                   onChangeSearch?.("");
                 }}
-                className="ml-2 text-gray-400 hover:text-gray-600 flex-shrink-0"
+                className="ml-2 text-gray-300 hover:text-gray-500 shrink-0"
               >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                   <path d="M18 6 6 18M6 6l12 12" />
                 </svg>
               </button>
@@ -181,27 +154,21 @@ export default function FreelancerSearchBarComponent({
           </div>
 
           {/* Search Button */}
-          <div className="flex-shrink-0 pr-2 sm:pr-3">
-            <button
-              onClick={handleSearch}
-              className="
-                bg-blue-500
-                hover:bg-blue-600
-                active:bg-blue-700
-                text-white
-                font-medium
-                text-sm sm:text-base
-                px-4 sm:px-6 md:px-7
-                py-2 sm:py-2.5 md:py-3
-                rounded-md
-                transition-colors duration-150
-                whitespace-nowrap
-                cursor-pointer
-              "
-            >
-              Search
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleSearch}
+            className={`
+              ${HEIGHT}
+              bg-[#1E88E5] hover:bg-blue-600
+              text-white font-semibold text-sm
+              px-8
+              transition-colors duration-200
+              whitespace-nowrap
+              rounded-r-lg
+            `}
+          >
+            Search
+          </button>
         </div>
       </div>
 

@@ -17,10 +17,11 @@ import LoginPage from './pages/Login.jsx'
 import Home from './pages/Home.jsx'
 import { setupListeners } from '@reduxjs/toolkit/query'
 import CardDetailFreelancer from './components/carddetail/CardDetailFreelancer.jsx'
-import CardDetailBusiness from './components/carddetail/CarddetailBusiness.jsx'
 import ProfileBusinessPage from './pages/ProfileBusiness.jsx'
 import ProfileRouter from './routes/ProfileRouter.jsx'
 import FreelancerPublicProfile from './pages/FreelancerPublicProfile.jsx'
+import DetailWork from './pages/DetailWork.jsx'
+import DetailWorkPage from './pages/DetailWork.jsx'
 
 setupListeners(store.dispatch);
 
@@ -38,7 +39,7 @@ createRoot(document.getElementById('root')).render(
                 <Route path="/findwork"    element={<FindWork />} />
 
                 
-                <Route path="/jobs/:jobId" element={<DetailWork />} />
+                <Route path="/jobs/:jobId" element={<DetailWorkPage />} />
 
                 {/* /profile auto-routes to correct page based on userType */}
                 <Route path="/profile" element={<ProfileRouter />} />
@@ -46,7 +47,7 @@ createRoot(document.getElementById('root')).render(
 
                 <Route path="/profile-business"      element={<ProfileBusinessPage />} />
                 <Route path="/services/:serviceId"   element={<CardDetailFreelancer />} />
-                <Route path="/business/jobs/:jobId"  element={<CardDetailBusiness />} />
+               
                 <Route path="/login"                 element={<LoginPage />} />
                 <Route path="/register"              element={<Register />} />
               </Route>
