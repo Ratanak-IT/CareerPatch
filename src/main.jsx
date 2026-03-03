@@ -22,6 +22,7 @@ import ProfileRouter from './routes/ProfileRouter.jsx'
 import FreelancerPublicProfile from './pages/FreelancerPublicProfile.jsx'
 import DetailWork from './pages/DetailWork.jsx'
 import DetailWorkPage from './pages/DetailWork.jsx'
+import ContactPage from './pages/ContactPage.jsx'
 
 setupListeners(store.dispatch);
 
@@ -40,6 +41,7 @@ createRoot(document.getElementById('root')).render(
 
                 
                 <Route path="/jobs/:jobId" element={<DetailWorkPage />} />
+                 <Route path="/contact" element={<ContactPage />} />
 
                 {/* /profile auto-routes to correct page based on userType */}
                 <Route path="/profile" element={<ProfileRouter />} />

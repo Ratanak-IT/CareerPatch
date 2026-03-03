@@ -1,3 +1,4 @@
+// src/services/serviceApi.js (or your current file path)
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const BASE_URL = import.meta.env.VITE_API_URL;
@@ -44,28 +45,27 @@ export const serviceApi = createApi({
   reducerPath: "serviceApi",
 
   baseQuery: fetchBaseQuery({
-  baseUrl: BASE_URL,
-  prepareHeaders: (headers, { getState }) => {
-    const state = getState();
+    baseUrl: BASE_URL,
+    prepareHeaders: (headers, { getState }) => {
+      const state = getState();
 
-    const token =
-      state?.auth?.accessToken ||
-      state?.auth?.token ||
-      localStorage.getItem("ACCESS_TOKEN") ||
-      localStorage.getItem("token");
+      const token =
+        state?.auth?.accessToken ||
+        state?.auth?.token ||
+        localStorage.getItem("ACCESS_TOKEN") ||
+        localStorage.getItem("token");
 
-    if (token) {
-      headers.set("authorization", `Bearer ${token}`);
-    }
+      if (token) {
+        headers.set("authorization", `Bearer ${token}`);
+      }
 
-    return headers;
-  },
-}),
+      return headers;
+    },
+  }),
 
   tagTypes: ["Service", "ServiceBookmark", "JobBookmark"],
 
   endpoints: (builder) => ({
-
     // ───────────── SERVICES ─────────────
     getAllServices: builder.query({
       query: () => "/api/jobs-service/services",
@@ -153,51 +153,53 @@ export const serviceApi = createApi({
       }),
       invalidatesTags: ["Service"],
     }),
-    // ───────────── CATEGORIES ─────────────
-getCategories: builder.query({
-  query: () => "/api/jobs-service/categories",
-  transformResponse: (res) => {
-    if (Array.isArray(res)) return res;
-    if (Array.isArray(res?.data)) return res.data;
-    if (Array.isArray(res?.content)) return res.content;
-    return [];
-  },
-}),
 
-    // ───────────── SERVICE BOOKMARKS ─────────────
+    // ───────────── CATEGORIES ─────────────
+    getCategories: builder.query({
+      query: () => "/api/jobs-service/categories",
+      transformResponse: (res) => {
+        if (Array.isArray(res)) return res;
+        if (Array.isArray(res?.data)) return res.data;
+        if (Array.isArray(res?.content)) return res.content;
+        return [];
+      },
+    }),
+
+    // ───────────── SERVICE BOOKMARKS (✅ FIXED) ─────────────
+    // Postman: /api/jobs-service/service-bookmark :contentReference[oaicite:1]{index=1}
     getServiceBookmarks: builder.query({
-      query: () => "/api/jobs-service/job-bookmark",
+      query: () => "/api/jobs-service/service-bookmark",
       providesTags: ["ServiceBookmark"],
       transformResponse: normalizeBookmarkList,
     }),
 
     addServiceBookmark: builder.mutation({
       query: (serviceId) => ({
-        url: `/api/jobs-service/job-bookmark/${serviceId}`,
+        url: `/api/jobs-service/service-bookmark/${serviceId}`,
         method: "POST",
       }),
       invalidatesTags: ["ServiceBookmark"],
     }),
 
-    // ✅ DELETE MUST USE bookmarkId (not serviceId)
     removeServiceBookmark: builder.mutation({
       query: (bookmarkId) => ({
-        url: `/api/jobs-service/job-bookmark/${bookmarkId}`,
+        url: `/api/jobs-service/service-bookmark/${bookmarkId}`,
         method: "DELETE",
       }),
       invalidatesTags: ["ServiceBookmark"],
     }),
 
-    // ───────────── JOB BOOKMARKS ─────────────
+    // ───────────── JOB BOOKMARKS (✅ FIXED) ─────────────
+    // Postman: /api/jobs-service/job-bookmark :contentReference[oaicite:2]{index=2}
     getJobBookmarks: builder.query({
-      query: () => "/api/jobs-service/service-bookmark",
+      query: () => "/api/jobs-service/job-bookmark",
       providesTags: ["JobBookmark"],
       transformResponse: normalizeBookmarkList,
     }),
 
     addJobBookmark: builder.mutation({
       query: (jobId) => ({
-        url: `/api/jobs-service/service-bookmark/${jobId}`,
+        url: `/api/jobs-service/job-bookmark/${jobId}`,
         method: "POST",
       }),
       invalidatesTags: ["JobBookmark"],
@@ -205,7 +207,7 @@ getCategories: builder.query({
 
     removeJobBookmark: builder.mutation({
       query: (bookmarkId) => ({
-        url: `/api/jobs-service/service-bookmark/${bookmarkId}`,
+        url: `/api/jobs-service/job-bookmark/${bookmarkId}`,
         method: "DELETE",
       }),
       invalidatesTags: ["JobBookmark"],

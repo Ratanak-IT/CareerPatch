@@ -224,7 +224,7 @@ export default function NavbarAfterLogin() {
 
   return (
     <header
-      className="w-full border-b shadow-sm transition-colors duration-300 sticky top-0 z-50"
+      className="w-full border-b shadow-sm transition-colors duration-300 sticky top-0 z-100"
       style={{
         background: darkMode ? "#0f172a" : "#ffffff",
         borderColor: darkMode ? "#1e293b" : "#f1f5f9",
