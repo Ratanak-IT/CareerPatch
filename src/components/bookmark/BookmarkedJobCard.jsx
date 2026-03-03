@@ -1,4 +1,4 @@
-// src/components/findwork/JobsGrid.jsx
+// src/components/bookmarks/BookmarkedJobCard.jsx
 import { Link } from "react-router";
 import { useGetUserByIdQuery } from "../../services/userApi";
 import { useBookmarks } from "../../hooks/useBookmarks";
@@ -6,50 +6,76 @@ import { useBookmarks } from "../../hooks/useBookmarks";
 const FALLBACK_IMAGE = "https://placehold.co/400x220?text=No+Image";
 const FALLBACK_AVATAR = "https://placehold.co/40x40?text=?";
 
-function formatDate(value) {
+const BASE = import.meta.env.VITE_API_URL;
+
+function resolveUrl(u) {
+  if (!u) return undefined;
+  if (/^https?:\/\//i.test(u)) return u;
+  return `${BASE}${u.startsWith("/") ? "" : "/"}${u}`;
+}
+
+function pickJobImage(job) {
+  const raw =
+    (Array.isArray(job?.jobImages) && job.jobImages[0]) ||
+    (Array.isArray(job?.imageUrls) && job.imageUrls[0]) ||
+    (Array.isArray(job?.images) && job.images[0]) ||
+    job?.imageUrl ||
+    job?.thumbnail ||
+    job?.coverImageUrl ||
+    null;
+
+  return resolveUrl(raw) || FALLBACK_IMAGE;
+}
+
+function formatDateDMY(value) {
   if (!value) return "—";
   let v = value;
   if (typeof v === "string" && /^\d+$/.test(v)) v = Number(v);
   if (typeof v === "number" && v < 1e12) v = v * 1000;
+
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("en-US", {
-    month: "long",
-    day: "2-digit",
-    year: "numeric",
-  });
+
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
 }
 
-export function getJobId(job) {
-  return job?.id ?? job?.jobId ?? job?._id ?? null;
-}
+export default function BookmarkedJobCard({ bm }) {
+  // expected: { id: bookmarkId, job: {...} }
+  const job = bm?.job ?? null;
 
-/** Inline JobCard */
-function JobCard({ job }) {
-  const { data: userRes } = useGetUserByIdQuery(job?.userId, { skip: !job?.userId });
+  // ✅ compute ids safely (even if job is null)
+  const jobId = job?.id ?? null;
+  const userId = job?.userId ?? null;
+
+  // ✅ ALWAYS call hooks (skip requests if missing ids)
+  const { data: userRes } = useGetUserByIdQuery(userId, { skip: !userId });
   const user = userRes?.data || userRes;
 
-  const jobId = getJobId(job);
+  const { liked, toggle } = useBookmarks({
+    id: jobId,
+    type: "job",
+  });
+
+  // ✅ only after hooks
   if (!jobId) return null;
 
   const title = job?.title || "Untitled";
   const description = job?.description || "No description available.";
   const categoryName = job?.category?.name || job?.categoryName || null;
-  const date = formatDate(job?.createdAt);
-  const authorName = user?.fullName || user?.companyName || "Business";
-  const authorAvatar = user?.profileImageUrl || FALLBACK_AVATAR;
+  const date = formatDateDMY(job?.createdAt);
   const status = job?.status || "UNKNOWN";
 
-  const image =
-    (Array.isArray(job?.jobImages) && job.jobImages[0]) ||
-    (Array.isArray(job?.imageUrls) && job.imageUrls[0]) ||
-    FALLBACK_IMAGE;
+  const image = pickJobImage(job);
 
   const tags = [];
   if (categoryName) tags.push(categoryName);
   if (job?.skills?.[0]) tags.push(job.skills[0]);
 
-  const { liked, toggle } = useBookmarks({ id: jobId, type: "job" });
+  const authorName = user?.fullName || user?.companyName || "Business";
+  const authorAvatar = user?.profileImageUrl || FALLBACK_AVATAR;
 
   return (
     <Link
@@ -72,6 +98,7 @@ function JobCard({ job }) {
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            if (!jobId) return;
             toggle();
           }}
           className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md transition-all duration-200 hover:scale-110 active:scale-95"
@@ -108,20 +135,18 @@ function JobCard({ job }) {
 
         <div className="flex items-center justify-between mb-3 text-xs text-gray-400">
           <span>Date: {date}</span>
-          <span className="text-[#1E88E5] font-semibold">
-  {" "}
-  <span
-    className={`font-semibold ${
-      status === "OPEN"
-        ? "text-green-500"
-        : status === "DRAFT"
-        ? "text-yellow-500"
-        : "text-gray-500"
-    }`}
-  >
-    {status}
-  </span>
-</span>
+
+          <span
+            className={`font-semibold ${
+              status === "OPEN"
+                ? "text-green-500"
+                : status === "DRAFT"
+                ? "text-yellow-500"
+                : "text-gray-500"
+            }`}
+          >
+            {status}
+          </span>
         </div>
 
         <div className="flex flex-wrap gap-1.5 mb-3">
@@ -165,64 +190,5 @@ function JobCard({ job }) {
         </div>
       </div>
     </Link>
-  );
-}
-
-export default function JobsGrid({ filtered, visibleCount, onSeeMore, isLoading, isError }) {
-  const filteredNoDraft = (filtered || []).filter((j) => (j?.status || "OPEN") !== "DRAFT");
-const visible = filteredNoDraft.slice(0, visibleCount);
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center py-20">
-        <div className="w-9 h-9 border-4 border-[#1E88E5] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (isError) {
-    return <p className="text-red-500 text-center py-10">Failed to load jobs. Please try again.</p>;
-  }
-
-  return (
-    <>
-      <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {visible.map((job) => (
-          <JobCard key={getJobId(job) || job?.title} job={job} />
-        ))}
-      </div>
-
-      {/* Empty state */}
-      {filteredNoDraft.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-          <svg className="w-14 h-14 mb-4 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-            />
-          </svg>
-          <p className="font-semibold text-gray-500">No jobs found</p>
-          <p className="text-xs mt-1">Try adjusting your search or filters</p>
-        </div>
-      )}
-
-      {/* See More */}
-      {visibleCount < filteredNoDraft.length && (
-        <div className="flex justify-center mt-10">
-          <button
-            onClick={onSeeMore}
-            className="bg-[#1E88E5] hover:bg-blue-600 text-white font-semibold text-sm px-10 py-3 rounded-xl flex items-center gap-2 transition-all duration-200 shadow-md shadow-blue-100 hover:shadow-lg active:scale-95"
-            type="button"
-          >
-            See More
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-              <path d="M7 17 17 7M17 7H7M17 7v10" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-        </div>
-      )}
-    </>
   );
 }
