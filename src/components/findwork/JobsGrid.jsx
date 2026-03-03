@@ -169,7 +169,8 @@ function JobCard({ job }) {
 }
 
 export default function JobsGrid({ filtered, visibleCount, onSeeMore, isLoading, isError }) {
-  const visible = filtered.slice(0, visibleCount);
+  const filteredNoDraft = (filtered || []).filter((j) => (j?.status || "OPEN") !== "DRAFT");
+const visible = filteredNoDraft.slice(0, visibleCount);
 
   if (isLoading) {
     return (
@@ -192,7 +193,7 @@ export default function JobsGrid({ filtered, visibleCount, onSeeMore, isLoading,
       </div>
 
       {/* Empty state */}
-      {filtered.length === 0 && (
+      {filteredNoDraft.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400">
           <svg className="w-14 h-14 mb-4 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
@@ -208,7 +209,7 @@ export default function JobsGrid({ filtered, visibleCount, onSeeMore, isLoading,
       )}
 
       {/* See More */}
-      {visibleCount < filtered.length && (
+      {visibleCount < filteredNoDraft.length && (
         <div className="flex justify-center mt-10">
           <button
             onClick={onSeeMore}
