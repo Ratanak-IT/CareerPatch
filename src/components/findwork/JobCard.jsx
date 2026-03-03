@@ -31,7 +31,7 @@ export default function JobCard({ job }) {
   const date         = formatDate(job?.createdAt);
   const authorName   = user?.fullName || user?.companyName || "Business";
   const authorAvatar = user?.profileImageUrl || FALLBACK_AVATAR;
-  const level        = job?.level || job?.experienceLevel || "Expert";
+  const status        = job?.status || job?.experiencestatus || "Expert";
 
   const image =
     (Array.isArray(job?.jobImages) && job.jobImages[0]) ||
@@ -89,7 +89,7 @@ export default function JobCard({ job }) {
         <div className="flex items-center justify-between mb-3 text-xs text-gray-400">
           <span>Date: {date}</span>
           <span className="text-[#1E88E5] font-semibold">
-            Level: <span className="text-red-500">{level}</span>
+            status: <span className="text-red-500">{status}</span>
           </span>
         </div>
 
