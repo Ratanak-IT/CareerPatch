@@ -24,16 +24,6 @@
 //   const { data: userRes } = useGetUserByIdQuery(job?.userId, { skip: !job?.userId });
 //   const user = userRes?.data || userRes;
 
-<<<<<<< HEAD
-  const jobId        = getJobId(job);
-  const title        = job?.title       || "Untitled";
-  const description  = job?.description || "No description available.";
-  const categoryName = job?.category?.name || job?.categoryName || null;
-  const date         = formatDate(job?.createdAt);
-  const authorName   = user?.fullName || user?.companyName || "Business";
-  const authorAvatar = user?.profileImageUrl || FALLBACK_AVATAR;
-  const status        = job?.status || job?.experiencestatus || "Expert";
-=======
 //   const jobId        = getJobId(job);
 //   const title        = job?.title       || "Untitled";
 //   const description  = job?.description || "No description available.";
@@ -42,7 +32,6 @@
 //   const authorName   = user?.fullName || user?.companyName || "Business";
 //   const authorAvatar = user?.profileImageUrl || FALLBACK_AVATAR;
 //   const level        = job?.level || job?.experienceLevel || "Expert";
->>>>>>> 7fd3356b49a65822e0fe2fbc5ab131c2e6d917d8
 
 //   const image =
 //     (Array.isArray(job?.jobImages) && job.jobImages[0]) ||
@@ -97,21 +86,12 @@
 //           {description}
 //         </p>
 
-<<<<<<< HEAD
-        <div className="flex items-center justify-between mb-3 text-xs text-gray-400">
-          <span>Date: {date}</span>
-          <span className="text-[#1E88E5] font-semibold">
-            status: <span className="text-red-500">{status}</span>
-          </span>
-        </div>
-=======
 //         <div className="flex items-center justify-between mb-3 text-xs text-gray-400">
 //           <span>Date: {date}</span>
 //           <span className="text-[#1E88E5] font-semibold">
 //             Level: <span className="text-red-500">{level}</span>
 //           </span>
 //         </div>
->>>>>>> 7fd3356b49a65822e0fe2fbc5ab131c2e6d917d8
 
 //         <div className="flex flex-wrap gap-1.5 mb-3">
 //           {tags.slice(0, 3).map((t) => (
