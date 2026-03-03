@@ -1,24 +1,18 @@
-
-
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useGetCategoriesQuery, useCreateJobMutation } from "../../../services/servicesApi";
-import { useUploadProfileImageMutation } from "../../../services/profileApi";
+import { uploadImageToCloudinary } from "../../../utils/uploadToCloudinary"; // ✅ adjust path
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 const EXPERIENCE_LEVELS = ["Entry", "Junior", "Intermediate", "Senior", "Expert"];
 
 function Label({ children }) {
-  return (
-    <label className="block text-sm font-medium text-gray-600 mb-1.5">{children}</label>
-  );
+  return <label className="block text-sm font-medium text-gray-600 mb-1.5">{children}</label>;
 }
 
 function TextInput({ value, onChange, placeholder, type = "text", disabled, prefix }) {
   return (
     <div className="flex items-center border border-gray-200 rounded-xl bg-white overflow-hidden focus-within:ring-2 focus-within:ring-blue-400 transition">
-      {prefix && (
-        <span className="pl-4 pr-1 text-sm text-gray-500 select-none">{prefix}</span>
-      )}
+      {prefix && <span className="pl-4 pr-1 text-sm text-gray-500 select-none">{prefix}</span>}
       <input
         type={type}
         value={value ?? ""}
@@ -31,20 +25,21 @@ function TextInput({ value, onChange, placeholder, type = "text", disabled, pref
   );
 }
 
-// Tag chip with × button
 function Tag({ label, onRemove }) {
   return (
     <span className="inline-flex items-center gap-1.5 border border-blue-200 text-blue-600 text-xs font-medium px-3 py-1 rounded-full bg-white">
       {label}
-      <button type="button" onClick={onRemove}
-        className="text-blue-400 hover:text-blue-700 leading-none text-base font-bold">
+      <button
+        type="button"
+        onClick={onRemove}
+        className="text-blue-400 hover:text-blue-700 leading-none text-base font-bold"
+      >
         ×
       </button>
     </span>
   );
 }
 
-// Tags box: shows chips + "⊕ Add" inline input
 function TagsBox({ tags, onAdd, onRemove, placeholder = "Type and press Enter…" }) {
   const [input, setInput] = useState("");
 
@@ -63,7 +58,10 @@ function TagsBox({ tags, onAdd, onRemove, placeholder = "Type and press Enter…
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter") { e.preventDefault(); commit(); }
+          if (e.key === "Enter") {
+            e.preventDefault();
+            commit();
+          }
         }}
         placeholder={tags.length === 0 ? placeholder : ""}
         className="flex-1 min-w-[120px] text-xs text-gray-700 bg-transparent outline-none placeholder:text-gray-400 py-0.5"
@@ -74,7 +72,8 @@ function TagsBox({ tags, onAdd, onRemove, placeholder = "Type and press Enter…
         className="ml-auto flex items-center gap-1 text-blue-500 text-xs font-semibold shrink-0 hover:text-blue-700"
       >
         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" strokeLinecap="round" />
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 8v8M8 12h8" strokeLinecap="round" />
         </svg>
         Add skill
       </button>
@@ -82,7 +81,6 @@ function TagsBox({ tags, onAdd, onRemove, placeholder = "Type and press Enter…
   );
 }
 
-// Responsibilities box — same but different add label
 function ResBox({ items, onAdd, onRemove }) {
   const [input, setInput] = useState("");
 
@@ -103,16 +101,23 @@ function ResBox({ items, onAdd, onRemove }) {
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter") { e.preventDefault(); commit(); }
+          if (e.key === "Enter") {
+            e.preventDefault();
+            commit();
+          }
         }}
         placeholder="Type a responsibility and press Enter…"
         className="text-xs text-gray-700 bg-transparent outline-none placeholder:text-gray-400 py-0.5 mt-auto"
       />
       <div className="flex justify-end">
-        <button type="button" onClick={commit}
-          className="flex items-center gap-1 text-blue-500 text-xs font-semibold hover:text-blue-700">
+        <button
+          type="button"
+          onClick={commit}
+          className="flex items-center gap-1 text-blue-500 text-xs font-semibold hover:text-blue-700"
+        >
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-            <circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" strokeLinecap="round" />
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v8M8 12h8" strokeLinecap="round" />
           </svg>
           Add
         </button>
@@ -126,27 +131,28 @@ export default function CreateJobModal({ onClose }) {
   const { data: rawCategories = [] } = useGetCategoriesQuery();
   const categories = Array.isArray(rawCategories)
     ? rawCategories
-    : Array.isArray(rawCategories?.data) ? rawCategories.data : [];
+    : Array.isArray(rawCategories?.data)
+    ? rawCategories.data
+    : [];
 
   const [createJob, { isLoading: posting }] = useCreateJobMutation();
-  const [uploadImage, { isLoading: uploading }] = useUploadProfileImageMutation();
 
   // ── form state ─────────────────────────────────────────────────────────────
-  const [title,           setTitle]           = useState("");
-  const [budget,          setBudget]          = useState("");
+  const [title, setTitle] = useState("");
+  const [budget, setBudget] = useState("");
   const [experienceLevel, setExperienceLevel] = useState("");
-  const [skills,          setSkills]          = useState([]);
-  const [description,     setDescription]     = useState("");
-  const [responsibilities,setResponsibilities]= useState([]);
-  const [categoryId,      setCategoryId]      = useState("");
+  const [skills, setSkills] = useState([]);
+  const [description, setDescription] = useState("");
+  const [responsibilities, setResponsibilities] = useState([]);
+  const [categoryId, setCategoryId] = useState("");
   const [projectDuration, setProjectDuration] = useState("");
-  const [status,          setStatus]          = useState("OPEN");
+  const [status, setStatus] = useState("OPEN");
 
   // ── image state ────────────────────────────────────────────────────────────
   const fileInputRef = useRef(null);
-  const [imageFile,    setImageFile]    = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [uploadedUrls, setUploadedUrls] = useState([]); // final URL(s) for API
+  const [uploading, setUploading] = useState(false);
 
   const onPickFile = (file) => {
     if (!file) return;
@@ -156,92 +162,88 @@ export default function CreateJobModal({ onClose }) {
 
   const removeImage = () => {
     setImageFile(null);
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
     setImagePreview(null);
-    setUploadedUrls([]);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
+  useEffect(() => {
+    return () => {
+      if (imagePreview) URL.revokeObjectURL(imagePreview);
+    };
+  }, [imagePreview]);
 
   // ── submit ─────────────────────────────────────────────────────────────────
   const handlePost = async () => {
     if (!title.trim()) return;
 
-    let jobImages = [...uploadedUrls];
-
-    // Upload image if a new file was picked
-    if (imageFile) {
-      try {
-        const res = await uploadImage(imageFile).unwrap();
-        const url =
-          res?.url ??
-          res?.data?.url ??
-          res?.profileImageUrl ??
-          res?.data?.profileImageUrl ??
-          null;
-        if (url) jobImages = [url];
-      } catch (err) {
-        console.error("Image upload failed:", err);
-      }
-    }
-
     try {
+      let jobImages = [];
+
+      // ✅ Upload image to Cloudinary (if picked)
+      if (imageFile) {
+        setUploading(true);
+        const url = await uploadImageToCloudinary(imageFile);
+        setUploading(false);
+        if (url) jobImages = [url];
+      }
+
       await createJob({
-        title:           title.trim(),
-        description:     description.trim(),
-        categoryId:      categoryId || undefined,
-        budget:          budget ? Number(budget) : undefined,
-        jobImages,
+        title: title.trim(),
+        description: description.trim(),
+        categoryId: categoryId || undefined,
+        budget: budget ? Number(budget) : undefined,
+        jobImages, // ✅ API receives URL array
         status,
-        // extra fields — included so the backend can use them if supported
         experienceLevel: experienceLevel || undefined,
-        skills:          skills.length ? skills : undefined,
-        responsibilities:responsibilities.length ? responsibilities : undefined,
+        skills: skills.length ? skills : undefined,
+        responsibilities: responsibilities.length ? responsibilities : undefined,
         projectDuration: projectDuration.trim() || undefined,
       }).unwrap();
 
       onClose();
     } catch (err) {
       console.error("create-job failed:", err);
+      setUploading(false);
     }
   };
 
-  const isBusy   = posting || uploading;
+  const isBusy = posting || uploading;
   const btnLabel = uploading ? "Uploading…" : posting ? "Posting…" : "Post";
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/20 overflow-y-auto py-8 px-4">
       <div className="bg-gray-50 rounded-2xl w-full max-w-3xl shadow-2xl">
-
-        {/* ── Header ──────────────────────────────────────────────── */}
+        {/* Header */}
         <div className="flex items-center justify-between px-8 pt-8 pb-2">
-          {/* Back */}
-          <button onClick={onClose}
-            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors">
+          <button
+            onClick={onClose}
+            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+          >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
             Chat
           </button>
 
-          {/* Close */}
-          <button onClick={onClose}
-            className="bg-red-500 hover:bg-red-600 text-white rounded-xl w-10 h-10 flex items-center
-                       justify-center text-xl font-bold transition-colors">
+          <button
+            onClick={onClose}
+            disabled={isBusy}
+            className="bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white rounded-xl w-10 h-10 flex items-center justify-center text-xl font-bold transition-colors"
+          >
             ✕
           </button>
         </div>
 
         <h2 className="text-2xl font-bold text-gray-900 px-8 pt-2 pb-6">Company Announcement</h2>
 
-        {/* ── Fields ──────────────────────────────────────────────── */}
+        {/* Fields */}
         <div className="px-8 pb-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-
-          {/* Job Title */}
           <div>
             <Label>Job Title</Label>
-            <TextInput value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Web Development" />
+            <TextInput value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Web Development" disabled={isBusy} />
           </div>
 
-          {/* Project Cost */}
           <div>
             <Label>Project Cost</Label>
             <TextInput
@@ -250,33 +252,40 @@ export default function CreateJobModal({ onClose }) {
               placeholder="1500"
               type="text"
               prefix="$"
+              disabled={isBusy}
             />
           </div>
 
-          {/* Experience Level */}
           <div>
             <Label>Experience level</Label>
             <div className="relative">
               <select
                 value={experienceLevel}
                 onChange={(e) => setExperienceLevel(e.target.value)}
+                disabled={isBusy}
                 className="w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 text-sm
                            text-gray-800 bg-white outline-none focus:ring-2 focus:ring-blue-400
-                           transition pr-10"
+                           transition pr-10 disabled:opacity-50"
               >
                 <option value="">Intermediate</option>
                 {EXPERIENCE_LEVELS.map((l) => (
-                  <option key={l} value={l}>{l}</option>
+                  <option key={l} value={l}>
+                    {l}
+                  </option>
                 ))}
               </select>
-              <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
               </svg>
             </div>
           </div>
 
-          {/* Skills needed */}
           <div>
             <Label>Skills needed</Label>
             <TagsBox
@@ -287,7 +296,6 @@ export default function CreateJobModal({ onClose }) {
             />
           </div>
 
-          {/* Job Description */}
           <div>
             <Label>Job Description</Label>
             <textarea
@@ -295,13 +303,13 @@ export default function CreateJobModal({ onClose }) {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="description"
               rows={6}
+              disabled={isBusy}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700
                          bg-white placeholder:text-gray-400 outline-none focus:ring-2 focus:ring-blue-400
-                         resize-none transition"
+                         resize-none transition disabled:opacity-50"
             />
           </div>
 
-          {/* Responsibilities (right of description) */}
           <div>
             <Label>Resonsibilities</Label>
             <ResBox
@@ -311,72 +319,77 @@ export default function CreateJobModal({ onClose }) {
             />
           </div>
 
-          {/* Project Duration */}
           <div>
             <Label>Project Duration</Label>
-            <TextInput
-              value={projectDuration}
-              onChange={(e) => setProjectDuration(e.target.value)}
-              placeholder="4 months"
-            />
+            <TextInput value={projectDuration} onChange={(e) => setProjectDuration(e.target.value)} placeholder="4 months" disabled={isBusy} />
           </div>
 
-          {/* Category */}
           <div>
             <Label>Category</Label>
             <div className="relative">
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
+                disabled={isBusy}
                 className="w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 text-sm
                            text-gray-800 bg-white outline-none focus:ring-2 focus:ring-blue-400
-                           transition pr-10"
+                           transition pr-10 disabled:opacity-50"
               >
                 <option value="">Select category…</option>
                 {categories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
                 ))}
               </select>
-              <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
               </svg>
             </div>
           </div>
 
-          {/* Status */}
           <div>
             <Label>Status</Label>
             <div className="relative">
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
+                disabled={isBusy}
                 className="w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 text-sm
                            text-gray-800 bg-white outline-none focus:ring-2 focus:ring-blue-400
-                           transition pr-10"
+                           transition pr-10 disabled:opacity-50"
               >
                 <option value="OPEN">Open</option>
                 <option value="DRAFT">Draft</option>
                 <option value="CLOSED">Closed</option>
               </select>
-              <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
-                fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
               </svg>
             </div>
           </div>
 
-          {/* Upload Image — full width */}
+          {/* Upload Image */}
           <div className="sm:col-span-2">
             <Label>Job Image</Label>
 
-            {/* Drop zone */}
             {!imagePreview && (
               <div
                 onClick={() => fileInputRef.current?.click()}
                 className="border-2 border-dashed border-gray-300 rounded-xl bg-white flex flex-col
-                           items-center justify-center py-8 cursor-pointer hover:border-blue-400
-                           transition-colors"
+                           items-center justify-center py-8 cursor-pointer hover:border-blue-400 transition-colors"
               >
                 <svg className="w-14 h-14 text-blue-400 mb-2" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M19.35 10.04A7.49 7.49 0 0012 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 000
@@ -386,7 +399,6 @@ export default function CreateJobModal({ onClose }) {
               </div>
             )}
 
-            {/* Preview */}
             {imagePreview && (
               <div className="border-2 border-dashed border-gray-300 rounded-xl bg-white p-4">
                 <div className="flex items-center gap-3">
@@ -398,17 +410,18 @@ export default function CreateJobModal({ onClose }) {
                   <span className="text-sm text-gray-700 font-medium truncate flex-1">
                     {imageFile?.name ?? "Selected image"}
                   </span>
-                  <button type="button" onClick={removeImage}
-                    className="text-red-500 hover:text-red-700 transition-colors shrink-0">
+                  <button type="button" onClick={removeImage} disabled={isBusy} className="text-red-500 hover:text-red-700 disabled:opacity-60 transition-colors shrink-0">
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round"
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5
-                           4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                           4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
                     </svg>
                   </button>
                 </div>
-                <button type="button" onClick={() => fileInputRef.current?.click()}
-                  className="mt-2 text-xs text-blue-500 hover:underline">
+                <button type="button" onClick={() => fileInputRef.current?.click()} disabled={isBusy} className="mt-2 text-xs text-blue-500 hover:underline disabled:opacity-60">
                   Change image
                 </button>
               </div>
@@ -420,6 +433,7 @@ export default function CreateJobModal({ onClose }) {
               accept="image/*"
               className="hidden"
               onChange={(e) => onPickFile(e.target.files?.[0])}
+              disabled={isBusy}
             />
 
             {uploading && (
@@ -429,10 +443,9 @@ export default function CreateJobModal({ onClose }) {
               </p>
             )}
           </div>
-
         </div>
 
-        {/* ── Footer ──────────────────────────────────────────────── */}
+        {/* Footer */}
         <div className="flex justify-center pb-8">
           <button
             onClick={handlePost}
@@ -440,13 +453,10 @@ export default function CreateJobModal({ onClose }) {
             className="bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white font-semibold
                        px-24 py-3 rounded-full text-sm flex items-center gap-2 transition-colors"
           >
-            {isBusy && (
-              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            )}
+            {isBusy && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
             {btnLabel}
           </button>
         </div>
-
       </div>
     </div>
   );
