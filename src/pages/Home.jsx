@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import MainSection from "../components/section/MainSection";
 import FindTheBest from "../components/section/FindTheBest";
 import SectionSolutionForEveryNeed from "../components/section/SectionSalutionForEveryDay";
@@ -9,7 +9,10 @@ import PeopleLoveWorking from "../components/section/PeopleLoveWorking";
 import { useGetFreelancersQuery } from "../services/freelancerApi";
 import ButtonComponent from "../components/button/ButtonComponent";
 import { Link } from "react-router";
-import CardBusinessPost from "../components/business/CardBusinessPostProjectComponent";
+import CardBusiness from "../components/business/CardBusinessPostProjectComponent";
+import JobsGrid from "../components/findwork/JobsGrid";
+import { useGetAllJobsQuery } from "../services/servicesApi";
+
 
 // ✅ API hook (from src/services/freelancer.js)
 
@@ -18,6 +21,15 @@ export default function Home() {
 
   // your API usually returns { success, message, data: [...] }
   const freelancers = data?.data?.content || [];
+  const { data: jobData, isLoading: jobLoading, isError: jobError } = useGetAllJobsQuery();
+  const jobs = useMemo(() => {
+    if (Array.isArray(jobData))                return jobData;
+    if (Array.isArray(jobData?.content))       return jobData.content;
+    if (Array.isArray(jobData?.data?.content)) return jobData.data.content;
+    if (Array.isArray(jobData?.data))          return jobData.data;
+    return [];
+  }, [jobData]);
+  
 
   return (
     <div>
@@ -33,7 +45,20 @@ export default function Home() {
         </h2>
       </div>
       {/* Card nusiness owner show */}
-      <CardBusinessPost />
+      <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6">
+        <div className="mt-6 pb-16">
+        <JobsGrid
+   filtered={jobs.slice(0, 4)}
+            visibleCount={4}
+            isLoading={jobLoading}
+            isError={jobError}
+   />
+      </div>
+      </div>
+      
+   
+    
+      
 
       <SectionSolutionForEveryNeed />
       <TalenCategories />
