@@ -18,6 +18,7 @@ export default function HeroSectionComponent({
           overflow-visible
           bg-gradient-to-br from-[#F3F4F6] to-[#1E88E5]/25
           rounded-2xl
+          
         "
         style={{ fontFamily: "'Poppins', sans-serif" }}
       >
@@ -55,7 +56,7 @@ export default function HeroSectionComponent({
                 w-[200px] h-auto
                 sm:w-[270px]
                 md:w-[320px]
-                lg:w-[363px] lg:h-[394px]
+                lg:w-[363px] lg:h-[340px]
                 object-contain
               "
               style={{ filter: "drop-shadow(0 20px 40px rgba(30,136,229,0.15))" }}
