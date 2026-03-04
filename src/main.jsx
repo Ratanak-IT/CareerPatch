@@ -46,6 +46,7 @@ createRoot(document.getElementById('root')).render(
                 {/* /profile auto-routes to correct page based on userType */}
                 <Route path="/profile" element={<ProfileRouter />} />
                 <Route path="/freelancers/:userId" element={<FreelancerPublicProfile />} />
+                <Route path="/business/:id" element={<ProfileBusinessPage />} />
 
                 <Route path="/profile-business"      element={<ProfileBusinessPage />} />
                 <Route path="/services/:serviceId"   element={<CardDetailFreelancer />} />
