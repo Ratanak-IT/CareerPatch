@@ -113,6 +113,8 @@ export default function TalentByFreelancer({
       </div>
 
       {/* ── Location as plain text ── */}
+      <div className="flex justify-between">
+
       <p className="text-[12px] text-gray-500 dark:text-slate-400 flex items-center gap-1">
         <svg className="w-3.5 h-3.5 shrink-0 text-[#1E88E5] dark:text-[#60a5fa]"
           fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,13 +126,13 @@ export default function TalentByFreelancer({
         {location || "Unknown"}
       </p>
 
-      {/* ── Arrow CTA ── */}k
-      <div className="flex items-center justify-end mt-auto">
+      {/* ── Arrow CTA ── */}
+     
         <span className="flex items-center gap-1.5 text-[11px] font-semibold
           text-gray-300 dark:text-slate-600
           group-hover:text-[#1E88E5] dark:group-hover:text-[#60a5fa]
           transition-all duration-200 group-hover:translate-x-1">
-          View Profile
+         
           <span className="w-6 h-6 rounded-full flex items-center justify-center
             bg-gray-100 dark:bg-[#1e3a5f]
             group-hover:bg-[#1E88E5] dark:group-hover:bg-[#2563EB]
@@ -142,7 +144,7 @@ export default function TalentByFreelancer({
             </svg>
           </span>
         </span>
-      </div>
+                </div>
     </div>
   );
 }
