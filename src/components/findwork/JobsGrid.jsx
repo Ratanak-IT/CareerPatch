@@ -1,5 +1,5 @@
 // src/components/findwork/JobsGrid.jsx
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useGetUserByIdQuery } from "../../services/userApi";
 import { useBookmarks } from "../../hooks/useBookmarks";
 
@@ -26,7 +26,11 @@ export function getJobId(job) {
 
 /** Inline JobCard */
 function JobCard({ job }) {
-  const { data: userRes } = useGetUserByIdQuery(job?.userId, { skip: !job?.userId });
+  const navigate = useNavigate();
+
+  const { data: userRes } = useGetUserByIdQuery(job?.userId, {
+    skip: !job?.userId,
+  });
   const user = userRes?.data || userRes;
 
   const jobId = getJobId(job);
@@ -36,8 +40,11 @@ function JobCard({ job }) {
   const description = job?.description || "No description available.";
   const categoryName = job?.category?.name || job?.categoryName || null;
   const date = formatDate(job?.createdAt);
-  const authorName = user?.fullName || user?.companyName || "Business";
+
+  // Author = business account
+  const authorName = user?.companyName || user?.fullName || "Business";
   const authorAvatar = user?.profileImageUrl || FALLBACK_AVATAR;
+
   const status = job?.status || "UNKNOWN";
 
   const image =
@@ -50,6 +57,13 @@ function JobCard({ job }) {
   if (job?.skills?.[0]) tags.push(job.skills[0]);
 
   const { liked, toggle } = useBookmarks({ id: jobId, type: "job" });
+
+  // ✅ click author -> public business profile
+  const goBusinessProfile = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (job?.userId) navigate(`/businesses/${job.userId}`);
+  };
 
   return (
     <Link
@@ -97,31 +111,37 @@ function JobCard({ job }) {
 
       {/* Body */}
       <div className="p-4 flex flex-col flex-1">
-        <h3 className="text-[#1E88E5] font-bold text-sm mb-1 truncate">{title}</h3>
+        <h3 className="text-[#1E88E5] font-bold text-sm mb-1 truncate">
+          {title}
+        </h3>
 
         <p
           className="text-gray-400 text-xs leading-relaxed mb-3 overflow-hidden"
-          style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}
+          style={{
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+          }}
         >
           {description}
         </p>
 
         <div className="flex items-center justify-between mb-3 text-xs text-gray-400">
           <span>Date: {date}</span>
+
           <span className="text-[#1E88E5] font-semibold">
-  {" "}
-  <span
-    className={`font-semibold ${
-      status === "OPEN"
-        ? "text-green-500"
-        : status === "DRAFT"
-        ? "text-yellow-500"
-        : "text-gray-500"
-    }`}
-  >
-    {status}
-  </span>
-</span>
+            <span
+              className={`font-semibold ${
+                status === "OPEN"
+                  ? "text-green-500"
+                  : status === "DRAFT"
+                  ? "text-yellow-500"
+                  : "text-gray-500"
+              }`}
+            >
+              {status}
+            </span>
+          </span>
         </div>
 
         <div className="flex flex-wrap gap-1.5 mb-3">
@@ -138,7 +158,13 @@ function JobCard({ job }) {
         <div className="border-t border-gray-100 mb-3" />
 
         <div className="flex items-center justify-between mt-auto">
-          <div className="flex items-center gap-2">
+          {/* ✅ clickable profile */}
+          <button
+            type="button"
+            onClick={goBusinessProfile}
+            className="flex items-center gap-2 text-left"
+            aria-label="View business profile"
+          >
             <img
               src={authorAvatar}
               alt={authorName}
@@ -147,15 +173,17 @@ function JobCard({ job }) {
                 e.currentTarget.src = FALLBACK_AVATAR;
               }}
             />
-            <span className="text-gray-700 text-xs font-medium truncate max-w-[80px]">
+            <span className="text-gray-700 text-xs font-medium truncate max-w-[110px]">
               {authorName}
             </span>
-          </div>
+          </button>
 
+          {/* Keep Apply button for job list (you can hook to modal later) */}
           <button
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
+              // open apply modal or navigate to apply page here
             }}
             className="bg-[#1E88E5] hover:bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200 active:scale-95"
             type="button"
@@ -168,9 +196,17 @@ function JobCard({ job }) {
   );
 }
 
-export default function JobsGrid({ filtered, visibleCount, onSeeMore, isLoading, isError }) {
-  const filteredNoDraft = (filtered || []).filter((j) => (j?.status || "OPEN") !== "DRAFT");
-const visible = filteredNoDraft.slice(0, visibleCount);
+export default function JobsGrid({
+  filtered,
+  visibleCount,
+  onSeeMore,
+  isLoading,
+  isError,
+}) {
+  const filteredNoDraft = (filtered || []).filter(
+    (j) => (j?.status || "OPEN") !== "DRAFT"
+  );
+  const visible = filteredNoDraft.slice(0, visibleCount);
 
   if (isLoading) {
     return (
@@ -181,7 +217,11 @@ const visible = filteredNoDraft.slice(0, visibleCount);
   }
 
   if (isError) {
-    return <p className="text-red-500 text-center py-10">Failed to load jobs. Please try again.</p>;
+    return (
+      <p className="text-red-500 text-center py-10">
+        Failed to load jobs. Please try again.
+      </p>
+    );
   }
 
   return (
@@ -195,7 +235,12 @@ const visible = filteredNoDraft.slice(0, visibleCount);
       {/* Empty state */}
       {filteredNoDraft.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-          <svg className="w-14 h-14 mb-4 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            className="w-14 h-14 mb-4 text-gray-200"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             <path
               d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
               strokeLinecap="round"
@@ -217,8 +262,18 @@ const visible = filteredNoDraft.slice(0, visibleCount);
             type="button"
           >
             See More
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-              <path d="M7 17 17 7M17 7H7M17 7v10" strokeLinecap="round" strokeLinejoin="round" />
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.5}
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M7 17 17 7M17 7H7M17 7v10"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </button>
         </div>

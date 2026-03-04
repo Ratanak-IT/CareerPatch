@@ -23,6 +23,7 @@ import FreelancerPublicProfile from './pages/FreelancerPublicProfile.jsx'
 import DetailWork from './pages/DetailWork.jsx'
 import DetailWorkPage from './pages/DetailWork.jsx'
 import ContactPage from './pages/ContactPage.jsx'
+import BusinessPublicProfile from './pages/businessPublicProfile.jsx'
 
 
 setupListeners(store.dispatch);
@@ -47,7 +48,7 @@ createRoot(document.getElementById('root')).render(
                 {/* /profile auto-routes to correct page based on userType */}
                 <Route path="/profile" element={<ProfileRouter />} />
                 <Route path="/freelancers/:userId" element={<FreelancerPublicProfile />} />
-                <Route path="/business/:id" element={<ProfileBusinessPage />} />
+                <Route path="/businesses/:userId" element={<BusinessPublicProfile />} />
 
                 <Route path="/profile-business"      element={<ProfileBusinessPage />} />
                 <Route path="/services/:serviceId"   element={<CardDetailFreelancer />} />
