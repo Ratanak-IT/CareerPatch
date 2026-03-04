@@ -1,4 +1,4 @@
-import React from "react";
+// src/components/freelancer/HeroSectionComponent.jsx
 import imgMain from "../../assets/modelforfindfreelancer.png";
 import FreelancerSearchBarComponent from "./FreelancerSearchBarComponent";
 
@@ -10,70 +10,70 @@ export default function HeroSectionComponent({
   onSubmitSearch,
 }) {
   return (
-    <div className="relative pb-[30px] sm:pb-[40px] md:pb-[50px]">
+    <div
+      className="relative w-full pb-[164px] md:pb-[68px]"
+      style={{ fontFamily: "'Poppins', sans-serif" }}
+    >
+      {/* ── Full-width background — same as MainSection / HeroSection ── */}
       <section
-        className="
-          w-full
-          flex flex-col
-          overflow-visible
-          bg-gradient-to-br from-[#F3F4F6] to-[#1E88E5]/25
-          rounded-2xl
-          
-        "
-        style={{ fontFamily: "'Poppins', sans-serif" }}
+        className={[
+          "w-full overflow-hidden relative",
+          "bg-gradient-to-br from-[#F3F4F6] to-[#1E88E5]/25",
+          "dark:bg-gradient-to-br dark:from-[#0d1b2e] dark:via-[#0f2240] dark:to-[#0d1520]",
+        ].join(" ")}
       >
+        {/* Dot-grid — dark only */}
         <div
-          className="
-            w-full px-6 lg:px-[80px]
-            flex flex-col lg:flex-row
-            items-center justify-between
-            pt-8 pb-14
-            sm:pb-16
-            lg:pt-0 lg:pb-16 lg:h-[396px]
-          "
-        >
-          <div className="w-full lg:w-[48%] text-center lg:text-left">
-            <h1
-              className="
-                font-bold leading-[1.2]
-                text-[22px] sm:text-[28px] md:text-[34px] lg:text-[40px]
-                m-0
-              "
-            >
-              Discover <span className="text-blue-600">our freelancers</span> and <br />
-              work with <span className="text-blue-600">the best talent on </span>
+          className="absolute inset-0 opacity-0 dark:opacity-20 pointer-events-none"
+          style={{
+            backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.18) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}
+        />
+
+        {/* Inner — same max-width + padding as MainSection */}
+        <div className="relative z-10 max-w-[1440px] mx-auto px-6 lg:px-[120px] flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-0 pt-10 pb-16 lg:py-0 lg:h-[360px]">
+
+          {/* LEFT — text */}
+          <div className="w-full lg:w-[52%] text-center lg:text-left space-y-4">
+            <h1 className="font-bold leading-[1.2] text-[28px] sm:text-[36px] md:text-[44px] lg:text-[52px] m-0 text-gray-900 dark:text-white">
+              Discover{" "}
+              <span className="text-[#1E88E5] dark:text-blue-400">our freelancers</span>{" "}and
+              <br />
+              work with{" "}
+              <span className="text-[#1E88E5] dark:text-blue-400">the best talent</span>{" "}on
               <br />
               CarrerPatch
             </h1>
           </div>
 
-          <div className="w-full lg:w-[52%] relative flex items-center justify-center mt-6 lg:mt-0">
-            <img
-              src={imgMain}
-              alt="Professional with Laptop"
-              className="
-                relative z-10
-                w-[200px] h-auto
-                sm:w-[270px]
-                md:w-[320px]
-                lg:w-[363px] lg:h-[340px]
-                object-contain
-              "
-              style={{ filter: "drop-shadow(0 20px 40px rgba(30,136,229,0.15))" }}
-            />
-            <div className="absolute -z-0 rounded-full pointer-events-none w-[250px] h-[250px] bg-[#1E88E5]/10 blur-3xl" />
+          {/* RIGHT — image */}
+          <div className="w-full lg:w-[48%] relative flex justify-center lg:justify-end items-end self-end">
+            <div className="relative">
+              <img
+                src={imgMain}
+                alt="Freelancer with Tablet"
+                className="relative z-10 w-[200px] sm:w-[260px] md:w-[310px] lg:w-[360px] h-auto object-contain"
+                style={{ filter: "drop-shadow(0 20px 40px rgba(30,136,229,0.15))" }}
+              />
+              {/* Glow blob */}
+              <div className="absolute -z-0 rounded-full pointer-events-none bottom-0 right-[5%] w-[70%] aspect-square bg-[#1E88E5]/10 blur-3xl opacity-0 dark:opacity-100" />
+            </div>
           </div>
         </div>
       </section>
 
-      <div className="absolute bottom-5 left-0 right-0 z-20">
-        <FreelancerSearchBarComponent
-          category={category}
-          searchText={searchText}
-          onChangeCategory={onChangeCategory}
-          onChangeSearch={onChangeSearch}
-          onSubmitSearch={onSubmitSearch}
-        />
+      {/* SearchBar — flush at bottom, same px as MainSection */}
+      <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-8 lg:px-[120px] z-20">
+        <div className="max-w-[1440px] mx-auto">
+          <FreelancerSearchBarComponent
+            category={category}
+            searchText={searchText}
+            onChangeCategory={onChangeCategory}
+            onChangeSearch={onChangeSearch}
+            onSubmitSearch={onSubmitSearch}
+          />
+        </div>
       </div>
     </div>
   );

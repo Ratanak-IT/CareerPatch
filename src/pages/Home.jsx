@@ -9,10 +9,15 @@ import PeopleLoveWorking from "../components/section/PeopleLoveWorking";
 import { useGetFreelancersQuery } from "../services/freelancerApi";
 import ButtonComponent from "../components/button/ButtonComponent";
 import { Link } from "react-router";
+<<<<<<< HEAD
 import CardBusiness from "../components/business/CardBusinessPostProjectComponent";
 import JobsGrid from "../components/findwork/JobsGrid";
 import { useGetAllJobsQuery } from "../services/servicesApi";
 
+=======
+import CardBusinessPost from "../components/business/CardBusinessPostProjectComponent";
+import FreelancerCard from "../components/freelancer/FreelancerCard";
+>>>>>>> 5be85011035f795b4c409e7a6c8d745f1ceb45b1
 
 // ✅ API hook (from src/services/freelancer.js)
 
@@ -45,6 +50,7 @@ export default function Home() {
         </h2>
       </div>
       {/* Card nusiness owner show */}
+<<<<<<< HEAD
       <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6">
         <div className="mt-6 pb-16">
         <JobsGrid
@@ -59,6 +65,10 @@ export default function Home() {
    
     
       
+=======
+      <CardBusinessPost />
+  
+>>>>>>> 5be85011035f795b4c409e7a6c8d745f1ceb45b1
 
       <SectionSolutionForEveryNeed />
       <TalenCategories />

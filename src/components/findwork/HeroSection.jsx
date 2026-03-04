@@ -1,116 +1,133 @@
 // src/components/findwork/HeroSection.jsx
 import SearchBar from "./SearchBar";
+import sectionpagefind from "../../assets/sectionpagefind.png";
+import qestion from "../../assets/qestion.png";
+import khim from "../../assets/khim.png";
+import kormva from "../../assets/kormva.png";
+import ratanalkkh from "../../assets/ratanalkkh.png";
 
-const AVATAR_SAMPLES = [
-  "https://i.pravatar.cc/40?img=1",
-  "https://i.pravatar.cc/40?img=2",
-  "https://i.pravatar.cc/40?img=3",
+const AVATARS = [
+  { src: khim,       alt: "Khim" },
+  { src: kormva,     alt: "Kormva" },
+  { src: ratanalkkh, alt: "Ratanalkkh" },
 ];
 
 export default function HeroSection({
-  searchText,
-  onChangeSearch,
-  experienceLevel,
-  onChangeLevel,
-  budgetRange,
-  onChangeBudget,
-  onSubmit,
+  searchText, onChangeSearch,
+  experienceLevel, onChangeLevel,
+  budgetRange, onChangeBudget, onSubmit,
 }) {
   return (
-    <div className="relative pb-10 sm:pb-14">
-      {/* Hero card */}
+    <section
+      className={[
+        "w-full overflow-hidden relative",
+        // mobile SearchBar = 3 rows ~180px | desktop = 60px
+        "pb-[164px] md:pb-[68px]",
+        "bg-gradient-to-br from-[#F3F4F6] to-[#1E88E5]/25",
+        "dark:bg-gradient-to-br dark:from-[#0d1b2e] dark:via-[#0f2240] dark:to-[#0d1520]",
+      ].join(" ")}
+      style={{ fontFamily: "'Poppins', sans-serif" }}
+    >
+      {/* Dot-grid dark only */}
       <div
-        className="w-full rounded-2xl overflow-hidden relative"
-        style={{ background: "linear-gradient(135deg, #EBF5FF 0%, #DBEAFE 50%, #EFF6FF 100%)" }}
-      >
-        <div className="flex flex-col lg:flex-row items-center justify-between px-6 sm:px-10 lg:px-16 pt-10 pb-16 lg:pb-14 gap-6">
-          {/* Text */}
-          <div className="w-full lg:w-[55%] text-center lg:text-left">
-            <h1 className="font-extrabold leading-tight text-[26px] sm:text-[34px] lg:text-[42px] text-gray-900 mb-3">
-              Find Freelance Projects{" "}
-              <span className="text-[#1E88E5]">That</span>
-              <br />
-              Match Your Skills
-            </h1>
-            <p className="text-gray-500 text-sm sm:text-base mb-6 max-w-sm mx-auto lg:mx-0">
-              Browse thousands of freelance opportunities tailored to your expertise.
-            </p>
+        className="absolute inset-0 opacity-0 dark:opacity-20 pointer-events-none"
+        style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.18) 1px, transparent 1px)", backgroundSize: "28px 28px" }}
+      />
 
-            {/* Social proof */}
-            <div className="flex flex-col sm:flex-row items-center lg:items-start gap-4 justify-center lg:justify-start">
-              <div className="flex items-center gap-3">
-                <div className="flex -space-x-2">
-                  {AVATAR_SAMPLES.map((src, i) => (
-                    <img key={i} src={src} alt="" className="w-9 h-9 rounded-full ring-2 ring-white object-cover" />
-                  ))}
-                </div>
-                <div className="text-left">
-                  <p className="text-xs text-gray-500">Over <span className="text-[#1E88E5] font-bold">12800+</span> freelancers to</p>
-                  <p className="text-xs text-gray-500">complete your projects</p>
-                </div>
-              </div>
-              <button className="bg-[#1E88E5] hover:bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl flex items-center gap-2 transition-colors duration-200 shadow-md shadow-blue-200">
-                Find your skill
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-                  <path d="M7 17 17 7M17 7H7M17 7v10" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
+      {/* Inner wrapper same as MainSection */}
+      <div className="relative z-10 max-w-[1440px] mx-auto px-6 lg:px-[120px] flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-0">
+
+        {/* LEFT */}
+        <div className="w-full lg:w-[48%] space-y-7 py-16 lg:py-20 text-center lg:text-left">
+
+          {/* Badge */}
+          <div className="flex items-center gap-2.5 w-fit mx-auto lg:mx-0 px-4 py-2 rounded-full bg-[#1E88E5]/10 border border-[#1E88E5]/25">
+            <div className="flex items-center rounded-full px-0.5 bg-[#1E88E5]" style={{ width: "32px", height: "18px" }}>
+              <div className="rounded-full bg-white ml-auto" style={{ width: "14px", height: "14px" }} />
             </div>
+            <span className="text-[#1E88E5] text-[12px] font-semibold uppercase tracking-wide">Find Your Dream Job</span>
           </div>
 
-          {/* Illustration */}
-          <div className="w-full lg:w-[45%] flex justify-center">
-            <div className="relative w-[240px] sm:w-[300px] lg:w-[340px]">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-orange-100 to-amber-50 scale-[0.85] translate-y-4" />
-              <div className="relative z-10 flex items-center justify-center h-[200px] sm:h-[240px]">
-                <svg viewBox="0 0 280 220" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="40" y="160" width="200" height="10" rx="4" fill="#E0E7FF"/>
-                  <rect x="60" y="170" width="8" height="30" rx="2" fill="#C7D2FE"/>
-                  <rect x="212" y="170" width="8" height="30" rx="2" fill="#C7D2FE"/>
-                  <rect x="70" y="90" width="120" height="75" rx="8" fill="#1E88E5" opacity="0.9"/>
-                  <rect x="75" y="95" width="110" height="60" rx="5" fill="#1565C0"/>
-                  <rect x="82" y="105" width="60" height="4" rx="2" fill="#60A5FA"/>
-                  <rect x="82" y="115" width="45" height="4" rx="2" fill="#93C5FD"/>
-                  <rect x="82" y="125" width="55" height="4" rx="2" fill="#60A5FA"/>
-                  <rect x="82" y="135" width="35" height="4" rx="2" fill="#93C5FD"/>
-                  <circle cx="165" cy="120" r="14" fill="#3B82F6" opacity="0.8"/>
-                  <path d="M160 113 l14 7 -14 7Z" fill="white"/>
-                  <rect x="122" y="165" width="16" height="8" rx="2" fill="#93C5FD"/>
-                  <rect x="112" y="173" width="36" height="5" rx="2" fill="#93C5FD"/>
-                  <circle cx="200" cy="95" r="18" fill="#FFD6A5"/>
-                  <rect x="183" y="113" width="34" height="40" rx="10" fill="#1E88E5"/>
-                  <rect x="160" y="120" width="25" height="8" rx="4" fill="#FFD6A5"/>
-                  <rect x="217" y="120" width="25" height="8" rx="4" fill="#FFD6A5"/>
-                  <path d="M182 92 Q200 75 218 92 Q215 80 200 77 Q185 80 182 92Z" fill="#4B3B2A"/>
-                  <circle cx="240" cy="60" r="22" fill="white" stroke="#E5E7EB" strokeWidth="2"/>
-                  <circle cx="240" cy="60" r="2" fill="#1E88E5"/>
-                  <line x1="240" y1="60" x2="240" y2="44" stroke="#1E88E5" strokeWidth="2" strokeLinecap="round"/>
-                  <line x1="240" y1="60" x2="252" y2="64" stroke="#EF4444" strokeWidth="2" strokeLinecap="round"/>
-                  <circle cx="255" cy="35" r="16" fill="#FEF3C7"/>
-                  <text x="249" y="42" fontSize="18" fill="#F59E0B" fontWeight="bold">?</text>
-                  <circle cx="48" cy="130" r="12" fill="#E0E7FF" stroke="#A5B4FC" strokeWidth="1.5"/>
-                  <circle cx="48" cy="130" r="5" fill="white"/>
-                  <rect x="35" y="75" width="10" height="10" rx="2" fill="#FCA5A5" opacity="0.6"/>
-                  <circle cx="252" cy="95" r="5" fill="#86EFAC" opacity="0.7"/>
-                </svg>
+          {/* Heading same scale as MainSection: 40/52/64 */}
+          <h1 className="font-bold leading-[1.1] text-[40px] md:text-[52px] lg:text-[64px] m-0">
+            <span className="text-[#1E88E5]">Find Freelance Projects</span>
+            <br />
+            <span className="text-gray-900 dark:text-white">That Match Your</span>
+            <br />
+            <span className="text-gray-900 dark:text-white">Skills</span>
+          </h1>
+
+          {/* Description */}
+          <p className="text-sm md:text-base leading-relaxed max-w-[480px] mx-auto lg:mx-0 m-0 text-gray-400 dark:text-slate-400">
+            Browse thousands of freelance opportunities tailored to your expertise.
+            Find your perfect match for your next project.
+          </p>
+
+          {/* Avatars + CTA */}
+          <div className="flex flex-wrap items-center gap-4 justify-center lg:justify-start pt-2">
+            <div className="flex items-center gap-4">
+              <div className="flex -space-x-3">
+                {AVATARS.map(({ src, alt }, i) => (
+                  <img key={i} src={src} alt={alt} className="w-10 h-10 rounded-full object-cover object-top border-2 border-white dark:border-[#0f172a]" />
+                ))}
               </div>
+              <p className="text-[12px] leading-snug m-0 text-gray-400 dark:text-slate-400 text-left">
+                Over <span className="text-[#1E88E5] font-bold">12800+</span> freelancers to
+                <br />complete your projects
+              </p>
             </div>
+            <button className="inline-flex items-center gap-2 bg-[#1E88E5] hover:bg-blue-600 dark:bg-blue-500 dark:hover:bg-blue-400 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all duration-200 shadow-md shadow-blue-200 dark:shadow-blue-900 whitespace-nowrap">
+              Find your skill
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path d="M7 17 17 7M17 7H7M17 7v10" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
           </div>
+        </div>
+
+        {/* RIGHT same as MainSection */}
+        <div className="w-full lg:w-[52%] relative flex justify-center lg:justify-end items-end self-end">
+          <img
+            src={sectionpagefind} alt="Freelancer working"
+            className="relative z-10 w-full object-contain object-bottom max-w-[460px]"
+            style={{ filter: "drop-shadow(0 20px 40px rgba(30,136,229,0.15))" }}
+          />
+          <img
+            src={qestion} alt="Question mark"
+            className="absolute z-20 object-contain top-[5%] right-[5%] w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24"
+          />
+          {/* 30K+ card same as MainSection */}
+          <div
+            className="absolute z-20 rounded-2xl p-4 lg:p-5 flex flex-col gap-1.5 bg-white shadow-[0_16px_48px_rgba(0,0,0,0.1)] dark:bg-slate-800 dark:shadow-[0_16px_48px_rgba(0,0,0,0.4)]"
+            style={{ top: "32%", right: "2%", minWidth: "130px", animation: "floatCard 3s ease-in-out infinite" }}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-[22px] font-extrabold leading-none text-gray-900 dark:text-slate-100">30K+</span>
+              <span className="text-xl">&#x1F4BC;</span>
+            </div>
+            <span className="text-[13px] font-medium text-gray-400 dark:text-slate-400">People got hired</span>
+          </div>
+          <div className="absolute -z-0 rounded-full pointer-events-none bottom-0 right-[5%] w-[70%] aspect-square bg-[#1E88E5]/10 blur-3xl" />
         </div>
       </div>
 
-      {/* Search bar floated at bottom */}
-      <div className="absolute bottom-7 left-0 right-0">
-        <SearchBar
-          searchText={searchText}
-          onChangeSearch={onChangeSearch}
-          experienceLevel={experienceLevel}
-          onChangeLevel={onChangeLevel}
-          budgetRange={budgetRange}
-          onChangeBudget={onChangeBudget}
-          onSubmit={onSubmit}
-        />
+      {/* SearchBar flush at bottom */}
+      <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-8 lg:px-[120px]">
+        <div className="max-w-[1440px] mx-auto">
+          <SearchBar
+            searchText={searchText} onChangeSearch={onChangeSearch}
+            experienceLevel={experienceLevel} onChangeLevel={onChangeLevel}
+            budgetRange={budgetRange} onChangeBudget={onChangeBudget} onSubmit={onSubmit}
+          />
+        </div>
       </div>
-    </div>
+
+      <style>{`
+        @keyframes floatCard {
+          0%, 100% { transform: translateY(0px); }
+          50%       { transform: translateY(-8px); }
+        }
+      `}</style>
+    </section>
   );
 }
