@@ -152,7 +152,7 @@ function RightCard({ skills }) {
  */
 export default function ProfileCardLayout({ data = profileData }) {
   return (
-    <div className="w-full">
+    <div className="w-full ">
 
       {/* ── Mobile: flex-col  |  Tablet: grid 2-col  |  Desktop: flex-row ── */}
       <div className="w-full max-w-[1200px]">
