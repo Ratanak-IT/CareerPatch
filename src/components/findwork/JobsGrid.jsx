@@ -34,21 +34,10 @@ function JobCard({ job }) {
   const title        = job?.title || "Untitled";
   const description  = job?.description || "No description available.";
   const categoryName = job?.category?.name || job?.categoryName || null;
-<<<<<<< HEAD
-  const date = formatDate(job?.createdAt);
-
-  // Author = business account
-  const authorName = user?.companyName || user?.fullName || "Business";
-  const authorAvatar = user?.profileImageUrl || FALLBACK_AVATAR;
-
-  const status = job?.status || "UNKNOWN";
-
-=======
   const date         = formatDate(job?.createdAt);
   const authorName   = user?.fullName || user?.companyName || "Business";
   const authorAvatar = user?.profileImageUrl || FALLBACK_AVATAR;
   const status       = job?.status || "UNKNOWN";
->>>>>>> 5be85011035f795b4c409e7a6c8d745f1ceb45b1
   const image =
     (Array.isArray(job?.jobImages) && job.jobImages[0]) ||
     (Array.isArray(job?.imageUrls) && job.imageUrls[0]) ||
@@ -109,12 +98,6 @@ function JobCard({ job }) {
 
       {/* ── Body ── */}
       <div className="p-4 flex flex-col flex-1">
-<<<<<<< HEAD
-        <h3 className="text-[#1E88E5] font-bold text-sm mb-1 truncate">
-          {title}
-        </h3>
-=======
->>>>>>> 5be85011035f795b4c409e7a6c8d745f1ceb45b1
 
         {/* Title */}
         <h3 className="text-[#1E88E5] dark:text-blue-400 font-bold text-sm mb-1 truncate">
@@ -123,17 +106,8 @@ function JobCard({ job }) {
 
         {/* Description */}
         <p
-<<<<<<< HEAD
-          className="text-gray-400 text-xs leading-relaxed mb-3 overflow-hidden"
-          style={{
-            display: "-webkit-box",
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: "vertical",
-          }}
-=======
           className="text-gray-400 dark:text-slate-500 text-xs leading-relaxed mb-3 overflow-hidden"
           style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}
->>>>>>> 5be85011035f795b4c409e7a6c8d745f1ceb45b1
         >
           {description}
         </p>
@@ -141,28 +115,12 @@ function JobCard({ job }) {
         {/* Date + Status */}
         <div className="flex items-center justify-between mb-3 text-xs text-gray-400 dark:text-slate-500">
           <span>Date: {date}</span>
-<<<<<<< HEAD
-
-          <span className="text-[#1E88E5] font-semibold">
-            <span
-              className={`font-semibold ${
-                status === "OPEN"
-                  ? "text-green-500"
-                  : status === "DRAFT"
-                  ? "text-yellow-500"
-                  : "text-gray-500"
-              }`}
-            >
-              {status}
-            </span>
-=======
           <span className={`font-semibold ${
             status === "OPEN"  ? "text-green-500 dark:text-green-400"  :
             status === "DRAFT" ? "text-yellow-500 dark:text-yellow-400" :
                                  "text-gray-400 dark:text-slate-500"
           }`}>
             {status}
->>>>>>> 5be85011035f795b4c409e7a6c8d745f1ceb45b1
           </span>
         </div>
 
@@ -195,30 +153,17 @@ function JobCard({ job }) {
               className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100 dark:ring-slate-700"
               onError={(e) => { e.currentTarget.src = FALLBACK_AVATAR; }}
             />
-<<<<<<< HEAD
-            <span className="text-gray-700 text-xs font-medium truncate max-w-[110px]">
-=======
             <span className="text-gray-700 dark:text-slate-300 text-xs font-medium truncate max-w-[80px]">
->>>>>>> 5be85011035f795b4c409e7a6c8d745f1ceb45b1
               {authorName}
             </span>
           </button>
 
           {/* Keep Apply button for job list (you can hook to modal later) */}
           <button
-<<<<<<< HEAD
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              // open apply modal or navigate to apply page here
-            }}
-            className="bg-[#1E88E5] hover:bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200 active:scale-95"
-=======
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
             className="bg-[#1E88E5] hover:bg-blue-600 dark:bg-blue-500 dark:hover:bg-blue-400
                        text-white text-xs font-semibold px-3 py-1.5 rounded-lg
                        transition-colors duration-200 active:scale-95"
->>>>>>> 5be85011035f795b4c409e7a6c8d745f1ceb45b1
             type="button"
           >
             Apply Now
@@ -229,21 +174,8 @@ function JobCard({ job }) {
   );
 }
 
-<<<<<<< HEAD
-export default function JobsGrid({
-  filtered,
-  visibleCount,
-  onSeeMore,
-  isLoading,
-  isError,
-}) {
-  const filteredNoDraft = (filtered || []).filter(
-    (j) => (j?.status || "OPEN") !== "DRAFT"
-  );
-=======
 export default function JobsGrid({ filtered, visibleCount, onSeeMore, isLoading, isError }) {
   const filteredNoDraft = (filtered || []).filter((j) => (j?.status || "OPEN") !== "DRAFT");
->>>>>>> 5be85011035f795b4c409e7a6c8d745f1ceb45b1
   const visible = filteredNoDraft.slice(0, visibleCount);
 
   if (isLoading) {
@@ -256,11 +188,7 @@ export default function JobsGrid({ filtered, visibleCount, onSeeMore, isLoading,
 
   if (isError) {
     return (
-<<<<<<< HEAD
-      <p className="text-red-500 text-center py-10">
-=======
       <p className="text-red-500 dark:text-red-400 text-center py-10">
->>>>>>> 5be85011035f795b4c409e7a6c8d745f1ceb45b1
         Failed to load jobs. Please try again.
       </p>
     );
@@ -277,27 +205,11 @@ export default function JobsGrid({ filtered, visibleCount, onSeeMore, isLoading,
 
       {/* Empty state */}
       {filteredNoDraft.length === 0 && (
-<<<<<<< HEAD
-        <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-          <svg
-            className="w-14 h-14 mb-4 text-gray-200"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-            />
-=======
         <div className="flex flex-col items-center justify-center py-20 text-gray-400 dark:text-slate-500">
           <svg className="w-14 h-14 mb-4 text-gray-200 dark:text-slate-700"
             fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
               d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
->>>>>>> 5be85011035f795b4c409e7a6c8d745f1ceb45b1
           </svg>
           <p className="font-semibold text-gray-500 dark:text-slate-400">No jobs found</p>
           <p className="text-xs mt-1 text-gray-400 dark:text-slate-500">Try adjusting your search or filters</p>
@@ -318,23 +230,8 @@ export default function JobsGrid({ filtered, visibleCount, onSeeMore, isLoading,
             type="button"
           >
             See More
-<<<<<<< HEAD
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.5}
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M7 17 17 7M17 7H7M17 7v10"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-=======
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
               <path d="M7 17 17 7M17 7H7M17 7v10" strokeLinecap="round" strokeLinejoin="round"/>
->>>>>>> 5be85011035f795b4c409e7a6c8d745f1ceb45b1
             </svg>
           </button>
         </div>
