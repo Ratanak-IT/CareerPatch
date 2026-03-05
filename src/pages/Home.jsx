@@ -108,7 +108,7 @@ export default function Home() {
 
           {!isLoading && !isError && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {freelancers.slice(0, 4).map((item) => (
+              {freelancers.slice(0, 8).map((item) => (
                 <TalentByFreelancer
                   key={item.id}
                   userId={item.id}

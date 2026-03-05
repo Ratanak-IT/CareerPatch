@@ -106,11 +106,6 @@ function JobCard({ job }) {
           {title}
         </h3>
 
-        {/* Title */}
-        <h3 className="text-[#1E88E5] dark:text-blue-400 font-bold text-sm mb-1 truncate">
-          {title}
-        </h3>
-
         {/* Description */}
         <p
           className="text-gray-400 text-xs leading-relaxed mb-3 overflow-hidden"
