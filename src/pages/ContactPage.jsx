@@ -209,15 +209,15 @@ export default function ContactPage() {
           <div className="rounded-2xl overflow-hidden shadow-sm border border-slate-100 dark:border-[#2A2D3A] bg-white dark:bg-[#1A1D27]">
             <div className="h-[220px] sm:h-[260px]">
               <iframe
-                title="Office Location"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3908.539033768917!2d104.90362862970343!3d11.58486710878801!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310951e96d257a6f%3A0x6b66703c5fc0c7cc!2sScience%20and%20Technology%20Advanced%20Development%20Co.%2C%20Ltd.!5e0!3m2!1sen!2skh!4v1772535647140!5m2!1sen!2skh" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-                widt="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen=""
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
+  title="Office Location"
+  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3908.539033768917!2d104.90362862970343!3d11.58486710878801!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x310951e96d257a6f%3A0x6b66703c5fc0c7cc!2sScience%20and%20Technology%20Advanced%20Development%20Co.%2C%20Ltd.!5e0!3m2!1sen!2skh!4v1772535647140!5m2!1sen!2skh"
+  width="100%"
+  height="100%"
+  style={{ border: 0 }}
+  allowFullScreen
+  loading="lazy"
+  referrerPolicy="no-referrer-when-downgrade"
+/>
             </div>
           </div>
 

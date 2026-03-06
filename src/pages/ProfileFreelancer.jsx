@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 
 import FreelancerCard from "../components/freelancer/FreelancerCard";
+import BookmarkedJobCard from "../components/bookmark/BookmarkedJobCard";
 import OwnServiceCard from "../components/card/Ownservicecard";
 
 import { selectIsAuthed } from "../features/auth/authSlice";
@@ -128,6 +129,7 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
 
   // =======================
   // Bookmarks (OWNER ONLY)
+  // 403 for freelancers is handled silently in servicesApi baseQuery
   // =======================
   const { data: serviceBookmarksRaw } = useGetServiceBookmarksQuery(undefined, {
     skip: !isAuthed || !isOwner,
@@ -139,6 +141,15 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
   const serviceBookmarks = useMemo(() => pickArray(serviceBookmarksRaw), [serviceBookmarksRaw]);
   const jobBookmarks = useMemo(() => pickArray(jobBookmarksRaw), [jobBookmarksRaw]);
   const totalFavorites = serviceBookmarks.length + jobBookmarks.length;
+
+  // DEBUG — remove after confirming field names
+  React.useEffect(() => {
+    if (jobBookmarksRaw) {
+      console.log("📌 raw jobBookmarksRaw:", JSON.stringify(jobBookmarksRaw, null, 2));
+      console.log("📌 jobBookmarks array:", jobBookmarks);
+      if (jobBookmarks[0]) console.log("📌 first item keys:", Object.keys(jobBookmarks[0]));
+    }
+  }, [jobBookmarksRaw, jobBookmarks]);
 
   // =======================
   // Mutations (OWNER ONLY)
@@ -570,18 +581,9 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
                   {jobBookmarks.map((row) => {
                     const { target, targetId } = normalizeBookmarkItem(row, "job");
                     return (
-                      <FreelancerCard
+                      <BookmarkedJobCard
                         key={targetId ?? row?.id}
-                        id={targetId}
-                        image={(Array.isArray(target?.imageUrls) && target.imageUrls[0]) || FALLBACK_IMAGE}
-                        title={target?.title || "Untitled"}
-                        description={target?.description || "No description"}
-                        tags={[target?.category?.name || target?.categoryName].filter(Boolean)}
-                        date={formatDate(target?.createdAt)}
-                        author={target?.authorName || "Business"}
-                        avatar={target?.authorAvatar || FALLBACK_AVATAR}
-                        postType="job"
-                        authorId={target?.userId}
+                        bm={{ id: row?.id, job: target }}
                       />
                     );
                   })}

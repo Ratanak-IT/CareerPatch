@@ -1,6 +1,19 @@
 // src/services/serviceApi.js (or your current file path)
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+// Wraps fetchBaseQuery to silently swallow 403 responses (freelancers
+// hitting bookmark endpoints that require BUSINESS_OWNER role).
+// Returns empty array data so the UI shows "No bookmarks" instead of erroring.
+function make403SilentQuery(baseQueryFn) {
+  return async (args, api, extraOptions) => {
+    const result = await baseQueryFn(args, api, extraOptions);
+    if (result?.error?.status === 403) {
+      return { data: [] };
+    }
+    return result;
+  };
+}
+
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 // ─────────────────────────────────────────────────────────────
@@ -44,7 +57,7 @@ function normalizeBookmarkList(res) {
 export const serviceApi = createApi({
   reducerPath: "serviceApi",
 
-  baseQuery: fetchBaseQuery({
+  baseQuery: make403SilentQuery(fetchBaseQuery({
     baseUrl: BASE_URL,
     prepareHeaders: (headers, { getState }) => {
       const state = getState();
@@ -61,7 +74,7 @@ export const serviceApi = createApi({
 
       return headers;
     },
-  }),
+  })),
 
   tagTypes: ["Service", "ServiceBookmark", "JobBookmark"],
 

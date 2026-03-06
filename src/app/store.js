@@ -10,6 +10,7 @@ import { serviceApi } from "../services/servicesApi";
 import { categoriesApi } from "../services/categoriesApi";
 import { apiSlice } from "../services/apiSlice";
 import { detailworkApi } from "../services/detailworkApi";
+import { jobsApi } from "../services/JobsApi";
 
 
 
@@ -25,6 +26,7 @@ export const store = configureStore({
      [serviceApi.reducerPath]: serviceApi.reducer,
      [categoriesApi.reducerPath]: categoriesApi.reducer,
       [apiSlice.reducerPath]: apiSlice.reducer,
+      [jobsApi.reducerPath]: jobsApi.reducer,
       
     
       [detailworkApi.reducerPath]: detailworkApi.reducer,
@@ -40,9 +42,8 @@ export const store = configureStore({
           profileApi.middleware,
           serviceApi.middleware,
           categoriesApi.middleware,
-          apiSlice.middleware
+          apiSlice.middleware,
+          jobsApi.middleware,
         )
-        
-      
         .concat(detailworkApi.middleware), 
 });

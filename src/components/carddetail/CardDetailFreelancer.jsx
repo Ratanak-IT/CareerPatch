@@ -121,9 +121,9 @@ export default function CardDetailFreelancer() {
   const [comments,   setComments]   = useState([]);
   const [imgError,   setImgError]   = useState(false);
 
-  const { data: byIdResp, isLoading: byIdLoading, isError: byIdError, error: byIdErrObj } =
+  const { data: byIdResp, isLoading: byIdLoading, isError: byIdError} =
     useGetServiceByIdQuery(serviceId, { skip: !serviceId });
-  const { data: listResp, isLoading: listLoading, isError: listError, error: listErrObj } =
+  const { data: listResp, isLoading: listLoading, isError: listError} =
     useGetServicesQuery(undefined, { skip: !serviceId });
 
   const service = useMemo(() => {
@@ -172,8 +172,12 @@ export default function CardDetailFreelancer() {
   if (!serviceId) return <ErrorState message="Missing service ID." onBack={() => navigate(-1)} />;
   if (loading)    return <Skeleton />;
   if (!service) {
-    const msg = (byIdError && JSON.stringify(byIdErrObj)) || (listError && JSON.stringify(listErrObj)) || "Not found.";
-    return <ErrorState message={msg} onBack={() => navigate(-1)} />;
+    return (
+      <ErrorState
+        message="This service is unavailable or has been removed."
+        onBack={() => navigate(-1)}
+      />
+    );
   }
 
   // theme helpers

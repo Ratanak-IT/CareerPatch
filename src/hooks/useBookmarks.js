@@ -1,5 +1,6 @@
 // src/hooks/useBookmarks.js
 import { useCallback, useMemo } from "react";
+import { useSelector } from "react-redux";
 import {
   useGetServiceBookmarksQuery,
   useAddServiceBookmarkMutation,
@@ -8,6 +9,7 @@ import {
   useAddJobBookmarkMutation,
   useRemoveJobBookmarkMutation,
 } from "../services/servicesApi";
+import { selectIsAuthed } from "../features/auth/authSlice";
 
 function extractArray(raw) {
   if (Array.isArray(raw)) return raw;
@@ -17,80 +19,77 @@ function extractArray(raw) {
   return [];
 }
 
-// Try to detect the target id field in a bookmark record
 function getTargetId(item) {
   return (
     item?.serviceId ??
-    item?.jobId ??
-    item?.targetId ??
+    item?.jobId     ??
+    item?.targetId  ??
     item?.service?.id ??
-    item?.job?.id ??
+    item?.job?.id   ??
     null
   );
 }
 
 export function useBookmarks({ id, type = "service" }) {
   const isService = type === "service";
+  const isAuthed  = useSelector(selectIsAuthed);
 
-  // Lists
-  const serviceQ = useGetServiceBookmarksQuery(undefined, { skip: !isService });
-  const jobQ = useGetJobBookmarksQuery(undefined, { skip: isService });
+  // Skip ALL network calls when the user is not logged in.
+  // Both bookmark endpoints require authentication — firing them as a guest
+  // produces a 401 on every single card render.
+  const serviceQ = useGetServiceBookmarksQuery(undefined, {
+    skip: !isAuthed || !isService,
+  });
+  const jobQ = useGetJobBookmarksQuery(undefined, {
+    skip: !isAuthed || isService,
+  });
 
   const items = useMemo(() => {
+    if (!isAuthed) return [];
     const raw = isService ? serviceQ.data : jobQ.data;
     return extractArray(raw);
-  }, [isService, serviceQ.data, jobQ.data]);
+  }, [isAuthed, isService, serviceQ.data, jobQ.data]);
 
-  // Mutations
-  const [addService] = useAddServiceBookmarkMutation();
+  const [addService]    = useAddServiceBookmarkMutation();
   const [removeService] = useRemoveServiceBookmarkMutation();
-  const [addJob] = useAddJobBookmarkMutation();
-  const [removeJob] = useRemoveJobBookmarkMutation();
+  const [addJob]        = useAddJobBookmarkMutation();
+  const [removeJob]     = useRemoveJobBookmarkMutation();
 
-  // Find bookmark record for this post id (so we can delete by bookmarkId)
   const match = useMemo(() => {
+    if (!id || !isAuthed) return undefined;
     const strId = String(id);
     return items.find((x) => {
       const t = getTargetId(x);
       return t != null && String(t) === strId;
     });
-  }, [items, id]);
+  }, [items, id, isAuthed]);
 
   const liked = !!match;
 
   const toggle = useCallback(async () => {
-    if (!id) return;
+    if (!id || !isAuthed) return;
 
-    // IMPORTANT: DELETE uses bookmarkId = match.id (from your backend style)
     try {
       if (liked) {
         if (!match?.id) throw new Error("Missing bookmark id (match.id)");
         if (isService) await removeService(match.id).unwrap();
-        else await removeJob(match.id).unwrap();
+        else           await removeJob(match.id).unwrap();
       } else {
         if (isService) await addService(id).unwrap();
-        else await addJob(id).unwrap();
+        else           await addJob(id).unwrap();
       }
 
-      // Refresh list so UI updates
       if (isService) serviceQ.refetch();
-      else jobQ.refetch();
+      else           jobQ.refetch();
     } catch (err) {
       console.error("Bookmark toggle failed:", err);
       throw err;
     }
-  }, [
-    id,
-    liked,
-    match,
-    isService,
-    addService,
-    removeService,
-    addJob,
-    removeJob,
-    serviceQ,
-    jobQ,
-  ]);
+  }, [id, isAuthed, liked, match, isService, addService, removeService, addJob, removeJob, serviceQ, jobQ]);
 
-  return { liked, toggle, isLoading: isService ? serviceQ.isLoading : jobQ.isLoading };
+  return {
+    liked,
+    toggle,
+    isLoading: isAuthed ? (isService ? serviceQ.isLoading : jobQ.isLoading) : false,
+  };
 }

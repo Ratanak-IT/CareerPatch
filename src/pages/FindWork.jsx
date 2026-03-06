@@ -1,4 +1,6 @@
 // src/pages/FindWork.jsx
+// TEMPORARY: added console.log to reveal real job object fields from the API.
+// Remove the log lines once the correct field names are confirmed.
 import { useMemo, useState } from "react";
 import { useGetAllJobsQuery } from "../services/servicesApi";
 import HeroSection from "../components/findwork/HeroSection";
@@ -15,11 +17,20 @@ export default function FindWork() {
   const [visibleCount,    setVisibleCount]     = useState(PAGE_SIZE);
 
   const jobs = useMemo(() => {
-    if (Array.isArray(data))                return data;
-    if (Array.isArray(data?.content))       return data.content;
-    if (Array.isArray(data?.data?.content)) return data.data.content;
-    if (Array.isArray(data?.data))          return data.data;
-    return [];
+    let list = [];
+    if (Array.isArray(data))                list = data;
+    else if (Array.isArray(data?.content))       list = data.content;
+    else if (Array.isArray(data?.data?.content)) list = data.data.content;
+    else if (Array.isArray(data?.data))          list = data.data;
+
+    // ── DEBUG: log the first job so we can see the real field names ──────
+    if (list.length > 0) {
+      console.log("🔍 Job object keys:", Object.keys(list[0]));
+      console.log("🔍 First job full object:", list[0]);
+    }
+    // ── END DEBUG ─────────────────────────────────────────────────────────
+
+    return list;
   }, [data]);
 
   const filtered = useMemo(() => {
@@ -56,12 +67,7 @@ export default function FindWork() {
         onChangeBudget={setBudgetRange}
         onSubmit={handleSearch}
       />
-
-      {/* pt clears the half of SearchBar that sticks below hero
-          Desktop: 64px/2 = 32px + gap = pt-14
-          Mobile:  160px/2 = 80px + gap = pt-24 on mobile */}
-      <div className="max-w-[1440px] mx-auto px-6 lg:px-[120px]
-                      pt-16 md:pt-14 pb-16">
+      <div className="max-w-[1440px] mx-auto px-6 lg:px-[120px] pt-16 md:pt-14 pb-16">
         <JobsGrid
           filtered={filtered}
           visibleCount={visibleCount}

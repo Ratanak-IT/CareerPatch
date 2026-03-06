@@ -3,16 +3,17 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import { useSelector } from "react-redux";
 import { useBookmarks } from "../../hooks/useBookmarks";
+import { selectIsAuthed } from "../../features/auth/authSlice";
 
 const FALLBACK_IMAGE  = "https://placehold.co/285x253?text=No+Image";
 const FALLBACK_AVATAR = "https://placehold.co/32x32?text=?";
 
 function selectMe(state) {
   return (
-    state?.auth?.user  ||
-    state?.auth?.me    ||
+    state?.auth?.user    ||
+    state?.auth?.me      ||
     state?.profile?.user ||
-    state?.profile?.me ||
+    state?.profile?.me   ||
     null
   );
 }
@@ -29,28 +30,52 @@ export default function FreelancerCard({
   authorId,
   postType = "service",
 }) {
-  const me   = useSelector(selectMe);
-  const role = (me?.userType || me?.role || "").toString().toUpperCase();
-  const canBookmark = role === "BUSINESS_OWNER";
+  const me       = useSelector(selectMe);
+  const isAuthed = useSelector(selectIsAuthed);
+  const role     = (me?.userType || me?.role || "").toString().toUpperCase();
+  const canBookmark = isAuthed && role === "BUSINESS_OWNER";
 
   const { liked: likedFromHook, toggle } = useBookmarks({ id, type: postType });
   const [liked, setLiked] = useState(likedFromHook);
   useEffect(() => { setLiked(likedFromHook); }, [likedFromHook]);
 
-  function handleToggle(e) {
+  const navigate = useNavigate();
+  const linkTo   = postType === "job" ? `/jobs/${id}` : `/services/${id}`;
+
+  // Central auth redirect helper
+  const redirectToLogin = (destination) => {
+    navigate(`/login?redirect=${encodeURIComponent(destination)}`);
+  };
+
+  const requireAuth = (e) => {
+    if (!isAuthed) {
+      e.preventDefault();
+      e.stopPropagation();
+      redirectToLogin(linkTo);
+    }
+  };
+
+  const handleBookmark = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!isAuthed) { redirectToLogin(linkTo); return; }
     setLiked((prev) => !prev);
-    toggle().catch(() => setLiked((prev) => !prev)); // revert on error
-  }
+    toggle().catch(() => setLiked((prev) => !prev));
+  };
 
-  const linkTo  = postType === "job" ? `/jobs/${id}` : `/services/${id}`;
-  const navigate = useNavigate();
-
+  // Profile click also requires login
   const goProfile = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!isAuthed) { redirectToLogin(`/freelancers/${authorId}`); return; }
     if (authorId) navigate(`/freelancers/${authorId}`);
+  };
+
+  const handleMessage = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isAuthed) { redirectToLogin(linkTo); return; }
+    // message logic here
   };
 
   if (!id) return null;
@@ -58,6 +83,7 @@ export default function FreelancerCard({
   return (
     <Link
       to={linkTo}
+      onClick={requireAuth}
       className="group flex flex-col w-full rounded-2xl overflow-hidden
                  bg-white dark:bg-slate-800
                  border border-gray-100 dark:border-slate-700
@@ -73,11 +99,11 @@ export default function FreelancerCard({
           onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
         />
 
-        {/* Heart bookmark — BUSINESS_OWNER only */}
+        {/* Bookmark — BUSINESS_OWNER only */}
         {canBookmark && (
           <button
             type="button"
-            onClick={handleToggle}
+            onClick={handleBookmark}
             className={`absolute top-3 right-3 z-50 w-8 h-8 rounded-full
                         backdrop-blur-sm flex items-center justify-center
                         shadow-md transition-all duration-200 hover:scale-110 active:scale-95
@@ -102,17 +128,24 @@ export default function FreelancerCard({
             </svg>
           </button>
         )}
+
+        {/* Guest overlay hint */}
+        {!isAuthed && (
+          <div className="absolute inset-0 bg-transparent group-hover:bg-black/5 transition-colors duration-200 flex items-end justify-center pb-3 opacity-0 group-hover:opacity-100 pointer-events-none">
+            <span className="bg-black/60 text-white text-[10px] font-semibold px-3 py-1 rounded-full">
+              Login to view details
+            </span>
+          </div>
+        )}
       </div>
 
       {/* ── Body ── */}
       <div className="p-4 flex flex-col flex-1 overflow-hidden">
 
-        {/* Title */}
         <h2 className="text-[#1E88E5] dark:text-blue-400 font-bold text-sm mb-1 truncate">
           {title}
         </h2>
 
-        {/* Description */}
         <p
           className="text-gray-500 dark:text-slate-500 text-xs leading-relaxed mb-4 overflow-hidden"
           style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}
@@ -138,7 +171,6 @@ export default function FreelancerCard({
           <span className="text-gray-400 dark:text-slate-500 text-xs">{date}</span>
         </div>
 
-        {/* Divider */}
         <div className="border-t border-gray-100 dark:border-slate-700 mb-3" />
 
         {/* Author + Message */}
@@ -147,7 +179,7 @@ export default function FreelancerCard({
             type="button"
             onClick={goProfile}
             className="flex items-center gap-2 text-left"
-            aria-label="View profile"
+            aria-label={isAuthed ? "View profile" : "Login to view profile"}
           >
             <img
               src={avatar || FALLBACK_AVATAR}
@@ -162,12 +194,12 @@ export default function FreelancerCard({
 
           <button
             type="button"
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            onClick={handleMessage}
             className="bg-[#1E88E5] hover:bg-blue-600 dark:bg-blue-500 dark:hover:bg-blue-400
                        text-white text-xs font-semibold px-3 py-1.5 rounded-lg
                        transition-colors duration-200 active:scale-95"
           >
-            Message
+            {isAuthed ? "Message" : "Login"}
           </button>
         </div>
       </div>
