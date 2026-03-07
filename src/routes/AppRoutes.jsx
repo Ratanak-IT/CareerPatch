@@ -20,14 +20,14 @@ import DetailWorkPage from "../pages/DetailWork.jsx";
 import ContactPage from "../pages/ContactPage.jsx";
 
 function ProfileRouter() {
-  const isAuthed  = useSelector(selectIsAuthed);
-  const authUser  = useSelector(selectAuthUser); 
+  const isAuthed = useSelector(selectIsAuthed);
+  const authUser = useSelector(selectAuthUser);
 
   const { data: meRes, isLoading } = useMeQuery(undefined, { skip: !isAuthed });
 
   if (!isAuthed) return <LoginPage />;
   const userFromMe = meRes?.data ?? meRes;
-  const user       = authUser || userFromMe;
+  const user = authUser || userFromMe;
 
   // If we have no user data at all yet, wait for the query
   if (!user && isLoading) {
@@ -51,26 +51,31 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route element={<RootLayout />}>
-        <Route path="/"            element={<Home />} />
-        <Route path="/findwork"    element={<FindWork />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/findwork" element={<FindWork />} />
         <Route path="/findfreelan" element={<FindFreelancers />} />
-        <Route path="/about"       element={<About />} />
+        <Route path="/about" element={<About />} />
 
         {/* Dynamic profile — reads userType from Redux + authApi cache */}
 
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/profile" element={<ProfileRouter />} />
-<Route path="/freelancers/:userId" element={<FreelancerPublicProfile />} />
-<Route path="/jobs/:jobId" element={<DetailWorkPage />} />
+        <Route
+          path="/freelancers/:userId"
+          element={<FreelancerPublicProfile />}
+        />
+        <Route path="/jobs/:jobId" element={<DetailWorkPage />} />
 
         <Route path="/services/:serviceId" element={<CardDetailFreelancer />} />
         <Route path="/jobs/:jobId" element={<CardDetailBusiness />} />
 
-        <Route path="/login"    element={<LoginPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<Register />} />
-
-        <Route path="*" element={<div style={{ padding: 24 }}>404 Not Found</div>} />
       </Route>
+      <Route
+        path="*"
+        element={<div style={{ padding: 24 }}>404 Not Found</div>}
+      />
     </Routes>
   );
 }

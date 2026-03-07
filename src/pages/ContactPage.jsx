@@ -68,7 +68,7 @@ export default function ContactPage() {
       {/* Hero */}
       <div className="max-w-5xl mx-auto text-center mb-10">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white">
-          Get in Touch
+          Contact us
         </h1>
         <p className="mt-3 text-slate-500 dark:text-slate-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
           Have questions? Send us a message and we’ll respond as soon as possible.
@@ -78,7 +78,7 @@ export default function ContactPage() {
       {/* Layout */}
       <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* LEFT — Contact Form */}
-        <div className="bg-white dark:bg-[#1A1D27] rounded-2xl shadow-sm border border-slate-100 dark:border-[#2A2D3A] p-6 sm:p-8">
+        <div className="bg-white dark:bg-[#1A1D27] rounded-2xl border border-slate-100 dark:border-[#2A2D3A] p-6 sm:p-8">
           {/* Card header */}
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center shrink-0">

@@ -27,9 +27,9 @@ export default function MentorCard({ name, role, spec, img, socials = {} }) {
 
   return (
     <div className={`rounded-2xl border ${cardBg} px-6 sm:px-8 py-7 shadow-sm transition-colors`}>
-      <h3 className={`hidden md:block text-xl font-semibold text-left ${t1}`}>
+      {/* <h3 className={`hidden md:block text-xl font-semibold text-left ${t1}`}>
         Mentor / Supervisors
-      </h3>
+      </h3> */}
 
       <div className="mt-6 flex flex-col items-center text-center min-[428px]:flex-row min-[428px]:items-center min-[428px]:text-left min-[428px]:gap-8">
         <div className={`shrink-0 overflow-hidden rounded-xl w-[170px] h-[150px] min-[428px]:w-[143px] min-[428px]:h-[133px] ${dm ? "bg-slate-700" : "bg-white"}`}>

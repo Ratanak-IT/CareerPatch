@@ -24,6 +24,8 @@ import DetailWork from './pages/DetailWork.jsx'
 import DetailWorkPage from './pages/DetailWork.jsx'
 import ContactPage from './pages/ContactPage.jsx'
 import BusinessPublicProfile from './pages/businessPublicProfile.jsx'
+import ScrollToTop from './components/common/ScrollToTop.jsx'
+import NotFound from './components/notfound/NotfoundComponent.js'
 
 
 setupListeners(store.dispatch);
@@ -33,6 +35,7 @@ createRoot(document.getElementById('root')).render(
     <React.StrictMode>
       <Provider store={store}>
         <BrowserRouter>
+        <ScrollToTop/>
           <DarkModeProvider>
             <Routes>
               <Route element={<RootLayout />}>
@@ -55,8 +58,8 @@ createRoot(document.getElementById('root')).render(
                
                 <Route path="/login"                 element={<LoginPage />} />
                 <Route path="/register"              element={<Register />} />
-                
               </Route>
+                <Route path="*" element={<NotFound />} />
             </Routes>
           </DarkModeProvider>
           <ToastContainer position="top-right" autoClose={800} />

@@ -11,7 +11,7 @@ export default function HeroSectionComponent({
 }) {
   return (
     <div
-      className="relative w-full pb-[164px] md:pb-[68px]"
+      className="relative w-full pb-7 sm:pb-[80px] md:pb-[30px]"
       style={{ fontFamily: "'Poppins', sans-serif" }}
     >
       {/* ── Full-width background — same as MainSection / HeroSection ── */}
@@ -19,7 +19,9 @@ export default function HeroSectionComponent({
         className={[
           "w-full overflow-hidden relative",
           "bg-gradient-to-br from-[#F3F4F6] to-[#1E88E5]/25",
-          "dark:bg-gradient-to-br dark:from-[#0d1b2e] dark:via-[#0f2240] dark:to-[#0d1520]",
+          "dark:from-[#0d1b2e] dark:via-[#0f2240] dark:to-[#0d1520]",
+          // bottom padding = half of SearchBar height so bar sits on the edge
+          "pb-[88px] sm:pb-[44px] md:pb-[36px] py-15",
         ].join(" ")}
       >
         {/* Dot-grid — dark only */}
@@ -32,11 +34,11 @@ export default function HeroSectionComponent({
         />
 
         {/* Inner — same max-width + padding as MainSection */}
-        <div className="relative z-10 max-w-[1440px] mx-auto px-6 lg:px-[120px] flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-0 pt-10 pb-16 lg:py-0 lg:h-[360px]">
+        <div className="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-[120px] flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-0 pt-10 pb-16 lg:py-0 lg:h-[360px]">
 
           {/* LEFT — text */}
           <div className="w-full lg:w-[52%] text-center lg:text-left space-y-4">
-            <h1 className="font-bold leading-[1.2] text-[28px] sm:text-[36px] md:text-[44px] lg:text-[52px] m-0 text-gray-900 dark:text-white">
+            <h1 className="font-bold leading-[1.2] text-[22px] sm:text-[32px] md:text-[40px] lg:text-[48px] m-0 text-gray-900 dark:text-white">
               Discover{" "}
               <span className="text-[#1E88E5] dark:text-blue-400">our freelancers</span>{" "}and
               <br />
@@ -53,7 +55,7 @@ export default function HeroSectionComponent({
               <img
                 src={imgMain}
                 alt="Freelancer with Tablet"
-                className="relative z-10 w-[200px] sm:w-[260px] md:w-[310px] lg:w-[360px] h-auto object-contain"
+                className="relative z-10 w-[200px] sm:w-[220px] md:w-[280px] lg:w-[340px] h-auto object-contain"
                 style={{ filter: "drop-shadow(0 20px 40px rgba(30,136,229,0.15))" }}
               />
               {/* Glow blob */}
@@ -64,7 +66,7 @@ export default function HeroSectionComponent({
       </section>
 
       {/* SearchBar — flush at bottom, same px as MainSection */}
-      <div className="absolute bottom-0 left-0 right-0 px-4 sm:px-8 lg:px-[120px] z-20">
+      <div className="absolute bottom-0 left-0 right-0 px-6 sm:px-8 md:px-[25px] lg:px-[120px] 2xl:px-60 z-20">
         <div className="max-w-[1440px] mx-auto">
           <FreelancerSearchBarComponent
             category={category}

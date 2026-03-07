@@ -48,14 +48,6 @@ function formatDate(value) {
   return `${dd}/${mm}/${yyyy}`;
 }
 
-/**
- * mode:
- *  - "owner"  => editable profile + post + favorites + OwnServiceCard
- *  - "public" => same UI but hide owner-only actions + show normal FreelancerCard
- *
- * publicUserId:
- *  - required when mode="public"
- */
 export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) {
   const navigate = useNavigate();
   const isOwner = mode === "owner";
@@ -404,7 +396,7 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
               )}
 
               {!servicesLoading && !servicesError && servicesForCards.length > 0 && (
-                <div className="grid gap-x-[50px] gap-y-6 justify-items-center grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-[1240px] mx-auto">
+                <div className="grid gap-x-[50px] gap-y-6 justify-items-center grid-cols-1 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 max-w-[1240px] mx-auto">
                   {servicesForCards.map((s) => (
                     <FreelancerCard
                       key={s?.id}
@@ -512,7 +504,7 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
               )}
 
               {!servicesLoading && !servicesError && servicesForCards.length > 0 && (
-                <div className="grid gap-x-[50px] gap-y-6 justify-items-center grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-[1240px] mx-auto">
+                <div className="grid  gap-y-6 justify-items-center grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 max-w-[1240px] mx-auto">
                   {servicesForCards.map((s) => (
                     <OwnServiceCard
                       key={s?.id}

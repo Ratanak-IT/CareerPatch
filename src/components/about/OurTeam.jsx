@@ -47,8 +47,8 @@ function TeamCard({ img, name, role, badge, socials, dm }) {
   return (
     <div className={`h-full rounded-2xl border ${cardBg} px-6 py-8 text-center transition-colors`}>
       <img src={img} alt={name} className="mx-auto h-32 w-32 rounded-full object-cover ring-2 ring-slate-100" />
-      <div className={`mt-5 text-sm font-semibold ${t1}`}>{name}</div>
-      <div className={`mt-1 text-xs ${t2}`}>{role}</div>
+      <div className={`mt-5 text-lg font-semibold ${t1}`}>{name}</div>
+      <div className={`mt-1 text-sm ${t2}`}>{role}</div>
 
       <div className="mt-4 flex items-center justify-center gap-2">
         {socials?.github && (
@@ -69,7 +69,7 @@ function TeamCard({ img, name, role, badge, socials, dm }) {
       </div>
 
       <div className={`mx-auto mt-4 h-px w-4/5 ${divider}`} />
-      <div className={`mt-3 text-xs ${t2}`}>
+      <div className={`mt-3 text-sm ${t2}`}>
         <span className="text-[#2563EB]">•</span> {badge}
       </div>
     </div>
@@ -112,7 +112,7 @@ export default function OurTeam() {
 
       {/* Our Team */}
       <div className={`mx-auto w-full max-w-7xl rounded-3xl border ${wrapBg} p-5 sm:p-6 md:p-8 shadow-sm transition-colors`}>
-        <h2 className={`text-lg font-semibold text-left ${t1}`}>Our Team</h2>
+        <h2 className={`text-2xl font-semibold text-center`}>Our Team</h2>
 
         {/* Desktop: 3 + 4 layout */}
         <div className="hidden lg:block">

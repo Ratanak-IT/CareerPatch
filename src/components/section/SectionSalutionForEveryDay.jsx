@@ -1,5 +1,6 @@
 import React from "react";
 import ButtonComponent from "../button/ButtonComponent";
+import { Link } from "react-router";
 
 const FEATURES = [
   "The best for every budget",
@@ -45,6 +46,7 @@ export default function SectionSolutionForEveryNeed() {
           </p>
 
           {/* Contact button */}
+          <Link to="/about#contact">
           <div className="pt-2">
             <ButtonComponent
               text={
@@ -68,6 +70,7 @@ export default function SectionSolutionForEveryNeed() {
               onClick={() => console.log("Contact clicked")}
             />
           </div>
+          </Link>
         </div>
 
         {/* ── RIGHT: Image + floating pills ── */}

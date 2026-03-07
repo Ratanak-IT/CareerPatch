@@ -167,7 +167,6 @@ export const serviceApi = createApi({
       invalidatesTags: ["Service"],
     }),
 
-    // ───────────── CATEGORIES ─────────────
     getCategories: builder.query({
       query: () => "/api/jobs-service/categories",
       transformResponse: (res) => {
@@ -178,8 +177,6 @@ export const serviceApi = createApi({
       },
     }),
 
-    // ───────────── SERVICE BOOKMARKS (✅ FIXED) ─────────────
-    // Postman: /api/jobs-service/service-bookmark :contentReference[oaicite:1]{index=1}
     getServiceBookmarks: builder.query({
       query: () => "/api/jobs-service/service-bookmark",
       providesTags: ["ServiceBookmark"],

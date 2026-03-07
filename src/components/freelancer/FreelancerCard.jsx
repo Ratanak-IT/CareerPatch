@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router";
 import { useSelector } from "react-redux";
 import { useBookmarks } from "../../hooks/useBookmarks";
 import { selectIsAuthed } from "../../features/auth/authSlice";
+import { FiChevronRight } from "react-icons/fi";
 
 const FALLBACK_IMAGE  = "https://placehold.co/285x253?text=No+Image";
 const FALLBACK_AVATAR = "https://placehold.co/32x32?text=?";
@@ -91,11 +92,11 @@ export default function FreelancerCard({
                  hover:-translate-y-1 transition-all duration-300"
     >
       {/* ── Image ── */}
-      <div className="relative shrink-0 overflow-hidden">
+      <div className="relative shrink-0 overflow-hidden" style={{ height: "clamp(230px, 25vw, 176px)" }}>
         <img
           src={image || FALLBACK_IMAGE}
           alt={title}
-          className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
         />
 
@@ -140,14 +141,14 @@ export default function FreelancerCard({
       </div>
 
       {/* ── Body ── */}
-      <div className="p-4 flex flex-col flex-1 overflow-hidden">
+      <div className="p-3 sm:p-4 flex flex-col flex-1 overflow-hidden">
 
-        <h2 className="text-[#1E88E5] dark:text-blue-400 font-bold text-sm mb-1 truncate">
+        <h2 className="text-[#1E88E5] dark:text-blue-100 font-bold text-sm mb-1 truncate">
           {title}
         </h2>
 
         <p
-          className="text-gray-500 dark:text-slate-500 text-xs leading-relaxed mb-4 overflow-hidden"
+          className="text-gray-500 dark:text-gray-300 text-xs leading-relaxed mb-4 overflow-hidden"
           style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}
         >
           {description}
@@ -161,14 +162,14 @@ export default function FreelancerCard({
               .slice(0, 2)
               .map((t) => (
                 <span key={t}
-                  className="bg-[#1E88E5]/10 dark:bg-blue-500/20
-                             text-[#1E88E5] dark:text-blue-400
+                  className="bg-[#1E88E5]/10 dark:bg-blue-300/20
+                             text-[#1E88E5] dark:text-blue-200
                              text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
                   {t}
                 </span>
               ))}
           </div>
-          <span className="text-gray-400 dark:text-slate-500 text-xs">{date}</span>
+          <span className="text-gray-400 dark:text-gray-300 text-xs">{date}</span>
         </div>
 
         <div className="border-t border-gray-100 dark:border-slate-700 mb-3" />
@@ -193,14 +194,14 @@ export default function FreelancerCard({
           </button>
 
           <button
-            type="button"
-            onClick={handleMessage}
-            className="bg-[#1E88E5] hover:bg-blue-600 dark:bg-blue-500 dark:hover:bg-blue-400
-                       text-white text-xs font-semibold px-3 py-1.5 rounded-lg
-                       transition-colors duration-200 active:scale-95"
-          >
-            {isAuthed ? "Message" : "Login"}
-          </button>
+  className="flex items-center justify-center
+             w-5 h-5 rounded-full
+             bg-gray-100 hover:bg-gray-300
+             text-gray-400 hover:text-gray-800
+             transition duration-200"
+>
+  <FiChevronRight size={10} />
+</button>
         </div>
       </div>
     </Link>

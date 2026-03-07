@@ -1,17 +1,104 @@
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useGetCategoriesQuery } from "../../services/categoriesApi";
 
-const categories = [
-  "All",
-  "Freelancer",
-  "Python Programming",
-  "Designer",
-  "Developer",
-  "Writer",
-  "Marketer",
-  "Consultant",
-  "Photographer",
-  "Videographer",
-];
+function ModernDropdown({
+  value,
+  options,
+  onChange,
+  placeholder,
+  loading = false,
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative w-full h-full">
+      <button
+        type="button"
+        onClick={() => !loading && setOpen((v) => !v)}
+        className="w-full h-full flex items-center justify-between px-4 md:px-5
+                   text-sm text-left bg-transparent outline-none
+                   text-gray-500 dark:text-slate-300 transition-colors"
+      >
+        <span className="truncate">
+          {loading ? "Loading categories..." : value || placeholder}
+        </span>
+
+        <svg
+          className={`w-4 h-4 shrink-0 ml-2 text-gray-400 dark:text-slate-500 transition-transform ${
+            open ? "rotate-180" : ""
+          }`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      {open && !loading && (
+        <div
+          className="absolute left-0 top-[calc(100%+10px)] z-50 w-full overflow-hidden
+                     rounded-2xl border border-gray-200 dark:border-[#1e3a5f]
+                     bg-white dark:bg-[#0d1b35]
+                     shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.45)]"
+        >
+          <div className="max-h-64 overflow-y-auto py-2">
+            {options.map((option) => {
+              const active = value === option;
+
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => {
+                    onChange?.(option);
+                    setOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-4 py-3 text-sm text-left transition-colors
+                    ${
+                      active
+                        ? "bg-blue-50 text-[#1E88E5] dark:bg-[#14345c] dark:text-blue-400"
+                        : "text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-[#13233f]"
+                    }`}
+                >
+                  <span className="truncate">{option}</span>
+                  {active && (
+                    <svg
+                      className="w-4 h-4 shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        d="M5 13l4 4L19 7"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function FreelancerSearchBarComponent({
   category = "All",
@@ -20,9 +107,16 @@ export default function FreelancerSearchBarComponent({
   onChangeSearch,
   onSubmitSearch,
 }) {
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { data: categories = [], isLoading } = useGetCategoriesQuery();
 
-  // keep internal input synced with parent
+  const categoryOptions = [
+    "All",
+    ...categories
+      .map((item) => item?.name)
+      .filter(Boolean)
+      .filter((name, index, arr) => arr.indexOf(name) === index),
+  ];
+
   const [localSearch, setLocalSearch] = useState(searchText);
 
   useEffect(() => {
@@ -38,88 +132,114 @@ export default function FreelancerSearchBarComponent({
     if (e.key === "Enter") handleSearch();
   };
 
-  // ✅ match Job SearchBar height
-  const HEIGHT = "h-[56px]";
-
   return (
-    <div className="flex items-center justify-center w-full">
-      <div className="relative w-full">
+    <div style={{ fontFamily: "'Poppins', sans-serif" }}>
+      {/* Desktop */}
+      <div
+        className="hidden md:flex items-stretch h-[64px] rounded-2xl overflow-visible
+                   bg-white dark:bg-[#0d1b35]
+                   border border-gray-200 dark:border-[#1e3a5f]
+                   shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_32px_rgba(0,0,0,0.5)]"
+      >
+        {/* Search input */}
         <div
-          className="
-            flex items-center
-            w-full
-            bg-white
-            border border-gray-100
-            rounded-lg
-            shadow-lg
-            overflow-visible
-          "
+          className="flex items-center gap-3 px-6 min-w-0"
+          style={{ flex: "2" }}
         >
-          {/* Category Dropdown */}
-          <div className="relative">
+          <svg
+            className="w-[18px] h-[18px] text-gray-400 dark:text-slate-500 shrink-0"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" strokeLinecap="round" />
+          </svg>
+
+          <input
+            type="text"
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Search by title, category, freelancer name"
+            className="flex-1 min-w-0 bg-transparent outline-none
+                       text-sm text-gray-700 dark:text-slate-200
+                       placeholder-gray-400 dark:placeholder-slate-500"
+          />
+
+          {localSearch && (
             <button
               type="button"
-              onClick={() => setDropdownOpen((s) => !s)}
-              className={`
-                flex items-center gap-2
-                px-4
-                ${HEIGHT}
-                text-gray-700 text-sm font-normal
-                bg-transparent
-                outline-none
-                cursor-pointer
-                whitespace-nowrap
-              `}
+              onClick={() => {
+                setLocalSearch("");
+                onChangeSearch?.("");
+              }}
+              className="text-gray-300 hover:text-gray-500 dark:text-slate-600
+                         dark:hover:text-slate-400 shrink-0"
             >
-              <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.35-4.35" />
-              </svg>
-
-              <span className="truncate max-w-[110px]">{category}</span>
-
               <svg
-                className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+                className="w-4 h-4"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={2}
                 viewBox="0 0 24 24"
               >
-                <path d="m6 9 6 6 6-6" />
+                <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
               </svg>
             </button>
+          )}
+        </div>
 
-            {dropdownOpen && (
-              <div className="absolute top-full left-0 mt-1 w-52 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => {
-                      onChangeCategory?.(cat);
-                      setDropdownOpen(false);
-                    }}
-                    className={`
-                      w-full text-left px-4 py-2 text-sm
-                      hover:bg-gray-50 transition-colors
-                      ${cat === category ? "text-blue-600 font-medium bg-blue-50" : "text-gray-700"}
-                    `}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+        {/* Divider */}
+        <div className="w-px self-stretch bg-gray-200 dark:bg-[#1e3a5f]" />
 
-          {/* Divider */}
-          <div className="w-px h-6 bg-gray-300 shrink-0" />
+        {/* Category filter */}
+        <div className="relative flex items-center min-w-[220px]" style={{ flex: "1" }}>
+          <ModernDropdown
+            value={category}
+            options={categoryOptions}
+            onChange={onChangeCategory}
+            placeholder="All Category"
+            loading={isLoading}
+          />
+        </div>
 
-          {/* Search Input */}
-          <div className={`flex items-center flex-1 px-4 min-w-0 ${HEIGHT}`}>
-            <svg className="w-4 h-4 text-gray-400 shrink-0 mr-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+        {/* Search button */}
+        <button
+          type="button"
+          onClick={handleSearch}
+          className="px-10 bg-[#1E88E5] hover:bg-blue-600
+                     dark:bg-blue-500 dark:hover:bg-blue-400
+                     text-white font-semibold text-sm
+                     transition-colors shrink-0 rounded-r-2xl"
+        >
+          Search
+        </button>
+      </div>
+
+      {/* Mobile */}
+      <div className="md:hidden">
+        <div
+          className="w-full rounded-2xl overflow-visible
+                     bg-white dark:bg-[#0d1b35]
+                     border border-gray-200 dark:border-[#1e3a5f]
+                     shadow-[0_4px_20px_rgba(0,0,0,0.08)]"
+        >
+          {/* Search row */}
+          <div
+            className="flex items-center gap-3 px-4 h-[54px]
+                       border-b border-gray-100 dark:border-[#1e3a5f]"
+          >
+            <svg
+              className="w-[17px] h-[17px] text-gray-400 dark:text-slate-500 shrink-0"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              viewBox="0 0 24 24"
+            >
               <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
+              <path d="m21 21-4.35-4.35" strokeLinecap="round" />
             </svg>
 
             <input
@@ -128,53 +248,48 @@ export default function FreelancerSearchBarComponent({
               onChange={(e) => setLocalSearch(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Search by title, category, freelancer name"
-              className="
-                flex-1 min-w-0
-                bg-transparent
-                border-none outline-none
-                text-gray-700 text-sm
-                placeholder-gray-400
-              "
+              className="flex-1 bg-transparent outline-none text-[14px]
+                         text-gray-700 dark:text-slate-200
+                         placeholder-gray-400 dark:placeholder-slate-500"
             />
 
-            {localSearch && (
-              <button
-                type="button"
-                onClick={() => {
-                  setLocalSearch("");
-                  onChangeSearch?.("");
-                }}
-                className="ml-2 text-gray-300 hover:text-gray-500 shrink-0"
+            <button
+              type="button"
+              onClick={handleSearch}
+              className="w-9 h-9 rounded-xl bg-[#1E88E5] hover:bg-blue-600
+                         flex items-center justify-center shrink-0
+                         transition-colors active:scale-95"
+            >
+              <svg
+                className="w-[18px] h-[18px] text-white"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.5}
+                viewBox="0 0 24 24"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path d="M18 6 6 18M6 6l12 12" />
-                </svg>
-              </button>
-            )}
+                <path
+                  d="M5 12h14M12 5l7 7-7 7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
           </div>
 
-          {/* Search Button */}
-          <button
-            type="button"
-            onClick={handleSearch}
-            className={`
-              ${HEIGHT}
-              bg-[#1E88E5] hover:bg-blue-600
-              text-white font-semibold text-sm
-              px-8
-              transition-colors duration-200
-              whitespace-nowrap
-              rounded-r-lg
-            `}
-          >
-            Search
-          </button>
+          {/* Filter row */}
+          <div className="flex h-[48px]">
+            <div className="relative flex-1">
+              <ModernDropdown
+                value={category}
+                options={categoryOptions}
+                onChange={onChangeCategory}
+                placeholder="All Category"
+                loading={isLoading}
+              />
+            </div>
+          </div>
         </div>
       </div>
-
-      {dropdownOpen && (
-        <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
-      )}
     </div>
   );
 }

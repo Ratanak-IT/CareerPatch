@@ -1,6 +1,7 @@
 import React from "react";
 import ButtonComponent from "../button/ButtonComponent";
 import girlImg from "../../assets/girl.png";
+import { Link } from "react-router";
 
 export default function FindTheBest() {
   return (
@@ -79,6 +80,7 @@ export default function FindTheBest() {
 
           {/* Button */}
           <div className="pt-2">
+            <Link to={'/findfreelan'}>
             <ButtonComponent
               text={
                 <span className="flex items-center gap-2">
@@ -100,6 +102,7 @@ export default function FindTheBest() {
               }
               onClick={() => console.log("Find freelancer clicked")}
             />
+            </Link>
           </div>
         </div>
       </div>
