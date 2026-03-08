@@ -1,9 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useCreateServiceMutation, useGetCategoriesQuery } from "../../../services/servicesApi";
+// src/components/Auth/postcomponent/EditServiceModal.jsx
+import { useState, useRef } from "react";
+import { useGetCategoriesQuery } from "../../../services/categoriesApi";
+import { useUpdateServiceMutation } from "../../../services/servicesApi";
 import { uploadImageToCloudinary } from "../../../utils/uploadToCloudinary";
 
 const FALLBACK_THUMB = "https://placehold.co/56x56?text=?";
 
+// ── Reusable chip badge
 function Chip({ text, onRemove }) {
   return (
     <span className="inline-flex items-center gap-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-semibold px-3 py-1 rounded-full border border-blue-200 dark:border-blue-700">
@@ -12,7 +15,7 @@ function Chip({ text, onRemove }) {
         type="button"
         onClick={onRemove}
         className="hover:text-red-500 transition-colors leading-none"
-        aria-label="remove"
+        aria-label={`Remove ${text}`}
       >
         ×
       </button>
@@ -20,27 +23,36 @@ function Chip({ text, onRemove }) {
   );
 }
 
-export default function CreatePostModal({ onClose }) {
+export default function EditServiceModal({ service, onClose }) {
   const { data: categories = [] } = useGetCategoriesQuery();
-  const [createService, { isLoading: saving }] = useCreateServiceMutation();
+  const [updateService, { isLoading: saving }] = useUpdateServiceMutation();
 
+  // ── Form state (matches API payload)
   const [form, setForm] = useState({
-    title:       "",
-    description: "",
-    categoryId:  "",
-    status:      "ACTIVE",
-    imageUrls:   [],
+    title:       service?.title       || "",
+    description: service?.description || "",
+    categoryId:  service?.category?.id || service?.categoryId || "",
+    status:      service?.status      || "ACTIVE",
+    imageUrls:   Array.isArray(service?.imageUrls)
+      ? service.imageUrls
+      : Array.isArray(service?.jobImages)
+      ? service.jobImages.map((img) => img.imageUrl || img)
+      : [],
   });
 
-  const fileRef                         = useRef(null);
-  const [pickedFile, setPickedFile]     = useState(null);
-  const [previewUrl, setPreviewUrl]     = useState(null);
-  const [uploading,  setUploading]      = useState(false);
-  const [imageInput, setImageInput]     = useState("");
-  const [error,      setError]          = useState("");
+  // ── Image upload state
+  const fileRef      = useRef(null);
+  const [pickedFile, setPickedFile]   = useState(null);
+  const [previewUrl, setPreviewUrl]   = useState(null);
+  const [uploading,  setUploading]    = useState(false);
+  const [imageInput, setImageInput]   = useState("");
+
+  // ── Error
+  const [error, setError] = useState("");
 
   const busy = saving || uploading;
 
+  // ── Helpers
   const set = (key, val) => setForm((p) => ({ ...p, [key]: val }));
 
   const pickFile = (file) => {
@@ -67,14 +79,11 @@ export default function CreatePostModal({ onClose }) {
   const removeUrlImage = (idx) =>
     set("imageUrls", form.imageUrls.filter((_, i) => i !== idx));
 
-  useEffect(() => {
-    return () => { if (previewUrl) URL.revokeObjectURL(previewUrl); };
-  }, [previewUrl]);
-
-  const onSubmit = async () => {
-    if (!form.title.trim())       return setError("Title is required.");
+  // ── Submit
+  const handleSave = async () => {
+    if (!form.title.trim())    return setError("Title is required.");
     if (!form.description.trim()) return setError("Description is required.");
-    if (!form.categoryId)         return setError("Please select a category.");
+    if (!form.categoryId)      return setError("Please select a category.");
     setError("");
 
     try {
@@ -83,11 +92,12 @@ export default function CreatePostModal({ onClose }) {
       if (pickedFile) {
         setUploading(true);
         const url = await uploadImageToCloudinary(pickedFile);
-        imageUrls = [...imageUrls, url];
+        imageUrls  = [...imageUrls, url];
         setUploading(false);
       }
 
-      await createService({
+      await updateService({
+        id: service.id,
         title:       form.title,
         description: form.description,
         categoryId:  form.categoryId,
@@ -97,9 +107,9 @@ export default function CreatePostModal({ onClose }) {
 
       onClose?.();
     } catch (e) {
-      console.error(e);
+      console.error("update service error:", e);
       setUploading(false);
-      setError(e?.message || "Failed to create post.");
+      setError(e?.message || "Failed to update post.");
     }
   };
 
@@ -112,7 +122,7 @@ export default function CreatePostModal({ onClose }) {
                         px-4 sm:px-6 lg:px-10 pt-6 sm:pt-8 pb-4
                         flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
-            Freelancer Post
+            Edit Post
           </h2>
           <button
             onClick={onClose}
@@ -305,10 +315,10 @@ export default function CreatePostModal({ onClose }) {
                 </div>
               </div>
 
-              {/* Added image list */}
+              {/* Existing image list */}
               {form.imageUrls.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Added images</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Current images</p>
                   {form.imageUrls.map((url, idx) => (
                     <div
                       key={idx}
@@ -339,11 +349,11 @@ export default function CreatePostModal({ onClose }) {
             </div>
           </div>
 
-          {/* ── Post button ── */}
+          {/* ── Save button ── */}
           <div className="mt-10 flex justify-center">
             <button
               type="button"
-              onClick={onSubmit}
+              onClick={handleSave}
               disabled={busy}
               className="w-full sm:w-auto sm:min-w-[260px] bg-blue-500 hover:bg-blue-600
                          disabled:opacity-60 text-white font-semibold py-3 rounded-xl
@@ -352,7 +362,7 @@ export default function CreatePostModal({ onClose }) {
               {busy && (
                 <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               )}
-              {uploading ? "Uploading..." : saving ? "Posting..." : "Post"}
+              {uploading ? "Uploading..." : saving ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </div>

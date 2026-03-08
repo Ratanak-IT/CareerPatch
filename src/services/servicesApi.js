@@ -16,9 +16,6 @@ function make403SilentQuery(baseQueryFn) {
 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
-// ─────────────────────────────────────────────────────────────
-// Normalizers (ONLY for services/jobs lists)
-// ─────────────────────────────────────────────────────────────
 export function normalizeService(s) {
   return {
     ...s,
@@ -199,8 +196,6 @@ export const serviceApi = createApi({
       invalidatesTags: ["ServiceBookmark"],
     }),
 
-    // ───────────── JOB BOOKMARKS (✅ FIXED) ─────────────
-    // Postman: /api/jobs-service/job-bookmark :contentReference[oaicite:2]{index=2}
     getJobBookmarks: builder.query({
       query: () => "/api/jobs-service/job-bookmark",
       providesTags: ["JobBookmark"],

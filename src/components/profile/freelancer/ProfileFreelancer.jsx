@@ -504,7 +504,7 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
               )}
 
               {!servicesLoading && !servicesError && servicesForCards.length > 0 && (
-                <div className="grid  gap-y-6 justify-items-center grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 max-w-[1240px] mx-auto">
+                <div className="grid justify-items-center gap-10 grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
                   {servicesForCards.map((s) => (
                     <OwnServiceCard
                       key={s?.id}
