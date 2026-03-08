@@ -254,16 +254,17 @@ export default function ApplyJobModal({ job, onClose }) {
       setSubmitting(true);
 
       const { error: dbErr } = await supabase.from("job_applications").insert({
-        job_id:          String(job?.id || ""),
-        job_title:       job?.title || "",
-        applicant_id:    userId,
-        full_name:       form.fullName.trim(),
-        email:           form.email.trim(),
-        phone:           form.phone.trim() || null,
-        job_title_apply: form.jobTitle.trim() || null,
-        description:     form.description.trim() || null,
-        cv_url:          cvUrl,
-        overview_url:    overviewUrl,
+        job_id:           String(job?.id || ""),
+        job_title:        job?.title || "",
+        applicant_id:     userId,
+        applicant_avatar: authUser?.profileImageUrl || null,
+        full_name:        form.fullName.trim(),
+        email:            form.email.trim(),
+        phone:            form.phone.trim() || null,
+        job_title_apply:  form.jobTitle.trim() || null,
+        description:      form.description.trim() || null,
+        cv_url:           cvUrl,
+        overview_url:     overviewUrl,
       });
 
       setSubmitting(false);
