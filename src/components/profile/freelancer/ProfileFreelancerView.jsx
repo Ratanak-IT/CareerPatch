@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useNavigate } from "react-router";
-import FreelancerCard from "../components/freelancer/FreelancerCard";
+import FreelancerCard from "../../freelancer/FreelancerCard";
 
 const FALLBACK_COVER =
   "https://images.unsplash.com/photo-1529101091764-c3526daf38fe?auto=format&fit=crop&q=80&w=1600";

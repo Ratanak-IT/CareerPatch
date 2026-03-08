@@ -4,8 +4,9 @@ import HeroSectionComponent from "../components/freelancer/HeroSectionComponent"
 import FreelancerCard from "../components/freelancer/FreelancerCard";
 import { useGetServicesQuery } from "../services/freelancerPostApi";
 import { useGetUserByIdQuery } from "../services/userApi";
+import { FreelancerCardSkeleton } from "../components/loading/FreelancerCardSkeleton";
 
-const FALLBACK_IMAGE  = "https://placehold.co/285x253?text=No+Image";
+const FALLBACK_IMAGE = "https://placehold.co/285x253?text=No+Image";
 const FALLBACK_AVATAR = "https://placehold.co/32x32?text=?";
 
 function formatDate(value) {
@@ -19,19 +20,23 @@ function formatDate(value) {
 }
 
 function getServiceId(service) {
-  return service?.id ?? service?.serviceId ?? service?._id ?? service?.uuid ?? null;
+  return (
+    service?.id ?? service?.serviceId ?? service?._id ?? service?.uuid ?? null
+  );
 }
 
 function ServiceCardWithAuthor({ service, searchText, category }) {
-  const { data: userRes } = useGetUserByIdQuery(service?.userId, { skip: !service?.userId });
+  const { data: userRes } = useGetUserByIdQuery(service?.userId, {
+    skip: !service?.userId,
+  });
   const user = userRes?.data || userRes;
 
-  const serviceId    = getServiceId(service);
-  const title        = service?.title       || "Untitled";
-  const description  = service?.description || "No description";
+  const serviceId = getServiceId(service);
+  const title = service?.title || "Untitled";
+  const description = service?.description || "No description";
   const categoryName = service?.category?.name || service?.categoryName || "—";
-  const date         = formatDate(service?.createdAt);
-  const authorName   = user?.fullName        || "Freelancer";
+  const date = formatDate(service?.createdAt);
+  const authorName = user?.fullName || "Freelancer";
   const authorAvatar = user?.profileImageUrl || FALLBACK_AVATAR;
 
   const image =
@@ -45,7 +50,7 @@ function ServiceCardWithAuthor({ service, searchText, category }) {
   const q = searchText.trim().toLowerCase();
   const matchSearch =
     !q ||
-    title.toLowerCase().includes(q)        ||
+    title.toLowerCase().includes(q) ||
     categoryName.toLowerCase().includes(q) ||
     authorName.toLowerCase().includes(q);
   const matchCategory =
@@ -72,20 +77,19 @@ function ServiceCardWithAuthor({ service, searchText, category }) {
 
 export default function FindFreelancers() {
   const { data, isLoading, isError } = useGetServicesQuery();
-  const [category,   setCategory]   = useState("All");
+  const [category, setCategory] = useState("All");
   const [searchText, setSearchText] = useState("");
 
   const services = useMemo(() => {
-    if (Array.isArray(data?.content))       return data.content;
+    if (Array.isArray(data?.content)) return data.content;
     if (Array.isArray(data?.data?.content)) return data.data.content;
-    if (Array.isArray(data?.data))          return data.data;
-    if (Array.isArray(data))                return data;
+    if (Array.isArray(data?.data)) return data.data;
+    if (Array.isArray(data)) return data;
     return [];
   }, [data]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#07111f]">
-
       {/* ── Hero — NO wrapper, goes full width flush with navbar ── */}
       <HeroSectionComponent
         category={category}
@@ -97,14 +101,14 @@ export default function FindFreelancers() {
 
       {/* ── Cards grid — centered container ── */}
       <div className="max-w-[1440px] mx-auto px-6 lg:px-[120px] pt-8 pb-16">
-
         {/* Loading */}
         {isLoading && (
-          <div className="flex justify-center py-16">
-            <div className="w-8 h-8 border-4 border-[#1E88E5] border-t-transparent rounded-full animate-spin" />
-          </div>
-        )}
-
+  <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    {Array.from({ length: 8 }).map((_, i) => (
+      <FreelancerCardSkeleton key={i} />
+    ))}
+  </div>
+)}
         {/* Error */}
         {isError && (
           <p className="text-red-500 dark:text-red-400 text-center py-8">
@@ -132,12 +136,22 @@ export default function FindFreelancers() {
             {/* Empty state */}
             {services.length === 0 && (
               <div className="flex flex-col items-center justify-center py-20">
-                <svg className="w-14 h-14 mb-4 text-gray-200 dark:text-slate-700"
-                  fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0Z"/>
+                <svg
+                  className="w-14 h-14 mb-4 text-gray-200 dark:text-slate-700"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0Z"
+                  />
                 </svg>
-                <p className="font-semibold text-gray-500 dark:text-slate-400">No services found</p>
+                <p className="font-semibold text-gray-500 dark:text-slate-400">
+                  No services found
+                </p>
                 <p className="text-xs mt-1 text-gray-400 dark:text-slate-500">
                   Try adjusting your search or category
                 </p>

@@ -1,4 +1,4 @@
-// src/components/carddetail/CardDetailFreelancer.jsx
+
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useDarkMode } from "../navbar/NavbarComponent";

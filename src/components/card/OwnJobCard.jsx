@@ -8,7 +8,7 @@ import {
   useGetCategoriesQuery,
 } from "../../services/servicesApi";
 import { uploadImageToCloudinary } from "../../utils/uploadToCloudinary";
-import EditJobModal from "../modals/EditJobModal";
+import EditJobModal from "../Auth/modals/EditJobModal";
 
 const FALLBACK_IMAGE = "https://placehold.co/285x253?text=No+Image";
 

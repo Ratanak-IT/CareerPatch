@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
-import { useGetCategoriesQuery, useUpdateJobMutation } from "../../services/servicesApi";
-import { uploadImageToCloudinary } from "../../utils/uploadToCloudinary";
+import { useGetCategoriesQuery, useUpdateJobMutation } from "../../../services/servicesApi";
+import { uploadImageToCloudinary } from "../../../utils/uploadToCloudinary";
 
 const EXPERIENCE_LEVELS = ["Entry", "Junior", "Intermediate", "Senior", "Expert"];
 const FALLBACK_IMAGE = "https://placehold.co/285x253?text=No+Image";

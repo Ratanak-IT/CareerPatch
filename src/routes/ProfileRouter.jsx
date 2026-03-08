@@ -3,8 +3,8 @@ import { useSelector } from 'react-redux'
 import { selectIsAuthed, selectAuthUser } from '../features/auth/authSlice.js'
 import { useMeQuery } from '../services/authApi.js'
 import LoginPage from '../pages/Login.jsx'
-import ProfileFreelancer from '../pages/ProfileFreelancer.jsx'
-import ProfileBusinessPage from '../pages/ProfileBusiness.jsx'
+import ProfileFreelancer from '../components/profile/freelancer/ProfileFreelancer.jsx'
+import ProfileBusinessPage from '../components/profile/business/ProfileBusiness.jsx'
 
 export default function ProfileRouter() {
   const isAuthed = useSelector(selectIsAuthed)

@@ -1,4 +1,4 @@
-import SearchBar from "./SearchBar";
+import SearchBar from "../search/SearchBar";
 import sectionpagefind from "../../assets/sectionpagefind.png";
 import qestion from "../../assets/qestion.png";
 import khim from "../../assets/khim.png";

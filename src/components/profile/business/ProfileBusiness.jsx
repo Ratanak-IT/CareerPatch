@@ -3,9 +3,9 @@ import React, { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 
-import { selectIsAuthed } from "../features/auth/authSlice";
-import { useMeQuery } from "../services/profileApi";
-import { useGetUserByIdQuery } from "../services/userApi";
+import { selectIsAuthed } from "../../../features/auth/authSlice";
+import { useMeQuery } from "../../../services/profileApi";
+import { useGetUserByIdQuery } from "../../../services/userApi";
 
 import {
   useGetMyJobsQuery,
@@ -17,10 +17,10 @@ import {
   // You need an endpoint to fetch ALL jobs for public profile filtering.
   // If your hook name is different, replace this import.
   useGetAllJobsQuery,
-} from "../services/servicesApi";
+} from "../../../services/servicesApi";
 
-import EditBusinessModal from "../components/Auth/EditBusinessModal";
-import CreateJobModal from "../components/Auth/postcomponent/CreateJobModal";
+import EditBusinessModal from "../../Auth/modals/EditBusinessModal";
+import CreateJobModal from "../../Auth/modals/CreateJobModal";
 
 import ProfileBusinessView from "./profileBusinessView";
 

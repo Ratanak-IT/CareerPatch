@@ -8,7 +8,8 @@ import {
   formatDate,
   FALLBACK_IMAGE,
   FALLBACK_AVATAR,
-} from "./jobUtils";
+} from "../../utils/jobUtils";
+import JobCardSkeleton from "../loading/JobsCardSkeleton";
 
 function JobCard({ job, categoryMap = {} }) {
   const navigate = useNavigate();
@@ -53,24 +54,20 @@ function JobCard({ job, categoryMap = {} }) {
   const goBusinessProfile = (e) => {
     e.preventDefault();
     e.stopPropagation();
-
     if (!isAuthed) {
       navigate(`/login?redirect=${encodeURIComponent(`/businesses/${job.userId}`)}`);
       return;
     }
-
     if (job?.userId) navigate(`/businesses/${job.userId}`);
   };
 
   const handleBookmark = (e) => {
     e.preventDefault();
     e.stopPropagation();
-
     if (!isAuthed) {
       navigate(`/login?redirect=${encodeURIComponent(`/jobs/${jobId}`)}`);
       return;
     }
-
     toggle();
   };
 
@@ -92,9 +89,7 @@ function JobCard({ job, categoryMap = {} }) {
           src={image}
           alt={title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          onError={(e) => {
-            e.currentTarget.src = FALLBACK_IMAGE;
-          }}
+          onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
         />
 
         <button
@@ -102,18 +97,11 @@ function JobCard({ job, categoryMap = {} }) {
           className={`absolute top-3 right-3 w-8 h-8 rounded-full
                      backdrop-blur-sm flex items-center justify-center
                      shadow-md transition-all duration-200 hover:scale-110 active:scale-95
-                     ${
-                       liked && isAuthed
-                         ? "bg-[#2563EB]/10 dark:bg-[#2563EB]/20"
-                         : "bg-white/90 dark:bg-slate-800/90"
+                     ${liked && isAuthed
+                       ? "bg-[#2563EB]/10 dark:bg-[#2563EB]/20"
+                       : "bg-white/90 dark:bg-slate-800/90"
                      }`}
-          aria-label={
-            isAuthed
-              ? liked
-                ? "Remove bookmark"
-                : "Bookmark"
-              : "Login to bookmark"
-          }
+          aria-label={isAuthed ? (liked ? "Remove bookmark" : "Bookmark") : "Login to bookmark"}
           type="button"
         >
           <svg
@@ -152,15 +140,11 @@ function JobCard({ job, categoryMap = {} }) {
 
         <div className="flex items-center justify-between mb-3 text-xs text-gray-400 dark:text-gray-300 font-bold">
           <span>Date: {date}</span>
-          <span
-            className={`font-semibold ${
-              status === "OPEN"
-                ? "text-green-500"
-                : status === "DRAFT"
-                  ? "text-yellow-500"
-                  : "text-gray-500"
-            }`}
-          >
+          <span className={`font-semibold ${
+            status === "OPEN" ? "text-green-500"
+            : status === "DRAFT" ? "text-yellow-500"
+            : "text-gray-500"
+          }`}>
             {status}
           </span>
         </div>
@@ -191,9 +175,7 @@ function JobCard({ job, categoryMap = {} }) {
               src={authorAvatar}
               alt={authorName}
               className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100 dark:ring-slate-700"
-              onError={(e) => {
-                e.currentTarget.src = FALLBACK_AVATAR;
-              }}
+              onError={(e) => { e.currentTarget.src = FALLBACK_AVATAR; }}
             />
             <span className="text-gray-700 w-[13ch] dark:text-gray-300 text-xs font-medium truncate max-w-[110px]">
               {authorName}
@@ -213,6 +195,9 @@ function JobCard({ job, categoryMap = {} }) {
   );
 }
 
+/* ─────────────────────────────────────────
+   Jobs Grid
+───────────────────────────────────────── */
 export default function JobsGrid({
   filtered,
   visibleCount,
@@ -227,14 +212,18 @@ export default function JobsGrid({
 
   const visible = filteredNoDraft.slice(0, visibleCount);
 
+  /* ── Loading ── */
   if (isLoading) {
     return (
-      <div className="flex justify-center py-20">
-        <div className="w-9 h-9 border-4 border-[#1E88E5] border-t-transparent rounded-full animate-spin" />
+      <div className="grid gap-3 sm:gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <JobCardSkeleton key={i} />
+        ))}
       </div>
     );
   }
 
+  /* ── Error ── */
   if (isError) {
     return (
       <p className="text-red-500 text-center py-10">
@@ -243,9 +232,10 @@ export default function JobsGrid({
     );
   }
 
+  /* ── Grid ── */
   return (
     <>
-      <div className="grid gap-3 sm:gap-5 grid-cols-1 sm:grid-cols-1 md:grid-cols-3 lg:grid-cols-4">
+      <div className="grid gap-3 sm:gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {visible.map((job) => (
           <JobCard
             key={getJobId(job) || job?.title}
@@ -255,14 +245,10 @@ export default function JobsGrid({
         ))}
       </div>
 
+      {/* Empty state */}
       {filteredNoDraft.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-          <svg
-            className="w-14 h-14 mb-4 text-gray-200"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+          <svg className="w-14 h-14 mb-4 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
               strokeLinecap="round"
@@ -270,15 +256,14 @@ export default function JobsGrid({
               strokeWidth={1.5}
             />
           </svg>
-          <p className="font-semibold text-gray-500 dark:text-slate-400">
-            No jobs found
-          </p>
+          <p className="font-semibold text-gray-500 dark:text-slate-400">No jobs found</p>
           <p className="text-xs mt-1 text-gray-400 dark:text-slate-500">
             Try adjusting your search or filters
           </p>
         </div>
       )}
 
+      {/* See More */}
       {visibleCount < filteredNoDraft.length && (
         <div className="flex justify-center mt-10">
           <button
@@ -292,18 +277,8 @@ export default function JobsGrid({
             type="button"
           >
             See More
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.5}
-              viewBox="0 0 24 24"
-            >
-              <path
-                d="M7 17 17 7M17 7H7M17 7v10"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <path d="M7 17 17 7M17 7H7M17 7v10" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
         </div>

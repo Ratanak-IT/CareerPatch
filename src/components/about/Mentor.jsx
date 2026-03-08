@@ -1,4 +1,4 @@
-import { useDarkMode } from "../navbar/NavbarComponent";
+// src/components/about/MentorCard.jsx
 
 const GithubIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
@@ -16,38 +16,75 @@ const TelegramIcon = () => (
   </svg>
 );
 
-export default function MentorCard({ name, role, spec, img, socials = {} }) {
-  const { darkMode: dm } = useDarkMode();
-
-  const cardBg  = dm ? "bg-[#1e293b] border-slate-700"  : "bg-white border-slate-200";
-  const t1      = dm ? "text-white"     : "text-slate-900";
-  const t2      = dm ? "text-slate-400" : "text-slate-500";
-  const divider = dm ? "bg-slate-700"   : "bg-slate-200";
-  const bullet  = dm ? "text-slate-300" : "text-slate-600";
-
+export function MentorCardSkeleton() {
   return (
-    <div className={`rounded-2xl border ${cardBg} px-6 sm:px-8 py-7 shadow-sm transition-colors`}>
-      {/* <h3 className={`hidden md:block text-xl font-semibold text-left ${t1}`}>
-        Mentor / Supervisors
-      </h3> */}
+    <div className="rounded-2xl border bg-white border-slate-200
+                    dark:bg-[#1e293b] dark:border-slate-700
+                    px-6 sm:px-8 py-7 shadow-sm">
+      <div className="mt-6 flex flex-col items-center min-[428px]:flex-row min-[428px]:items-center min-[428px]:gap-8">
+        {/* Avatar */}
+        <div className="shrink-0 w-[170px] h-[150px] min-[428px]:w-[143px] min-[428px]:h-[133px]
+                        rounded-xl bg-slate-200 dark:bg-slate-700 animate-pulse" />
 
-      <div className="mt-6 flex flex-col items-center text-center min-[428px]:flex-row min-[428px]:items-center min-[428px]:text-left min-[428px]:gap-8">
-        <div className={`shrink-0 overflow-hidden rounded-xl w-[170px] h-[150px] min-[428px]:w-[143px] min-[428px]:h-[133px] ${dm ? "bg-slate-700" : "bg-white"}`}>
+        <div className="mt-6 min-[428px]:mt-0 flex-1 flex flex-col gap-2.5 items-center min-[428px]:items-start">
+          {/* Name */}
+          <div className="h-8 w-48 min-[428px]:h-6 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse" />
+          {/* Role */}
+          <div className="h-3.5 w-36 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse" />
+          {/* Spec */}
+          <div className="h-3 w-28 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse mt-1" />
+          {/* Socials */}
+          <div className="mt-2 flex gap-4">
+            <div className="h-5 w-5 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse" />
+            <div className="h-5 w-5 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse" />
+            <div className="h-5 w-5 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse" />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-7 h-px w-full bg-slate-200 dark:bg-slate-700" />
+      <div className="mt-5 h-3 w-48 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse" />
+    </div>
+  );
+}
+
+export default function MentorCard({ name, role, spec, img, socials = {} }) {
+  return (
+    <div className="rounded-2xl border bg-white border-slate-200
+                    dark:bg-[#1e293b] dark:border-slate-700
+                    px-6 sm:px-8 py-7 shadow-sm transition-colors">
+
+      <div className="mt-6 flex flex-col items-center text-center
+                      min-[428px]:flex-row min-[428px]:items-center min-[428px]:text-left min-[428px]:gap-8">
+
+        <div className="shrink-0 overflow-hidden rounded-xl
+                        w-[170px] h-[150px] min-[428px]:w-[143px] min-[428px]:h-[133px]
+                        bg-white dark:bg-slate-700">
           <img src={img} alt={name} className="h-full w-full object-contain" />
         </div>
 
         <div className="mt-6 min-[428px]:mt-0 min-w-0 flex-1">
-          <div className={`text-[36px] min-[428px]:text-[26px] font-bold leading-tight ${t1}`}>{name}</div>
-          <div className={`mt-2 text-base min-[428px]:text-sm ${t2}`}>{role}</div>
+          <div className="text-[36px] min-[428px]:text-[26px] font-bold leading-tight
+                          text-slate-900 dark:text-white">
+            {name}
+          </div>
+          <div className="mt-2 text-base min-[428px]:text-sm text-slate-500 dark:text-slate-400">
+            {role}
+          </div>
 
           <div className="mt-5 min-[428px]:mt-3 flex flex-wrap justify-center min-[428px]:justify-start gap-x-3 gap-y-1">
-            <span className={`text-sm min-[428px]:text-xs ${t2}`}>Specializations</span>
-            <span className={`text-sm min-[428px]:text-xs font-semibold ${t1}`}>{spec}</span>
+            <span className="text-sm min-[428px]:text-xs text-slate-500 dark:text-slate-400">
+              Specializations
+            </span>
+            <span className="text-sm min-[428px]:text-xs font-semibold text-slate-900 dark:text-white">
+              {spec}
+            </span>
           </div>
 
           <div className="mt-5 min-[428px]:mt-4 flex items-center justify-center min-[428px]:justify-start gap-5">
             {socials.github && (
-              <a href={socials.github} className={`${dm ? "text-slate-300 hover:text-white" : "text-slate-700 hover:text-black"} transition-colors`}>
+              <a href={socials.github}
+                className="text-slate-700 hover:text-black dark:text-slate-300 dark:hover:text-white transition-colors">
                 <GithubIcon />
               </a>
             )}
@@ -65,9 +102,9 @@ export default function MentorCard({ name, role, spec, img, socials = {} }) {
         </div>
       </div>
 
-      <div className={`mt-7 h-px w-full ${divider}`} />
+      <div className="mt-7 h-px w-full bg-slate-200 dark:bg-slate-700" />
 
-      <div className={`mt-5 flex items-start gap-3 text-sm text-left ${bullet}`}>
+      <div className="mt-5 flex items-start gap-3 text-sm text-left text-slate-600 dark:text-slate-300">
         <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-[#2B6DFF]" />
         <span>Guided and reviewed the project.</span>
       </div>

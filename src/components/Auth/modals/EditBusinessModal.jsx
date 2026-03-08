@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
-import { useUpdateBusinessProfileMutation } from "../../services/profileApi";
-import { uploadImageToCloudinary } from "../../utils/uploadToCloudinary"; // ✅ adjust if different path
+import { useUpdateBusinessProfileMutation } from "../../../services/profileApi";
+import { uploadImageToCloudinary } from "../../../utils/uploadToCloudinary"; // ✅ adjust if different path
 
 function Label({ children }) {
   return <label className="block text-sm font-medium text-gray-600 mb-1.5">{children}</label>;

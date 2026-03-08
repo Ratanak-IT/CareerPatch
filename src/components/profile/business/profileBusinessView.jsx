@@ -1,10 +1,10 @@
-// src/pages/ProfileBusinessView.jsx
+
 import React, { useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router";
 
-import OwnJobCard from "../components/card/OwnJobCard";
-import BookmarkedServiceCard from "../components/bookmark/BookmarkedServiceCard";
-import BookmarkedJobCard from "../components/bookmark/BookmarkedJobCard";
+import OwnJobCard from "../../card/OwnJobCard";
+import BookmarkedServiceCard from "../../bookmark/BookmarkedServiceCard";
+import BookmarkedJobCard from "../../bookmark/BookmarkedJobCard";
 
 // ─── Fallbacks ────────────────────────────────────────────────────────────────
 const FALLBACK_COVER =
