@@ -13,9 +13,8 @@ import sokkhim         from "../../assets/khim.png";
 import pong            from "../../assets/chhor pong.png";
 
 import { logout as logoutAction, selectAuthUser } from "../../features/auth/authSlice";
-
-// ✅ CRITICAL FIX: import from context — not manage own state
 import { useDarkMode } from "./NavbarComponent";
+import { useMessageNotifications } from "../../hooks/useMessageNotifications";
 
 /* ─── Sub-components ────────────────────────────────────────────────────── */
 function DarkIcon({ size = 22, darkMode }) {
@@ -55,12 +54,16 @@ function NavLink({ to, label, active, darkMode, onClick }) {
   );
 }
 
-const NOTIFICATIONS = [
-  { id: 1, image: pong,        title: "New project proposal", desc: "Ali Hassan sent you a proposal",         time: "2m ago",  read: false },
-  { id: 2, image: sokkhim,     title: "Contract signed",       desc: "Your contract with Nova Studio is live", time: "1h ago",  read: false },
-  { id: 3, image: nakkhImg,    title: "New review received",   desc: "You received a 5-star rating",           time: "3h ago",  read: true  },
-  { id: 4, image: senghourImg, title: "Payment received",      desc: "$320 added to your wallet",              time: "1d ago",  read: true  },
-];
+function timeAgoShort(value) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  const sec = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (sec < 60)    return "just now";
+  if (sec < 3600)  return `${Math.floor(sec / 60)}m ago`;
+  if (sec < 86400) return `${Math.floor(sec / 3600)}h ago`;
+  return `${Math.floor(sec / 86400)}d ago`;
+}
 
 /* ─── Main Component ─────────────────────────────────────────────────────── */
 export default function NavbarAfterLogin() {
@@ -75,14 +78,13 @@ export default function NavbarAfterLogin() {
   const [mobileOpen,    setMobileOpen]    = useState(false);
   const [notifOpen,     setNotifOpen]     = useState(false);
   const [profileOpen,   setProfileOpen]   = useState(false);
-  const [notifications, setNotifications] = useState(NOTIFICATIONS);
+
+  const myId = user?.id || user?.userId || null;
+  const { notifications, unreadCount, markRead, markAllRead } = useMessageNotifications(myId);
 
   const notifRef   = useRef(null);
   const profileRef = useRef(null);
-
-  const isActive     = (p) => location.pathname === p;
-  const unreadCount  = notifications.filter((n) => !n.read).length;
-  const markAllRead  = () => setNotifications((n) => n.map((x) => ({ ...x, read: true })));
+  const isActive   = (p) => location.pathname === p;
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -218,31 +220,56 @@ export default function NavbarAfterLogin() {
                 </div>
                 {/* List */}
                 <div style={{ maxHeight: 300, overflowY: "auto" }}>
-                  {notifications.map((n) => (
-                    <div key={n.id}
-                      className="flex items-start gap-3 px-5 py-3 cursor-pointer transition-colors"
-                      style={{
-                        background: n.read ? "transparent" : darkMode ? "rgba(59,130,246,0.08)" : "rgba(239,246,255,0.8)",
-                        borderBottom: `1px solid ${darkMode ? "#1e293b" : "#f8fafc"}`,
-                      }}
-                      onMouseEnter={e => (e.currentTarget.style.background = darkMode ? "rgba(255,255,255,0.04)" : "#f8fafc")}
-                      onMouseLeave={e => (e.currentTarget.style.background = n.read ? "transparent" : darkMode ? "rgba(59,130,246,0.08)" : "rgba(239,246,255,0.8)")}
-                      onClick={() => setNotifications(p => p.map(x => x.id === n.id ? { ...x, read: true } : x))}>
-                      <img src={n.image} alt="" className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p style={{ ...pFont("13px", n.read ? 400 : 600), color: darkMode ? "#e2e8f0" : "#0f172a", marginBottom: 2 }}>{n.title}</p>
-                        <p style={{ ...pFont("11px"), color: sub, marginBottom: 3 }}>{n.desc}</p>
-                        <p style={{ ...pFont("11px"), color: "#3b82f6" }}>{n.time}</p>
-                      </div>
-                      {!n.read && <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1" style={{ background: "#3b82f6" }} />}
+                  {notifications.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-8 gap-2">
+                      <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                      </svg>
+                      <p style={{ ...pFont("12px"), color: sub }}>No new messages</p>
                     </div>
-                  ))}
+                  ) : (
+                    notifications.map((n) => (
+                      <div key={n.id}
+                        className="flex items-start gap-3 px-5 py-3 cursor-pointer transition-colors"
+                        style={{
+                          background: darkMode ? "rgba(59,130,246,0.08)" : "rgba(239,246,255,0.8)",
+                          borderBottom: `1px solid ${darkMode ? "#1e293b" : "#f8fafc"}`,
+                        }}
+                        onMouseEnter={e => (e.currentTarget.style.background = darkMode ? "rgba(255,255,255,0.04)" : "#f8fafc")}
+                        onMouseLeave={e => (e.currentTarget.style.background = darkMode ? "rgba(59,130,246,0.08)" : "rgba(239,246,255,0.8)")}
+                        onClick={() => {
+                          markRead(n.id);
+                          setNotifOpen(false);
+                          navigate("/chat", { state: { openConvId: n.convId } });
+                        }}>
+                        {/* Avatar */}
+                        {n.senderAvatar ? (
+                          <img src={n.senderAvatar} alt="" className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+                        ) : (
+                          <div className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold"
+                            style={{ background: "linear-gradient(135deg,#3b82f6,#6366f1)" }}>
+                            {n.senderName?.slice(0,1)?.toUpperCase() || "?"}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p style={{ ...pFont("13px", 600), color: darkMode ? "#e2e8f0" : "#0f172a", marginBottom: 2 }}>
+                            {n.senderName}
+                          </p>
+                          <p style={{ ...pFont("11px"), color: sub, marginBottom: 3 }}>{n.preview}</p>
+                          <p style={{ ...pFont("11px"), color: "#3b82f6" }}>{timeAgoShort(n.time)}</p>
+                        </div>
+                        <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1" style={{ background: "#3b82f6" }} />
+                      </div>
+                    ))
+                  )}
                 </div>
                 <div className="px-5 py-3 text-center" style={{ borderTop: `1px solid ${bdr}` }}>
-                  <Link to="/notifications" onClick={() => setNotifOpen(false)}
-                    style={{ ...pFont("13px", 500), color: "#3b82f6", textDecoration: "none" }}>
-                    View all notifications →
-                  </Link>
+                  <button
+                    onClick={() => { setNotifOpen(false); navigate("/chat"); }}
+                    style={{ ...pFont("13px", 500), color: "#3b82f6", background: "none", border: "none", cursor: "pointer" }}>
+                    View all messages →
+                  </button>
                 </div>
               </div>
             )}
@@ -365,21 +392,39 @@ export default function NavbarAfterLogin() {
             )}
           </div>
           <div style={{ maxHeight: 260, overflowY: "auto" }}>
-            {notifications.map((n) => (
-              <div key={n.id}
-                className="flex items-start gap-3 px-4 py-3 cursor-pointer"
-                style={{
-                  background: n.read ? "transparent" : darkMode ? "rgba(59,130,246,0.08)" : "rgba(239,246,255,0.8)",
-                  borderBottom: `1px solid ${darkMode ? "#1e293b" : "#f8fafc"}`,
-                }}
-                onClick={() => { setNotifications(p => p.map(x => x.id === n.id ? { ...x, read: true } : x)); setNotifOpen(false); }}>
-                <img src={n.image} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p style={{ ...pFont("13px", n.read ? 400 : 600), color: darkMode ? "#e2e8f0" : "#0f172a", marginBottom: 2 }}>{n.title}</p>
-                  <p style={{ ...pFont("11px"), color: sub }}>{n.desc}</p>
-                </div>
+            {notifications.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-6 gap-1">
+                <p style={{ ...pFont("12px"), color: sub }}>No new messages</p>
               </div>
-            ))}
+            ) : (
+              notifications.map((n) => (
+                <div key={n.id}
+                  className="flex items-start gap-3 px-4 py-3 cursor-pointer"
+                  style={{
+                    background: darkMode ? "rgba(59,130,246,0.08)" : "rgba(239,246,255,0.8)",
+                    borderBottom: `1px solid ${darkMode ? "#1e293b" : "#f8fafc"}`,
+                  }}
+                  onClick={() => {
+                    markRead(n.id);
+                    setNotifOpen(false);
+                    navigate("/chat", { state: { openConvId: n.convId } });
+                  }}>
+                  {n.senderAvatar ? (
+                    <img src={n.senderAvatar} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold"
+                      style={{ background: "linear-gradient(135deg,#3b82f6,#6366f1)" }}>
+                      {n.senderName?.slice(0,1)?.toUpperCase() || "?"}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p style={{ ...pFont("13px", 600), color: darkMode ? "#e2e8f0" : "#0f172a", marginBottom: 2 }}>{n.senderName}</p>
+                    <p style={{ ...pFont("11px"), color: sub }}>{n.preview}</p>
+                  </div>
+                  <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1" style={{ background: "#3b82f6" }} />
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}
