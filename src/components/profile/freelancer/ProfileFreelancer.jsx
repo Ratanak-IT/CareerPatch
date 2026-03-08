@@ -1,7 +1,7 @@
 // src/pages/ProfileFreelancer.jsx
 import React, { useMemo, useState } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 
 import FreelancerCard from "../../freelancer/FreelancerCard";
 import BookmarkedJobCard from "../../bookmark/BookmarkedJobCard";
@@ -286,10 +286,11 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
                 )}
               </div>
             </div>
-
+            <Link to={'/chat'}>
             <button className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-4 py-2 rounded-lg">
               Message
             </button>
+            </Link>
           </div>
         </div>
 

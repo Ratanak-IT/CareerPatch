@@ -1,265 +1,348 @@
 import { useState, useRef, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate, useLocation } from "react-router";
+import { selectAuthUser } from "../../features/auth/authSlice";
+import { useConversations, useMessages } from "../../hooks/useChat";
 
-// ─── Static Data ─────────────────────────────────────────────────────────────
-const CONTACTS = [
-  { id: 1, name: "Dyson", preview: "How do you like my idea?", time: "12:09", avatar: "https://i.pravatar.cc/48?img=47" },
-  { id: 2, name: "Dyson", preview: "How do you like my idea?", time: "12:09", avatar: "https://i.pravatar.cc/48?img=47" },
-  { id: 3, name: "Dyson", preview: "How do you like my idea?", time: "12:09", avatar: "https://i.pravatar.cc/48?img=47" },
-  { id: 4, name: "Dyson", preview: "How do you like my idea?", time: "12:09", avatar: "https://i.pravatar.cc/48?img=47" },
-  { id: 5, name: "Dyson", preview: "How do you like my idea?", time: "12:09", avatar: "https://i.pravatar.cc/48?img=47" },
-  { id: 6, name: "Dyson", preview: "How do you like my idea?", time: "12:09", avatar: "https://i.pravatar.cc/48?img=47" },
-  { id: 7, name: "Dyson", preview: "How do you like my idea?", time: "12:09", avatar: "https://i.pravatar.cc/48?img=47" },
-];
+// ─── helpers ────────────────────────────────────────────────────────────────
+function timeAgo(value) {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  const sec = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (sec < 60)     return "just now";
+  if (sec < 3600)   return `${Math.floor(sec / 60)}m ago`;
+  if (sec < 86400)  return `${Math.floor(sec / 3600)}h ago`;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
 
-const INITIAL_MESSAGES = {
-  1: [
-    { id: 1, from: "them", text: "Yes, i'm  available.", time: "12:09" },
-    { id: 2, from: "me",   text: "Hi, are you available for a web project?", time: "12:09" },
-    { id: 3, from: "me",   text: "I need a company website.", time: "12:10" },
-    { id: 4, from: "them", text: "Sure, i can do it.", time: "12:11" },
-  ],
-};
+function initials(name = "") {
+  return name.trim().split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() || "?";
+}
 
-// ─── Messenger Icon ───────────────────────────────────────────────────────────
-function MessengerIcon() {
+function Avatar({ src, name, size = 10 }) {
+  const [err, setErr] = useState(false);
+  const cls = `w-${size} h-${size} rounded-full object-cover flex-shrink-0`;
+  if (src && !err) {
+    return <img src={src} alt={name} className={cls} onError={() => setErr(true)} />;
+  }
   return (
-    <svg className="w-8 h-8" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="24" cy="24" r="24" fill="#3B82F6" />
-      <path
-        d="M24 10C16.268 10 10 15.82 10 23c0 3.866 1.703 7.348 4.456 9.865V37l4.353-2.392A14.9 14.9 0 0024 35c7.732 0 14-5.82 14-13S31.732 10 24 10zm1.39 17.523l-3.565-3.8-6.957 3.8 7.652-8.123 3.652 3.8 6.87-3.8-7.652 8.123z"
-        fill="white"
-      />
-    </svg>
+    <div className={`${cls} bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xs`}>
+      {initials(name)}
+    </div>
   );
 }
 
-// ─── Contact Row ──────────────────────────────────────────────────────────────
-function ContactRow({ contact, isActive, onClick }) {
+// ─── Icons ──────────────────────────────────────────────────────────────────
+const IconSearch = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+    <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35" strokeLinecap="round"/>
+  </svg>
+);
+const IconSend = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+    <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+  </svg>
+);
+const IconBack = () => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/>
+  </svg>
+);
+const IconChat = () => (
+  <svg className="w-12 h-12 opacity-20" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round"
+      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+  </svg>
+);
+
+// ─── ConversationItem ────────────────────────────────────────────────────────
+function ConversationItem({ conv, myId, isActive, onClick }) {
+  const isA    = String(conv.user_a_id) === String(myId);
+  const name   = isA ? conv.user_b_name  : conv.user_a_name;
+  const avatar = isA ? conv.user_b_avatar : conv.user_a_avatar;
+
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-150 text-left
-        ${isActive ? "bg-gray-100" : "hover:bg-gray-50"}`}
+      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left
+        ${isActive
+          ? "bg-blue-50 border border-blue-100"
+          : "hover:bg-gray-50 border border-transparent"
+        }`}
     >
-      <img
-        src={contact.avatar}
-        alt={contact.name}
-        className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-      />
+      <Avatar src={avatar} name={name} size={11} />
       <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between">
-          <span className="font-semibold text-gray-800 text-sm">{contact.name}</span>
-          <span className="text-gray-400 text-xs flex-shrink-0 ml-2">{contact.time}</span>
+        <div className="flex items-center justify-between mb-0.5">
+          <span className={`font-semibold text-sm truncate ${isActive ? "text-blue-600" : "text-gray-800"}`}>
+            {name}
+          </span>
+          <span className="text-gray-400 text-[10px] flex-shrink-0 ml-2">
+            {timeAgo(conv.last_message_at)}
+          </span>
         </div>
-        <p className="text-gray-400 text-xs truncate mt-0.5">{contact.preview}</p>
+        <p className="text-gray-400 text-xs truncate">
+          {conv.last_message || "No messages yet"}
+        </p>
       </div>
     </button>
   );
 }
 
-// ─── Chat Bubble ──────────────────────────────────────────────────────────────
-function ChatBubble({ message, contact }) {
-  const isMe = message.from === "me";
+// ─── MessageBubble ───────────────────────────────────────────────────────────
+function MessageBubble({ msg, myId }) {
+  const isMe = String(msg.sender_id) === String(myId);
   return (
-    <div className={`flex items-end gap-2 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
-      {!isMe && (
-        <img
-          src={contact.avatar}
-          alt={contact.name}
-          className="w-9 h-9 rounded-full object-cover flex-shrink-0 mb-1"
-        />
-      )}
-      <div
-        className={`max-w-[65%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed
+    <div className={`flex items-end gap-2.5 ${isMe ? "flex-row-reverse" : "flex-row"}`}>
+      {!isMe && <Avatar src={msg.sender_avatar} name={msg.sender_name} size={8} />}
+      <div className="flex flex-col gap-0.5" style={{ maxWidth: "65%" }}>
+        <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words
           ${isMe
             ? "bg-blue-500 text-white rounded-br-md"
             : "bg-gray-100 text-gray-800 rounded-bl-md"
-          }`}
-      >
-        {message.text}
+          }`}>
+          {msg.content}
+        </div>
+        <span className={`text-[10px] text-gray-400 ${isMe ? "text-right" : "text-left"}`}>
+          {timeAgo(msg.created_at)}
+        </span>
       </div>
     </div>
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
-export default function ChatComponent() {
-  const [activeId, setActiveId] = useState(1);
-  const [search, setSearch] = useState("");
-  const [messages, setMessages] = useState(INITIAL_MESSAGES);
+// ─── ChatWindow ──────────────────────────────────────────────────────────────
+function ChatWindow({ conv, myId, myUser, onBack }) {
   const [input, setInput] = useState("");
-  const [showChat, setShowChat] = useState(false); // mobile: toggle panels
-  const messagesEndRef = useRef(null);
+  const bottomRef = useRef(null);
+  const inputRef  = useRef(null);
 
-  const activeContact = CONTACTS.find((c) => c.id === activeId);
-  const currentMessages = messages[activeId] || [];
+  const { messages, loading, sending, sendMessage } = useMessages(conv?.id);
 
-  const filteredContacts = CONTACTS.filter((c) =>
-    c.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const isA    = conv ? String(conv.user_a_id) === String(myId) : false;
+  const name   = conv ? (isA ? conv.user_b_name  : conv.user_a_name)  : "";
+  const avatar = conv ? (isA ? conv.user_b_avatar : conv.user_a_avatar) : null;
 
-  // Auto-scroll to bottom on new message
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [currentMessages]);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-  const handleSend = () => {
-    const text = input.trim();
-    if (!text) return;
-    const newMsg = { id: Date.now(), from: "me", text, time: "Now" };
-    setMessages((prev) => ({
-      ...prev,
-      [activeId]: [...(prev[activeId] || []), newMsg],
-    }));
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, [conv?.id]);
+
+  const handleSend = async () => {
+    const txt = input.trim();
+    if (!txt || sending) return;
     setInput("");
+    await sendMessage(txt, myUser);
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+  const handleKey = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
-  const handleSelectContact = (id) => {
-    setActiveId(id);
-    setShowChat(true); // mobile: go to chat panel
-  };
+  if (!conv) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3">
+        <IconChat />
+        <p className="text-sm font-medium">Select a conversation</p>
+        <p className="text-xs opacity-60">Choose from the list on the left</p>
+      </div>
+    );
+  }
 
   return (
-    // Outer: center the card on all screen sizes
+    <>
+      {/* Header */}
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 flex-shrink-0">
+        <button onClick={onBack} className="sm:hidden text-gray-400 hover:text-gray-700 mr-1">
+          <IconBack />
+        </button>
+        <Avatar src={avatar} name={name} size={10} />
+        <div className="flex-1 min-w-0">
+          <p className="font-semibold text-gray-800 text-sm truncate">{name}</p>
+          <p className="text-[11px] text-green-500 font-medium">Active</p>
+        </div>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
+        {loading ? (
+          <div className="flex justify-center py-10">
+            <span className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : messages.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full gap-2 text-gray-400 py-16">
+            <IconChat />
+            <p className="text-xs">No messages yet. Say hello! 👋</p>
+          </div>
+        ) : (
+          messages.map((msg) => (
+            <MessageBubble key={msg.id} msg={msg} myId={myId} />
+          ))
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      {/* Input */}
+      <div className="px-4 py-4 border-t border-gray-100 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <input
+            ref={inputRef}
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKey}
+            placeholder="Type a message…"
+            disabled={sending}
+            className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-5 py-3
+                       text-sm text-gray-700 placeholder-gray-400 outline-none
+                       focus:ring-2 focus:ring-blue-200 focus:border-blue-300 transition
+                       disabled:opacity-60"
+          />
+          <button
+            onClick={handleSend}
+            disabled={!input.trim() || sending}
+            className="bg-blue-500 hover:bg-blue-600 active:scale-95 disabled:opacity-40
+                       text-white p-3 rounded-2xl transition-all flex items-center justify-center flex-shrink-0"
+          >
+            {sending
+              ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              : <IconSend />
+            }
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ─── Main ────────────────────────────────────────────────────────────────────
+export default function ChatComponent() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const authUser = useSelector(selectAuthUser);
+  const myId     = authUser?.id || authUser?.userId || null;
+
+  const [activeConvId, setActiveConvId] = useState(location.state?.openConvId ?? null);
+  const [search,       setSearch]       = useState("");
+  const [showChat,     setShowChat]     = useState(!!location.state?.openConvId);
+
+  const { conversations, loading: convsLoading } = useConversations(myId);
+
+  const filtered = conversations.filter((c) => {
+    const isA = String(c.user_a_id) === String(myId);
+    const name = isA ? c.user_b_name : c.user_a_name;
+    return name.toLowerCase().includes(search.toLowerCase());
+  });
+
+  const activeConv = conversations.find((c) => c.id === activeConvId) ?? null;
+
+  // Not logged in
+  if (!authUser) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="bg-white rounded-2xl shadow border border-gray-100 p-8 max-w-sm w-full text-center">
+          <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <rect x="3" y="11" width="18" height="11" rx="2"/>
+              <path d="M7 11V7a5 5 0 0110 0v4"/>
+            </svg>
+          </div>
+          <p className="text-sm font-semibold text-gray-800 mb-1">Log in to use messages</p>
+          <p className="text-xs text-gray-400 mb-5">You need an account to send and receive messages.</p>
+          <button
+            onClick={() => navigate("/login")}
+            className="px-6 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-colors"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+      <div className="bg-gray-100 rounded-3xl flex overflow-hidden w-full" style={{ maxWidth: 1200, minHeight: 640 }}>
 
-      {/*
-        Card wrapper:
-        - Desktop (≥1024px): fixed 1200px wide, side-by-side
-        - Tablet  (≥640px) : full width, side-by-side
-        - Mobile  (<640px) : full width, toggle between panels
-      */}
-      <div
-        className="bg-gray-100 rounded-3xl flex overflow-hidden shadow-none w-full"
-        style={{ maxWidth: 1200 }}
-      >
-
-        {/* ── LEFT PANEL (Contact List) ── */}
-        {/*
-          Mobile : hidden when chat is open (showChat)
-          Tablet+: always visible as a column
-          Fixed width on large screens: 518px
-        */}
-        <div
-          className={`
-            bg-white rounded-3xl shadow-sm flex flex-col
-            ${showChat ? "hidden" : "flex"} sm:flex
-            w-full sm:w-[518px] flex-shrink-0
-          `}
-          style={{ minHeight: 620 }}
+        {/* ── LEFT: Conversations list ── */}
+        <div className={`bg-white rounded-3xl shadow-sm flex flex-col flex-shrink-0
+          ${showChat ? "hidden" : "flex"} sm:flex w-full sm:w-[360px] lg:w-[420px]`}
+          style={{ minHeight: 640 }}
         >
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 pt-6 pb-4">
-            <div className="flex items-center gap-3">
-              <MessengerIcon />
-              <span className="text-2xl font-bold text-gray-800">Chat</span>
-            </div>
-            <button className="flex items-center gap-1 text-gray-500 text-sm hover:text-gray-700 transition-colors">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
-              Back
-            </button>
+          <div className="flex items-center justify-between px-6 pt-6 pb-3">
+            <h1 className="text-xl font-bold text-gray-800">Messages</h1>
+            <Avatar src={authUser?.profileImageUrl} name={authUser?.fullName || "Me"} size={8} />
           </div>
 
-          {/* Search */}
-          <div className="px-5 mb-4">
-            <input
-              type="text"
-              placeholder="Search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-gray-100 rounded-full px-5 py-2.5 text-sm text-gray-600 placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-200 transition"
-            />
-          </div>
-
-          {/* Contact list */}
-          <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-1">
-            {filteredContacts.map((contact) => (
-              <ContactRow
-                key={contact.id}
-                contact={contact}
-                isActive={activeId === contact.id}
-                onClick={() => handleSelectContact(contact.id)}
+          <div className="px-5 mb-3">
+            <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-4 py-2.5">
+              <span className="text-gray-400"><IconSearch /></span>
+              <input
+                type="text"
+                placeholder="Search conversations…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="flex-1 bg-transparent text-sm text-gray-600 placeholder-gray-400 outline-none"
               />
-            ))}
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-1">
+            {convsLoading ? (
+              <div className="space-y-2 px-1 pt-2">
+                {[1,2,3].map((n) => (
+                  <div key={n} className="flex items-center gap-3 p-3 animate-pulse">
+                    <div className="w-11 h-11 rounded-full bg-gray-200 shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-3 bg-gray-200 rounded w-1/2" />
+                      <div className="h-2.5 bg-gray-200 rounded w-3/4" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-2">
+                <IconChat />
+                <p className="text-sm">
+                  {search ? "No conversations found" : "No conversations yet"}
+                </p>
+                {!search && (
+                  <p className="text-xs opacity-60 text-center px-4">
+                    Click "Message" on any freelancer or job post to start a conversation
+                  </p>
+                )}
+              </div>
+            ) : (
+              filtered.map((conv) => (
+                <ConversationItem
+                  key={conv.id}
+                  conv={conv}
+                  myId={myId}
+                  isActive={activeConvId === conv.id}
+                  onClick={() => { setActiveConvId(conv.id); setShowChat(true); }}
+                />
+              ))
+            )}
           </div>
         </div>
 
-        {/* Gap between panels (visible on sm+) */}
+        {/* Gap */}
         <div className="hidden sm:block w-4 flex-shrink-0" />
 
-        {/* ── RIGHT PANEL (Chat Window) ── */}
-        {/*
-          Mobile : visible only when showChat
-          Tablet+: always visible
-          Fixed width on large screens: 634px
-        */}
-        <div
-          className={`
-            bg-white rounded-3xl shadow-sm flex flex-col
-            ${showChat ? "flex" : "hidden"} sm:flex
-            w-full sm:w-[634px] flex-shrink-0
-          `}
-          style={{ minHeight: 620 }}
+        {/* ── RIGHT: Chat window ── */}
+        <div className={`bg-white rounded-3xl shadow-sm flex flex-col
+          ${showChat ? "flex" : "hidden"} sm:flex flex-1`}
+          style={{ minHeight: 640 }}
         >
-          {/* Chat header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <div className="flex items-center gap-3">
-              {/* Mobile back button */}
-              <button
-                className="sm:hidden text-gray-500 mr-1"
-                onClick={() => setShowChat(false)}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <img
-                src={activeContact?.avatar}
-                alt={activeContact?.name}
-                className="w-10 h-10 rounded-full object-cover"
-              />
-              <span className="font-semibold text-gray-800">{activeContact?.name}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-green-500 inline-block"></span>
-              <span className="text-sm text-gray-500">Active</span>
-            </div>
-          </div>
-
-          {/* Messages area */}
-          <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4">
-            {currentMessages.map((msg) => (
-              <ChatBubble key={msg.id} message={msg} contact={activeContact} />
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Input bar */}
-          <div className="px-4 py-4 flex items-center gap-3">
-            <input
-              type="text"
-              placeholder="Type something to send"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="flex-1 bg-gray-50 border border-gray-200 rounded-full px-5 py-3 text-sm text-gray-700 placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-200 transition"
-            />
-            <button
-              onClick={handleSend}
-              className="bg-blue-500 hover:bg-blue-600 active:scale-95 text-white font-semibold text-sm px-6 py-3 rounded-full transition-all duration-200 flex-shrink-0"
-            >
-              Send
-            </button>
-          </div>
+          <ChatWindow
+            conv={activeConv}
+            myId={myId}
+            myUser={authUser}
+            onBack={() => setShowChat(false)}
+          />
         </div>
 
       </div>

@@ -339,12 +339,14 @@ export default function ProfileBusinessView({
             </div>
 
             {/* Message always visible */}
+            <Link to={'/chat'}>
             <button className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-4 py-2 rounded-lg flex items-center gap-1.5 shrink-0">
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="white">
                 <path d="M12 2C6.477 2 2 6.145 2 11.243c0 2.908 1.438 5.504 3.688 7.205V22l3.37-1.85c.9.248 1.853.38 2.942.38 5.523 0 10-4.145 10-9.243S17.523 2 12 2zm1.007 12.44l-2.548-2.717-4.972 2.717 5.473-5.81 2.613 2.717 4.907-2.717-5.473 5.81z" />
               </svg>
               Message
             </button>
+            </Link>
           </div>
         </div>
 

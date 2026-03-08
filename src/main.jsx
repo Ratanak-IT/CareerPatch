@@ -26,6 +26,7 @@ import ContactPage from './pages/ContactPage.jsx'
 import BusinessPublicProfile from './components/profile/business/businessPublicProfile.jsx'
 import ScrollToTop from './components/common/ScrollToTop.jsx'
 import NotFound from './components/notfound/NotfoundComponent.js'
+import ChatComponent from './components/message/ChatComponent.jsx'
 
 
 setupListeners(store.dispatch);
@@ -43,6 +44,7 @@ createRoot(document.getElementById('root')).render(
                 <Route path="/about"       element={<About />} />
                 <Route path="/findfreelan" element={<FindFreelancers />} />
                 <Route path="/findwork"    element={<FindWork />} />
+                <Route path="/chat" element={<ChatComponent />} />
 
                 
                 <Route path="/jobs/:jobId" element={<DetailWorkPage />} />
