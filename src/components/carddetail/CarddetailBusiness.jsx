@@ -5,8 +5,8 @@ import { useSelector } from "react-redux";
 import { useDarkMode } from "../navbar/NavbarComponent";
 import { useGetAllJobsQuery, useGetJobByIdQuery } from "../../services/detailworkApi";
 import { selectAuthUser } from "../../features/auth/authSlice";
-import ApplyJobModal from "../apply/ApplyJobModal";
 import CommentsSection from "../comments/CommentsSection";
+import MessageButton from "../message/MessageButton";
 
 /* ─── helpers ───────────────────────────────────────────────────────────── */
 function timeAgo(value) {
@@ -155,8 +155,7 @@ export default function CardDetailBusiness() {
   const { jobId } = useParams();
   const authUser = useSelector(selectAuthUser);
 
-  const [bookmarked,  setBookmarked]  = useState(false);
-  const [applyOpen,   setApplyOpen]   = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
 
   // fetch detail by id
   const { data: byIdResp, isLoading: byIdLoading, isError: byIdError, error: byIdErrObj } =
@@ -288,11 +287,13 @@ export default function CardDetailBusiness() {
                   </div>
                 </div>
 
-                <button className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold
-                                   text-white bg-blue-500 hover:bg-blue-600 active:scale-95 transition-all shadow-sm shadow-blue-200">
-                  <IconSend />
-                  <span className="hidden sm:inline">Message</span>
-                </button>
+                     <MessageButton
+      otherUser={{
+        id:              job?.userId || job?.postedBy,
+        fullName:        companyName,
+        profileImageUrl: null,
+      }}
+    />
               </div>
 
               <div className={`my-4 border-t ${divLine}`} />
@@ -440,26 +441,10 @@ export default function CardDetailBusiness() {
                 <p className={`text-[13px] font-semibold text-blue-500`}>{deadline || "—"}</p>
               </div>
 
-              {/* Apply Now button */}
-              <button
-                onClick={() => setApplyOpen(true)}
-                className="w-full py-3 rounded-xl text-[13px] font-semibold text-white mb-3
-                           bg-blue-500 hover:bg-blue-600 active:scale-[0.98] transition-all shadow-sm shadow-blue-200
-                           flex items-center justify-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                </svg>
-                Apply Now
-              </button>
-
               <button
                 onClick={() => navigate(-1)}
-                className="w-full py-3 rounded-xl text-[13px] font-semibold
-                           border border-gray-200 dark:border-gray-700
-                           text-gray-600 dark:text-gray-400
-                           hover:bg-gray-50 dark:hover:bg-gray-800
-                           active:scale-[0.98] transition-all"
+                className="w-full py-3 rounded-xl text-[13px] font-semibold text-white
+                           bg-blue-500 hover:bg-blue-600 active:scale-[0.98] transition-all shadow-sm shadow-blue-200"
               >
                 ← Go Back
               </button>
@@ -480,14 +465,6 @@ export default function CardDetailBusiness() {
           </div>
         </div>
       </div>
-
-      {/* ── Apply Modal ── */}
-      {applyOpen && (
-        <ApplyJobModal
-          job={{ id: jobId, title: job?.title }}
-          onClose={() => setApplyOpen(false)}
-        />
-      )}
     </div>
-
-  )}
+  );
+}
