@@ -1,5 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { useNavigate } from "react-router";
+import { useSelector } from "react-redux";
+import { selectAuthUser } from "../../../features/auth/authSlice";
 import FreelancerCard from "../../freelancer/FreelancerCard";
 
 const FALLBACK_COVER =
@@ -39,7 +41,16 @@ export default function ProfileFreelancerView({
   onChangePhoto,
   onCreatePost,
 }) {
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
+  const authUser   = useSelector(selectAuthUser);
+
+  const handleMessage = useCallback(() => {
+    if (!authUser) { navigate("/login"); return; }
+    const recipientId     = user?.id ?? user?.userId ?? null;
+    const recipientName   = user?.fullName || "Freelancer";
+    const recipientAvatar = user?.profileImageUrl || null;
+    navigate("/chat", { state: { recipientId: String(recipientId), recipientName, recipientAvatar } });
+  }, [navigate, authUser, user]);
 
   const avatarUrl = user?.profileImageUrl || FALLBACK_AVATAR;
   const coverUrl = user?.coverImageUrl || FALLBACK_COVER;
@@ -107,7 +118,7 @@ export default function ProfileFreelancerView({
             ) : (
               <button
                 type="button"
-                onClick={() => {}}
+                onClick={handleMessage}
                 className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-4 py-2 rounded-lg"
               >
                 Message

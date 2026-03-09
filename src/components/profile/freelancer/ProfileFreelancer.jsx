@@ -1,13 +1,13 @@
 // src/pages/ProfileFreelancer.jsx
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 import FreelancerCard from "../../freelancer/FreelancerCard";
 import BookmarkedJobCard from "../../bookmark/BookmarkedJobCard";
 import OwnServiceCard from "../../card/Ownservicecard";
 
-import { selectIsAuthed } from "../../../features/auth/authSlice";
+import { selectIsAuthed, selectAuthUser } from "../../../features/auth/authSlice";
 
 import {
   useMeQuery,
@@ -52,7 +52,8 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
   const navigate = useNavigate();
   const isOwner = mode === "owner";
 
-  const isAuthed = useSelector(selectIsAuthed);
+  const isAuthed  = useSelector(selectIsAuthed);
+  const authUser  = useSelector(selectAuthUser);
 
   // =======================
   // Profile data
@@ -69,13 +70,16 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
 
   // pick current user based on mode
   const user = isOwner ? me : publicUser;
+  // hide Message button if viewer is the same person as the profile
+  const myId   = authUser?.id ?? authUser?.userId ?? me?.id ?? null;
+  const isSelf = !isOwner && myId && publicUserId && String(myId) === String(publicUserId);
 
   // Redirect if user opens own public page
   React.useEffect(() => {
-    if (!isOwner && me?.id && publicUserId && String(me.id) === String(publicUserId)) {
+    if (!isOwner && myId && publicUserId && String(myId) === String(publicUserId)) {
       navigate("/profile", { replace: true });
     }
-  }, [isOwner, me?.id, publicUserId, navigate]);
+  }, [isOwner, myId, publicUserId, navigate]);
 
   // =======================
   // Services
@@ -238,6 +242,14 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
     });
   }, [baseServices, createdAtMap, categoryMap]);
 
+  const handleMessage = useCallback(() => {
+    if (!authUser) { navigate("/login"); return; }
+    const recipientId     = user?.id ?? user?.userId ?? null;
+    const recipientName   = user?.fullName || "Freelancer";
+    const recipientAvatar = user?.profileImageUrl || null;
+    navigate("/chat", { state: { recipientId: String(recipientId), recipientName, recipientAvatar } });
+  }, [navigate, authUser, user]);
+
   const avatarUrl = user?.profileImageUrl || FALLBACK_AVATAR;
   const coverUrl = user?.coverImageUrl || FALLBACK_COVER;
 
@@ -272,25 +284,23 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
                 <p className="text-[12px] text-gray-500 mt-1">
                   {user?.userType || "FREELANCER"} • {user?.address || "—"}
                 </p>
-
-                {/* ✅ Owner-only actions */}
-                {isOwner && (
-                  <div className="mt-2 flex items-center gap-2">
-                    <button
-                      onClick={() => setEditOpen(true)}
-                      className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-3 py-2 rounded-lg"
-                    >
-                      Edit Profile
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
-            <Link to={'/chat'}>
-            <button className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-4 py-2 rounded-lg">
-              Message
-            </button>
-            </Link>
+
+            {/* Right-side action button */}
+            {isOwner && (
+              <button
+                onClick={() => setEditOpen(true)}
+                className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-4 py-2 rounded-lg shrink-0"
+              >
+                Edit Profile
+              </button>
+            )}
+            {!isOwner && !isSelf && (
+              <button onClick={handleMessage} className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-4 py-2 rounded-lg shrink-0">
+                Message
+              </button>
+            )}
           </div>
         </div>
 

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router";
 import { selectAuthUser } from "../../features/auth/authSlice";
-import { useConversations, useMessages } from "../../hooks/useChat";
+import { useConversations, useMessages, getOrCreateConversation } from "../../hooks/useChat";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 function timeAgo(value) {
@@ -225,11 +225,64 @@ export default function ChatComponent() {
   const authUser = useSelector(selectAuthUser);
   const myId     = authUser?.id || authUser?.userId || null;
 
-  const [activeConvId, setActiveConvId] = useState(location.state?.openConvId ?? null);
+  // Read state ONCE before anything clears it
+  const initConvId     = location.state?.openConvId   ?? null;
+  const initRecipient  = location.state?.recipientId  ?? null;
+  const initRecipName  = location.state?.recipientName  ?? null;
+  const initRecipAvatar = location.state?.recipientAvatar ?? null;
+
+  const [activeConvId, setActiveConvId] = useState(initConvId);
   const [search,       setSearch]       = useState("");
-  const [showChat,     setShowChat]     = useState(!!location.state?.openConvId);
+  const [showChat,     setShowChat]     = useState(!!initConvId);
+
+  // pendingConvId holds the target conv id while we wait for conversations to load
+  const pendingConvId = useRef(null);
 
   const { conversations, loading: convsLoading } = useConversations(myId);
+
+  // ── Step 1: on mount, getOrCreateConversation then store in pendingConvId ─
+  useEffect(() => {
+    if (!initRecipient || !myId || !authUser) return;
+    // Clear router state immediately so back-nav never re-triggers
+    window.history.replaceState({}, "");
+
+    async function openOrCreate() {
+      const convId = await getOrCreateConversation(
+        {
+          id:              myId,
+          fullName:        authUser.fullName || authUser.username || "User",
+          profileImageUrl: authUser.profileImageUrl || null,
+        },
+        {
+          id:              String(initRecipient),
+          userId:          String(initRecipient),
+          fullName:        initRecipName  || "User",
+          profileImageUrl: initRecipAvatar || null,
+        }
+      );
+      if (convId) {
+        pendingConvId.current = convId;   // watched by Step 2
+        setActiveConvId(convId);
+        setShowChat(true);
+      }
+    }
+    openOrCreate();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myId]);
+
+  // ── Step 2: once conversations array loads/updates, confirm the selection ─
+  // This fires every time conversations changes, so it catches both:
+  //   • conversation was already in list (fires immediately after first load)
+  //   • conversation was just created and arrives via real-time subscription
+  useEffect(() => {
+    if (!pendingConvId.current) return;
+    const found = conversations.find((c) => c.id === pendingConvId.current);
+    if (found) {
+      setActiveConvId(found.id);
+      setShowChat(true);
+      pendingConvId.current = null;
+    }
+  }, [conversations]);
 
   const filtered = conversations.filter((c) => {
     const isA = String(c.user_a_id) === String(myId);
