@@ -62,9 +62,9 @@ function DeleteConfirmModal({ service, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
-      <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm shadow-2xl p-6">
         <div className="flex flex-col items-center text-center gap-3">
-          <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
+          <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
             <svg
               className="w-7 h-7 text-red-500"
               fill="none"
@@ -79,10 +79,10 @@ function DeleteConfirmModal({ service, onClose }) {
               />
             </svg>
           </div>
-          <h2 className="text-lg font-bold text-gray-900">Delete Post?</h2>
-          <p className="text-sm text-gray-500">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Delete Post?</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Are you sure you want to delete{" "}
-            <span className="font-semibold text-gray-700">
+            <span className="font-semibold text-gray-700 dark:text-gray-300">
               "{service?.title}"
             </span>
             ? This cannot be undone.
@@ -91,7 +91,7 @@ function DeleteConfirmModal({ service, onClose }) {
         <div className="flex gap-3 mt-6">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-full border border-slate-300 text-sm font-semibold text-gray-600 hover:bg-slate-50 transition-colors"
+            className="flex-1 py-2.5 rounded-full border border-slate-300 dark:border-slate-600 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
           >
             Cancel
           </button>
@@ -122,11 +122,11 @@ function CardMenu({ onEdit, onDelete }) {
           e.stopPropagation();
           setOpen((p) => !p);
         }}
-        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
         aria-label="More options"
       >
         <svg
-          className="w-5 h-5 text-gray-500"
+          className="w-5 h-5 text-gray-500 dark:text-gray-400"
           fill="currentColor"
           viewBox="0 0 24 24"
         >
@@ -139,7 +139,7 @@ function CardMenu({ onEdit, onDelete }) {
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 bottom-10 z-20 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden w-36">
+          <div className="absolute right-0 bottom-10 z-20 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden w-36">
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -147,7 +147,7 @@ function CardMenu({ onEdit, onDelete }) {
                 setOpen(false);
                 onEdit();
               }}
-              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 transition-colors"
             >
               <svg
                 className="w-4 h-4"
@@ -209,7 +209,7 @@ export default function OwnServiceCard({ service, author, avatar }) {
     <>
       <Link
         to={`/services/${service?.id}`}
-        className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col flex-shrink-0"
+        className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-md hover:shadow-xl dark:hover:shadow-slate-900/60 transition-shadow duration-300 flex flex-col flex-shrink-0"
         style={{ width: 285, height: 487, textDecoration: "none" }}
       >
         {/* Image */}
@@ -228,7 +228,7 @@ export default function OwnServiceCard({ service, author, avatar }) {
               e.stopPropagation();
               dispatch(toggleFavorite(service?.id));
             }}
-            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white bg-opacity-90 flex items-center justify-center shadow transition-transform hover:scale-110"
+            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm flex items-center justify-center shadow transition-transform hover:scale-110"
             aria-label={liked ? "Unlike" : "Like"}
           >
             <svg
@@ -250,12 +250,12 @@ export default function OwnServiceCard({ service, author, avatar }) {
 
         {/* Body */}
         <div className="p-4 flex flex-col flex-1 overflow-hidden">
-          <h2 className="text-blue-500 font-bold text-sm mb-1 truncate">
+          <h2 className="text-blue-500 dark:text-blue-300 font-bold text-sm mb-1 truncate">
             {service?.title || "Untitled"}
           </h2>
 
           <p
-            className="text-gray-500 text-xs leading-relaxed mb-4 overflow-hidden line-clamp-3"
+            className="text-gray-500 dark:text-gray-300 text-xs leading-relaxed mb-4 overflow-hidden line-clamp-3"
             style={{
               display: "-webkit-box",
               WebkitLineClamp: 3,
@@ -266,24 +266,24 @@ export default function OwnServiceCard({ service, author, avatar }) {
           </p>
 
           {/* Category + date */}
-          <div className="flex items-center justify-between mb-4 flex-wrap gap-y-1">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-y-1 dark:text-gray-300">
             <div className="flex flex-wrap gap-1">
               {categoryName ? (
-                <span className="bg-blue-500 text-white text-xs font-medium px-2.5 py-0.5 rounded-full">
+                <span className="bg-blue-500 dark:bg-blue-600 text-white text-xs font-medium px-2.5 py-0.5 rounded-full">
                   {categoryName}
                 </span>
               ) : (
-                <span className="text-gray-300 text-xs italic">
+                <span className="text-gray-300 dark:text-gray-500 text-xs italic">
                   No category
                 </span>
               )}
             </div>
-            <span className="text-gray-400 text-xs">
+            <span className="text-gray-400 dark:text-gray-400 text-xs">
               {formatDate(service?.createdAt ?? service?.createAt ?? service?.created_at)}
             </span>
           </div>
 
-          <div className="border-t border-gray-100 mb-3" />
+          <div className="border-t border-gray-100 dark:border-slate-700 mb-3" />
 
           {/* Author + 3-dot menu */}
           <div className="flex items-center justify-between mt-auto">
@@ -291,12 +291,12 @@ export default function OwnServiceCard({ service, author, avatar }) {
               <img
                 src={avatar || "https://placehold.co/32x32?text=?"}
                 alt={author}
-                className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100"
+                className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100 dark:ring-slate-700"
                 onError={(e) => {
                   e.currentTarget.src = "https://placehold.co/32x32?text=?";
                 }}
               />
-              <span className="text-gray-700 text-xs font-medium">
+              <span className="text-gray-700 dark:text-slate-300 text-xs font-medium">
                 {author || "Freelancer"}
               </span>
             </div>

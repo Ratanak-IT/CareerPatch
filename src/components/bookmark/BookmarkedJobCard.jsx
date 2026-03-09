@@ -43,14 +43,11 @@ function formatDateDMY(value) {
 }
 
 export default function BookmarkedJobCard({ bm }) {
-  // expected: { id: bookmarkId, job: {...} }
   const job = bm?.job ?? null;
 
-  // ✅ compute ids safely (even if job is null)
   const jobId = job?.id ?? null;
   const userId = job?.userId ?? null;
 
-  // ✅ ALWAYS call hooks (skip requests if missing ids)
   const { data: userRes } = useGetUserByIdQuery(userId, { skip: !userId });
   const user = userRes?.data || userRes;
 
@@ -59,7 +56,6 @@ export default function BookmarkedJobCard({ bm }) {
     type: "job",
   });
 
-  // ✅ only after hooks
   if (!jobId) return null;
 
   const title = job?.title || "Untitled";
@@ -80,7 +76,13 @@ export default function BookmarkedJobCard({ bm }) {
   return (
     <Link
       to={`/jobs/${jobId}`}
-      className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col w-full border border-gray-100 hover:-translate-y-1"
+      className="group bg-white dark:bg-slate-800
+                 rounded-2xl overflow-hidden
+                 shadow-sm hover:shadow-xl dark:hover:shadow-slate-900/60
+                 transition-all duration-300
+                 flex flex-col w-full
+                 border border-gray-100 dark:border-slate-700
+                 hover:-translate-y-1"
     >
       {/* Image */}
       <div className="relative overflow-hidden" style={{ height: 176 }}>
@@ -88,9 +90,7 @@ export default function BookmarkedJobCard({ bm }) {
           src={image}
           alt={title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-          onError={(e) => {
-            e.currentTarget.src = FALLBACK_IMAGE;
-          }}
+          onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
         />
 
         {/* Bookmark button */}
@@ -101,7 +101,10 @@ export default function BookmarkedJobCard({ bm }) {
             if (!jobId) return;
             toggle();
           }}
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-md transition-all duration-200 hover:scale-110 active:scale-95"
+          className="absolute top-3 right-3 w-8 h-8 rounded-full
+                     bg-white/90 dark:bg-slate-800/90
+                     backdrop-blur-sm flex items-center justify-center
+                     shadow-md transition-all duration-200 hover:scale-110 active:scale-95"
           aria-label={liked ? "Remove bookmark" : "Bookmark"}
           type="button"
         >
@@ -124,25 +127,27 @@ export default function BookmarkedJobCard({ bm }) {
 
       {/* Body */}
       <div className="p-4 flex flex-col flex-1">
-        <h3 className="text-[#1E88E5] font-bold text-sm mb-1 truncate">{title}</h3>
+        <h3 className="text-[#1E88E5] dark:text-blue-100 font-bold text-sm mb-1 truncate">
+          {title}
+        </h3>
 
         <p
-          className="text-gray-400 text-xs leading-relaxed mb-3 overflow-hidden"
+          className="text-gray-400 dark:text-gray-300 text-xs leading-relaxed mb-3 overflow-hidden"
           style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}
         >
           {description}
         </p>
 
-        <div className="flex items-center justify-between mb-3 text-xs text-gray-400">
+        <div className="flex items-center justify-between mb-3 text-xs text-gray-400 dark:text-gray-300 font-bold">
           <span>Date: {date}</span>
 
           <span
             className={`font-semibold ${
               status === "OPEN"
-                ? "text-green-500"
+                ? "text-green-500 dark:text-green-400"
                 : status === "DRAFT"
                 ? "text-yellow-500"
-                : "text-gray-500"
+                : "text-gray-500 dark:text-gray-400"
             }`}
           >
             {status}
@@ -153,26 +158,26 @@ export default function BookmarkedJobCard({ bm }) {
           {tags.slice(0, 3).map((t) => (
             <span
               key={t}
-              className="bg-[#1E88E5] text-white text-[10px] font-semibold px-2.5 py-0.5 rounded-full"
+              className="bg-[#1E88E5]/10 dark:bg-blue-500/20
+                         text-[#1E88E5] dark:text-blue-400
+                         text-[10px] font-semibold px-2.5 py-0.5 rounded-full"
             >
               {t}
             </span>
           ))}
         </div>
 
-        <div className="border-t border-gray-100 mb-3" />
+        <div className="border-t border-gray-100 dark:border-slate-700 mb-3" />
 
         <div className="flex items-center justify-between mt-auto">
           <div className="flex items-center gap-2">
             <img
               src={authorAvatar}
               alt={authorName}
-              className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100"
-              onError={(e) => {
-                e.currentTarget.src = FALLBACK_AVATAR;
-              }}
+              className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100 dark:ring-slate-700"
+              onError={(e) => { e.currentTarget.src = FALLBACK_AVATAR; }}
             />
-            <span className="text-gray-700 text-xs font-medium truncate max-w-[80px]">
+            <span className="text-gray-700 dark:text-gray-300 text-xs font-medium truncate max-w-[80px]">
               {authorName}
             </span>
           </div>
@@ -182,7 +187,9 @@ export default function BookmarkedJobCard({ bm }) {
               e.preventDefault();
               e.stopPropagation();
             }}
-            className="bg-[#1E88E5] hover:bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200 active:scale-95"
+            className="bg-[#1E88E5] hover:bg-blue-600 dark:bg-blue-500 dark:hover:bg-blue-400
+                       text-white text-xs font-semibold px-3 py-1.5 rounded-lg
+                       transition-all duration-200 active:scale-95"
             type="button"
           >
             Apply Now

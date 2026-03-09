@@ -12,10 +12,7 @@ import {
   useGetServiceBookmarksQuery,
   useGetJobBookmarksQuery,
   useGetCategoriesQuery,
-
-  // ✅ IMPORTANT:
-  // You need an endpoint to fetch ALL jobs for public profile filtering.
-  // If your hook name is different, replace this import.
+  
   useGetAllJobsQuery,
 } from "../../../services/servicesApi";
 

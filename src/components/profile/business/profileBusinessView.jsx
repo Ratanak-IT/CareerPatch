@@ -38,8 +38,8 @@ function Spinner() {
 
 function Empty({ label }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-      <svg className="w-10 h-10 mb-2 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div className="flex flex-col items-center justify-center py-12 text-gray-400 dark:text-gray-500">
+      <svg className="w-10 h-10 mb-2 text-gray-200 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path
           d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V7a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
           strokeLinecap="round"
@@ -54,8 +54,8 @@ function Empty({ label }) {
 
 function BookmarkEmpty({ label }) {
   return (
-    <div className="flex flex-col items-center py-10 text-gray-400">
-      <svg className="w-10 h-10 mb-2 text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <div className="flex flex-col items-center py-10 text-gray-400 dark:text-gray-500">
+      <svg className="w-10 h-10 mb-2 text-gray-200 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path
           d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
           strokeLinecap="round"
@@ -82,22 +82,22 @@ function InfoSidebar({ user }) {
   return (
     <div className="flex flex-col gap-4 w-full lg:w-60 lg:shrink-0">
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <p className="text-sm font-bold text-gray-900 mb-2">About Company</p>
+        <p className="text-sm font-bold text-gray-900 dark:text-white mb-2">About Company</p>
         {user?.bio ? (
-          <p className="text-xs text-gray-500 leading-relaxed">{user.bio}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{user.bio}</p>
         ) : (
-          <p className="text-xs text-gray-400 italic">No bio provided.</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 italic">No bio provided.</p>
         )}
       </div>
 
       {workTags.length > 0 && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-          <p className="text-sm font-bold text-gray-900 mb-3">Work With Us</p>
+          <p className="text-sm font-bold text-gray-900 dark:text-white mb-3">Work With Us</p>
           <ul className="flex flex-col gap-2">
             {workTags.map((t) => (
               <li key={t} className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-blue-500" />
-                <span className="text-xs text-gray-600">{t}</span>
+                <span className="text-xs text-gray-600 dark:text-gray-400">{t}</span>
               </li>
             ))}
           </ul>
@@ -106,12 +106,12 @@ function InfoSidebar({ user }) {
 
       {contactRows.length > 0 && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-          <p className="text-sm font-bold text-gray-900 mb-3">Contact Info</p>
+          <p className="text-sm font-bold text-gray-900 dark:text-white mb-3">Contact Info</p>
           <div className="flex flex-col gap-3">
             {contactRows.map(({ label, val }) => (
-              <div key={label} className="flex items-start justify-between gap-3">
-                <span className="text-xs font-semibold text-gray-500 shrink-0">{label}</span>
-                <span className="text-xs text-gray-700 break-all text-right leading-snug">{val}</span>
+              <div key={label} className="flex items-start justify-between gap-3 dark:text-gray-300">
+                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 shrink-0">{label}</span>
+                <span className="text-xs text-gray-700 dark:text-gray-300 break-all text-right leading-snug">{val}</span>
               </div>
             ))}
           </div>
@@ -135,7 +135,7 @@ function ViewApplyTab({ jobs, loading }) {
         return (
           <div
             key={jobId || job?.title}
-            className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center justify-between gap-4"
+            className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm p-4 flex items-center justify-between gap-4"
           >
             <div className="flex items-center gap-3 min-w-0">
               {thumb ? (
@@ -149,7 +149,7 @@ function ViewApplyTab({ jobs, loading }) {
                 />
               ) : (
                 <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
-                  <svg className="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-6 h-6 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                       strokeLinecap="round"
@@ -161,8 +161,8 @@ function ViewApplyTab({ jobs, loading }) {
               )}
 
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-gray-800 truncate">{job.title || "Untitled"}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{formatDate(job.createdAt)}</p>
+                <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">{job.title || "Untitled"}</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{formatDate(job.createdAt)}</p>
               </div>
             </div>
 
@@ -178,7 +178,7 @@ function ViewApplyTab({ jobs, loading }) {
                 </span>
               )}
               {job?.budget != null && (
-                <span className="text-xs text-gray-500 font-medium">${Number(job.budget).toLocaleString()}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">${Number(job.budget).toLocaleString()}</span>
               )}
             </div>
           </div>
@@ -225,21 +225,21 @@ function PublicJobCard({ job }) {
       </div>
 
       <div className="p-4 flex flex-col flex-1">
-        <h3 className="text-[#1E88E5] font-bold text-sm mb-1 truncate">{title}</h3>
+        <h3 className="text-[#1E88E5] dark:text-blue-400 font-bold text-sm mb-1 truncate">{title}</h3>
 
         <p
-          className="text-gray-400 text-xs leading-relaxed mb-3 overflow-hidden"
+          className="text-gray-400 dark:text-gray-500 text-xs leading-relaxed mb-3 overflow-hidden"
           style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}
         >
           {description}
         </p>
 
-        <div className="flex items-center justify-between mb-3 text-xs text-gray-400">
+        <div className="flex items-center justify-between mb-3 text-xs text-gray-400 dark:text-gray-500">
           <span>Date: {date}</span>
           <span className="font-semibold">
             <span
               className={`font-semibold ${
-                status === "OPEN" ? "text-green-500" : status === "DRAFT" ? "text-yellow-500" : "text-gray-500"
+                status === "OPEN" ? "text-green-500 dark:text-green-400" : status === "DRAFT" ? "text-yellow-500" : "text-gray-500 dark:text-gray-400"
               }`}
             >
               {status}
@@ -255,8 +255,8 @@ function PublicJobCard({ job }) {
           ))}
         </div>
 
-        <div className="border-t border-gray-100 mb-3" />
-        <div className="text-xs text-gray-500 font-semibold">View details</div>
+        <div className="border-t border-gray-100 dark:border-gray-700 mb-3" />
+        <div className="text-xs text-gray-500 dark:text-gray-400 font-semibold">View details</div>
       </div>
     </Link>
   );
@@ -304,10 +304,10 @@ export default function ProfileBusinessView({
   const jobsNoDraft = useMemo(() => (jobs || []).filter((j) => String(j?.status || "OPEN") !== "DRAFT"), [jobs]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="w-full max-w-300 mx-auto px-4 sm:px-6 py-6">
         {/* ── Cover + header ─────────────────────────────────────── */}
-        <div className="rounded-2xl overflow-hidden bg-white shadow-sm">
+        <div className="rounded-2xl overflow-hidden bg-white dark:bg-gray-800 shadow-sm">
           <div className="relative h-45 sm:h-55 bg-gray-200">
             <img src={coverUrl} alt="cover" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-blue-900/20" />
@@ -315,7 +315,7 @@ export default function ProfileBusinessView({
 
           <div className="flex items-center justify-between gap-4 px-4 sm:px-6 py-4">
             <div className="flex items-center gap-4">
-              <div className="-mt-12 sm:-mt-14 w-24 h-24 z-10 rounded-xl overflow-hidden bg-gray-100 shadow-md ring-4 ring-white shrink-0">
+              <div className="-mt-12 sm:-mt-14 w-24 h-24 z-10 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 shadow-md ring-4 ring-white dark:ring-gray-800 shrink-0">
                 <img
                   src={avatarUrl}
                   alt="logo"
@@ -327,10 +327,10 @@ export default function ProfileBusinessView({
               </div>
 
               <div>
-                <p className="text-[16px] font-bold text-gray-900 leading-tight">
+                <p className="text-[16px] font-bold text-gray-900 dark:text-white leading-tight">
                   {loadingUser ? "Loading..." : user?.companyName || user?.fullName || "—"}
                 </p>
-                <p className="text-[12px] text-gray-500 mt-0.5">
+                <p className="text-[12px] text-gray-500 dark:text-gray-400 mt-0.5">
                   {[user?.industry, user?.address].filter(Boolean).join(" • ") || "—"}
                 </p>
               </div>
@@ -359,7 +359,7 @@ export default function ProfileBusinessView({
         {/* ── Tabs (OWNER ONLY) ──────────────────────────────────── */}
         {isOwner && (
           <div className="mt-6 flex justify-center">
-            <div className="bg-white rounded-xl border border-purple-200 overflow-hidden flex">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-purple-200 dark:border-purple-900 overflow-hidden flex">
               {[
                 { key: "information", label: "Information" },
                 { key: "favorites", label: "Favorites", badge: totalFavorites },
@@ -394,8 +394,8 @@ export default function ProfileBusinessView({
             <InfoSidebar user={user} />
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-4">
-                <p className="text-gray-900 font-bold text-xl">Job Announcement</p>
-                <span className="text-xs text-gray-500">{jobsNoDraft.length} posts</span>
+                <p className="text-gray-900 dark:text-white font-bold text-xl">Job Announcement</p>
+                <span className="text-xs text-gray-500 dark:text-gray-400">{jobsNoDraft.length} posts</span>
               </div>
 
               {loadingJobs && <Spinner />}
@@ -422,7 +422,7 @@ export default function ProfileBusinessView({
             <InfoSidebar user={user} />
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between mb-4">
-                <p className="text-gray-900 font-bold text-xl">Job Announcement</p>
+                <p className="text-gray-900 dark:text-white font-bold text-xl">Job Announcement</p>
                 <button
                   onClick={onOpenPost}
                   className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-4 py-2 rounded-lg flex items-center gap-1.5"
@@ -461,7 +461,7 @@ export default function ProfileBusinessView({
         {isOwner && tab === "favorites" && (
           <div className="mt-8 space-y-10">
             <div>
-              <p className="text-blue-500 font-bold text-lg mb-4 flex items-center gap-2">
+              <p className="text-blue-500 dark:text-blue-400 font-bold text-lg mb-4 flex items-center gap-2">
                 Freelancer Services
                 <span className="text-xs bg-blue-100 text-blue-600 rounded-full px-2 py-0.5 font-semibold">
                   {serviceBookmarks.length}
@@ -482,7 +482,7 @@ export default function ProfileBusinessView({
             </div>
 
             <div>
-              <p className="text-blue-500 font-bold text-lg mb-4 flex items-center gap-2">
+              <p className="text-blue-500 dark:text-blue-400 font-bold text-lg mb-4 flex items-center gap-2">
                 Job Posts
                 <span className="text-xs bg-blue-100 text-blue-600 rounded-full px-2 py-0.5 font-semibold">
                   {jobBookmarks.length}
@@ -507,7 +507,7 @@ export default function ProfileBusinessView({
         {/* ── View Apply tab (OWNER ONLY) ────────────────────────── */}
         {isOwner && tab === "viewapply" && (
           <div className="mt-8">
-            <p className="text-blue-500 font-bold text-lg mb-4">Your Job Posts</p>
+            <p className="text-blue-500 dark:text-blue-400 font-bold text-lg mb-4">Your Job Posts</p>
             <ViewApplyTab jobs={jobs} loading={loadingJobs} />
             <div className="mt-4">
               <button

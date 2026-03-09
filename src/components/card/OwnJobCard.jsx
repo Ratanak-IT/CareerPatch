@@ -1,18 +1,14 @@
 // src/components/card/OwnJobCard.jsx
-import React, { useRef, useState, useEffect } from "react";
+import React, {useState} from "react";
 import { Link } from "react-router";
 import { useBookmarks } from "../../hooks/useBookmarks";
 import {
-  useUpdateJobMutation,
   useDeleteJobMutation,
-  useGetCategoriesQuery,
 } from "../../services/servicesApi";
-import { uploadImageToCloudinary } from "../../utils/uploadToCloudinary";
 import EditJobModal from "../Auth/modals/EditJobModal";
 
 const FALLBACK_IMAGE = "https://placehold.co/285x253?text=No+Image";
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
 const EXPERIENCE_LEVELS = ["Entry", "Junior", "Intermediate", "Senior", "Expert"];
 
 function formatDate(value) {
@@ -168,23 +164,23 @@ function DeleteJobModal({ job, onClose }) {
   };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 px-4">
-      <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-6">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl w-full max-w-sm shadow-2xl p-6">
         <div className="flex flex-col items-center text-center gap-3">
-          <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
+          <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
             <svg className="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <h2 className="text-lg font-bold text-gray-900">Delete Job Post?</h2>
-          <p className="text-sm text-gray-500">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Delete Job Post?</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Are you sure you want to delete{" "}
-            <span className="font-semibold text-gray-700">"{job?.title}"</span>? This cannot be undone.
+            <span className="font-semibold text-gray-300">"{job?.title}"</span>? This cannot be undone.
           </p>
         </div>
         <div className="flex gap-3 mt-6">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-full border border-slate-300 text-sm font-semibold text-gray-600 hover:bg-slate-50"
+            className="flex-1 py-2.5 rounded-full border border-slate-300 dark:border-slate-600 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-slate-700"
           >
             Cancel
           </button>
@@ -213,10 +209,10 @@ function CardMenu({ onEdit, onDelete }) {
           e.stopPropagation();
           setOpen((p) => !p);
         }}
-        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"
+        className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-slate-700"
         aria-label="More options"
       >
-        <svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+        <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
           <circle cx="12" cy="5" r="1.5" />
           <circle cx="12" cy="12" r="1.5" />
           <circle cx="12" cy="19" r="1.5" />
@@ -225,7 +221,7 @@ function CardMenu({ onEdit, onDelete }) {
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 bottom-10 z-20 bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden w-36">
+          <div className="absolute right-0 bottom-10 z-20 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl shadow-lg overflow-hidden w-36">
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -233,7 +229,7 @@ function CardMenu({ onEdit, onDelete }) {
                 setOpen(false);
                 onEdit();
               }}
-              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600"
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path
@@ -251,7 +247,7 @@ function CardMenu({ onEdit, onDelete }) {
                 setOpen(false);
                 onDelete();
               }}
-              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50"
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" strokeLinecap="round" strokeLinejoin="round" />
@@ -278,7 +274,7 @@ export default function OwnJobCard({ job, author, avatar }) {
     <>
       <Link
         to={`/jobs/${job?.id}`}
-        className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300 flex flex-col w-full border border-gray-100"
+        className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-md hover:shadow-xl dark:hover:shadow-slate-900/60 transition-shadow duration-300 flex flex-col w-full border border-gray-100 dark:border-slate-700"
       >
         {/* Image */}
         <div className="relative" style={{ height: 176 }}>
@@ -292,7 +288,7 @@ export default function OwnJobCard({ job, author, avatar }) {
           />
           <button
             onClick={toggle}
-            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center shadow transition-transform hover:scale-110 active:scale-95"
+            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 dark:bg-slate-800/90 flex items-center justify-center shadow transition-transform hover:scale-110 active:scale-95"
             aria-label={liked ? "Remove bookmark" : "Bookmark"}
           >
             <svg
@@ -314,9 +310,9 @@ export default function OwnJobCard({ job, author, avatar }) {
 
         {/* Body */}
         <div className="p-4 flex flex-col flex-1">
-          <h3 className="text-blue-500 font-bold text-sm mb-1 truncate">{job?.title || "Untitled"}</h3>
+          <h3 className="text-blue-500 dark:text-blue-300 font-bold text-sm mb-1 truncate">{job?.title || "Untitled"}</h3>
           <p
-            className="text-gray-400 text-xs leading-relaxed mb-3 overflow-hidden"
+            className="text-gray-400 dark:text-gray-300 text-xs leading-relaxed mb-3 overflow-hidden"
             style={{ display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}
           >
             {job?.description || "No description"}
@@ -326,29 +322,29 @@ export default function OwnJobCard({ job, author, avatar }) {
           <div className="flex items-center justify-between mb-3 flex-wrap gap-y-1">
             <div className="flex flex-wrap gap-1">
               {categoryName ? (
-                <span className="bg-blue-500 text-white text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
+                <span className="bg-blue-500/10 dark:bg-blue-500/20 text-blue-500 dark:text-blue-300 text-[10px] font-semibold px-2.5 py-0.5 rounded-full">
                   {categoryName}
                 </span>
               ) : (
-                <span className="text-gray-300 text-xs italic">No category</span>
+                <span className="text-gray-300 dark:text-gray-500 text-xs italic">No category</span>
               )}
             </div>
-            <span className="text-gray-400 text-xs">{formatDate(job?.createdAt)}</span>
+            <span className="text-gray-400 dark:text-gray-400 text-xs">{formatDate(job?.createdAt)}</span>
           </div>
 
-          <div className="border-t border-gray-100 mb-3" />
+          <div className="border-t border-gray-100 dark:border-slate-700 mb-3" />
 
           <div className="flex items-center justify-between mt-auto">
             <div className="flex items-center gap-2">
               <img
                 src={avatar || "https://placehold.co/32x32?text=?"}
                 alt={author}
-                className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100"
+                className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100 dark:ring-slate-700"
                 onError={(e) => {
                   e.currentTarget.src = "https://placehold.co/32x32?text=?";
                 }}
               />
-              <span className="text-gray-700 text-xs font-medium truncate max-w-[80px]">
+              <span className="text-gray-700 dark:text-slate-300 text-xs font-medium truncate max-w-[80px]">
                 {author || "Business"}
               </span>
             </div>

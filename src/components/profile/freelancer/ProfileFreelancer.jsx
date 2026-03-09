@@ -263,25 +263,25 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 py-6">
         {/* Cover + Profile header */}
-        <div className="rounded-2xl overflow-hidden bg-white shadow-sm">
+        <div className="rounded-2xl overflow-hidden bg-white dark:bg-gray-800 shadow-sm">
           <div className="relative h-[180px] sm:h-[220px]">
             <img src={coverUrl} alt="cover" className="w-full h-full object-cover z-0" />
           </div>
 
           <div className="flex items-center justify-between gap-4 px-4 sm:px-6 py-4">
             <div className="flex items-center gap-4">
-              <div className="-mt-12 sm:-mt-14 w-[96px] h-[96px] rounded-xl overflow-hidden bg-white shadow-md ring-4 ring-white z-10">
+              <div className="-mt-12 sm:-mt-14 w-[96px] h-[96px] rounded-xl overflow-hidden bg-white dark:bg-gray-700 shadow-md ring-4 ring-white dark:ring-gray-800 z-10">
                 <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover z-10" />
               </div>
 
               <div>
-                <p className="text-[16px] font-semibold text-gray-900 leading-tight">
+                <p className="text-[16px] font-semibold text-gray-900 dark:text-white leading-tight">
                   {user?.fullName || "—"}
                 </p>
-                <p className="text-[12px] text-gray-500 mt-1">
+                <p className="text-[12px] text-gray-500 dark:text-gray-400 mt-1">
                   {user?.userType || "FREELANCER"} • {user?.address || "—"}
                 </p>
               </div>
@@ -307,13 +307,13 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
         {/* Tabs (OWNER ONLY) */}
         {isOwner && (
           <div className="mt-6 flex justify-center">
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden flex">
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden flex">
               {["information", "favorites"].map((t) => (
                 <button
                   key={t}
                   onClick={() => setTab(t)}
                   className={`px-8 py-2 text-sm font-semibold capitalize flex items-center gap-1.5 ${
-                    tab === t ? "bg-purple-600 text-white" : "text-purple-600"
+                    tab === t ? "bg-purple-600 text-white" : "text-purple-600 dark:text-purple-400"
                   }`}
                 >
                   {t}
@@ -337,38 +337,38 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
           <>
             <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="space-y-4">
-                <div className="bg-white rounded-xl border border-gray-200 p-4">
-                  <p className="text-sm font-semibold text-gray-900">About Me</p>
-                  <p className="text-xs text-gray-500 mt-2 leading-5">{user?.bio || "—"}</p>
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">About Me</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 leading-5">{user?.bio || "—"}</p>
                 </div>
 
-                <div className="bg-white rounded-xl border border-gray-200 p-4">
-                  <p className="text-sm font-semibold text-gray-900">Contact Info</p>
-                  <div className="text-xs text-gray-600 mt-2 space-y-2">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">Contact Info</p>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-2 space-y-2">
                     {/* ✅ hide email/phone if you want privacy, or show only address */}
                     <div>{user?.address || "—"}</div>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-xl border border-gray-200 p-4">
-                  <p className="text-sm font-semibold text-gray-900">Languages</p>
-                  <div className="text-xs text-gray-600 mt-2 space-y-1">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">Languages</p>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-2 space-y-1">
                     <div>Khmer</div>
                     <div>English</div>
                   </div>
                 </div>
               </div>
 
-              <div className="lg:col-span-1 bg-white rounded-xl border border-gray-200 p-4 min-h-[260px]">
-                <p className="text-sm font-semibold text-gray-900">Work experience</p>
-                <div className="text-sm text-gray-600 mt-3 leading-6">
+              <div className="lg:col-span-1 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 min-h-[260px]">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">Work experience</p>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-3 leading-6">
                   <div>Web developer — Sep 2020 - Nov 2023</div>
                   <div>Java developer — Dec 2023 - Jan 2025</div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-gray-200 p-4 min-h-[260px]">
-                <p className="text-sm font-semibold text-gray-900">Skill</p>
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 min-h-[260px]">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">Skill</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {(Array.isArray(user?.skills) ? user.skills : []).length === 0 && (
                     <p className="text-sm text-gray-400">—</p>
@@ -386,7 +386,7 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
             </div>
 
             <div className="mt-8 flex items-center justify-between">
-              <p className="text-blue-500 font-bold text-xl">All posts</p>
+              <p className="text-blue-500 dark:text-blue-400 font-bold text-xl">All posts</p>
             </div>
 
             <div className="mt-4">
@@ -401,7 +401,7 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
               )}
 
               {!servicesLoading && !servicesError && servicesForCards.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                <div className="flex flex-col items-center justify-center py-16 text-gray-400 dark:text-gray-500">
                   <p className="text-sm font-medium">No posts yet</p>
                 </div>
               )}
@@ -434,39 +434,39 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
           <>
             <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
               <div className="space-y-4">
-                <div className="bg-white rounded-xl border border-gray-200 p-4">
-                  <p className="text-sm font-semibold text-gray-900">About Me</p>
-                  <p className="text-xs text-gray-500 mt-2 leading-5">{user?.bio || "—"}</p>
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">About Me</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 leading-5">{user?.bio || "—"}</p>
                 </div>
 
-                <div className="bg-white rounded-xl border border-gray-200 p-4">
-                  <p className="text-sm font-semibold text-gray-900">Contact Info</p>
-                  <div className="text-xs text-gray-600 mt-2 space-y-2">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">Contact Info</p>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-2 space-y-2">
                     <div>{user?.email || "—"}</div>
                     <div>{user?.phone || "—"}</div>
                     <div>{user?.address || "—"}</div>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-xl border border-gray-200 p-4">
-                  <p className="text-sm font-semibold text-gray-900">Languages</p>
-                  <div className="text-xs text-gray-600 mt-2 space-y-1">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">Languages</p>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-2 space-y-1">
                     <div>Khmer</div>
                     <div>English</div>
                   </div>
                 </div>
               </div>
 
-              <div className="lg:col-span-1 bg-white rounded-xl border border-gray-200 p-4 min-h-[260px]">
-                <p className="text-sm font-semibold text-gray-900">Work experience</p>
-                <div className="text-sm text-gray-600 mt-3 leading-6">
+              <div className="lg:col-span-1 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 min-h-[260px]">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">Work experience</p>
+                <div className="text-sm text-gray-600 dark:text-gray-400 mt-3 leading-6">
                   <div>Web developer — Sep 2020 - Nov 2023</div>
                   <div>Java developer — Dec 2023 - Jan 2025</div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-gray-200 p-4 min-h-[260px]">
-                <p className="text-sm font-semibold text-gray-900">Skill</p>
+              <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 min-h-[260px]">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">Skill</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {(Array.isArray(user?.skills) ? user.skills : []).length === 0 && (
                     <p className="text-sm text-gray-400">—</p>
@@ -485,7 +485,7 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
 
             {/* All Posts */}
             <div className="mt-8 flex items-center justify-between">
-              <p className="text-blue-500 font-bold text-xl">All posts</p>
+              <p className="text-blue-500 dark:text-blue-400 font-bold text-xl">All posts</p>
               <button
                 onClick={() => setPostModalOpen(true)}
                 className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold px-4 py-2 rounded-lg flex items-center gap-1.5"
@@ -509,7 +509,7 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
               )}
 
               {!servicesLoading && !servicesError && servicesForCards.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                <div className="flex flex-col items-center justify-center py-16 text-gray-400 dark:text-gray-500">
                   <p className="text-sm font-medium">No posts yet</p>
                 </div>
               )}
@@ -534,8 +534,8 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
         {isOwner && tab === "favorites" && (
           <div className="mt-8 space-y-10">
             {/* Bookmarked Freelancer Services */}
-            <div>
-              <p className="text-blue-500 font-bold text-lg mb-4 flex items-center gap-2">
+            {/* <div>
+              <p className="text-blue-500 dark:text-blue-400 font-bold text-lg mb-4 flex items-center gap-2">
                 Freelancer Services
                 <span className="text-xs bg-blue-100 text-blue-600 rounded-full px-2 py-0.5 font-semibold">
                   {serviceBookmarks.length}
@@ -566,12 +566,12 @@ export default function ProfileFreelancerPage({ mode = "owner", publicUserId }) 
                   })}
                 </div>
               )}
-            </div>
+            </div> */}
 
             {/* Bookmarked Business Job Posts */}
             <div>
-              <p className="text-blue-500 font-bold text-lg mb-4 flex items-center gap-2">
-                Job Posts
+              <p className="text-blue-500 dark:text-blue-400 font-bold text-lg mb-4 flex items-center gap-2">
+                Saved Job
                 <span className="text-xs bg-blue-100 text-blue-600 rounded-full px-2 py-0.5 font-semibold">
                   {jobBookmarks.length}
                 </span>
