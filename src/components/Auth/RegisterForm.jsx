@@ -35,7 +35,7 @@ const GoogleIcon = () => (
 
 const GithubIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="#24292e">
-    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
   </svg>
 );
 
@@ -77,7 +77,7 @@ const FloatingInput = ({ label, name, type = "text", value, onChange }) => {
 
 /* ================= Floating Select ================= */
 
-const FloatingSelect = ({ label, name, value, onChange, options }) => {
+const FloatingSelect = ({ label, name, value, onChange, options, placeholder }) => {
   return (
     <div className="relative mb-6">
       <label className="absolute left-6 -top-3 bg-white px-2 text-[#676666] text-sm z-10">
@@ -90,14 +90,14 @@ const FloatingSelect = ({ label, name, value, onChange, options }) => {
         onChange={onChange}
         className="w-full h-[50px] px-5 pr-10 text-base bg-white rounded-md
         border border-gray-400 outline-none
-        focus:border-gray-600 transition-colors duration-200"
+        focus:border-gray-600 transition-colors duration-200 appearance-none"
       >
         <option className="text-gray-300" value="" disabled>
-          Select gender
+          {placeholder || `Select ${label.toLowerCase()}`}
         </option>
         {options.map((opt) => (
-          <option key={opt} value={opt}>
-            {opt}
+          <option key={opt.value ?? opt} value={opt.value ?? opt}>
+            {opt.label ?? opt}
           </option>
         ))}
       </select>
@@ -116,7 +116,8 @@ export default function SignUpPage() {
     useRegisterBusinessOwnerMutation();
 
   const isLoading = loadingFreelancer || loadingBusiness;
-  const { loginWithGoogle, loginWithGithub, loading: oauthLoading } = useOAuthLogin({ redirectTo: "/" });
+  const { loginWithGoogle, loginWithGithub, loading: oauthLoading } =
+    useOAuthLogin({ redirectTo: "/" });
 
   const [form, setForm] = useState({
     firstName: "",
@@ -124,12 +125,18 @@ export default function SignUpPage() {
     username: "",
     gender: "",
     email: "",
+    phone: "",
     password: "",
     confirmPassword: "",
     role: "freelancer",
+    // Business-only fields (default to "" as required by API)
+    companyName: "",
+    companyWebsite: "",
+    industry: "",
+    // Not shown in form, sent as default empty string
+    profileImageUrl: "",
   });
 
-  // ✅ clear username when switching to business
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -143,69 +150,73 @@ export default function SignUpPage() {
 
   const handleBack = () => window.history.back();
 
-  const onSubmit = async (e) => {
-  e.preventDefault();
-
   const isBusiness = form.role === "business";
-  const userType = isBusiness ? "BUSINESS_OWNER" : "FREELANCER";
 
-  // normalize email
-  const email = form.email.trim().toLowerCase();
+  const onSubmit = async (e) => {
+    e.preventDefault();
 
-  // basic validation
-  if (
-    !email ||
-    !form.password ||
-    !form.firstName ||
-    !form.lastName ||
-    !form.gender ||
-    (!isBusiness && !form.username)
-  ) {
-    toast.error("Please fill in all fields.");
-    return;
-  }
+    const userType = isBusiness ? "BUSINESS_OWNER" : "FREELANCER";
+    const email = form.email.trim().toLowerCase();
 
-  if (form.password !== form.confirmPassword) {
-    toast.error("Passwords do not match.");
-    return;
-  }
-
-  // ✅ Build base body (NO username yet)
-  const body = {
-    fullName: `${form.firstName} ${form.lastName}`.trim(),
-    gender: form.gender,
-    email,
-    password: form.password,
-    userType,
-  };
-
-  // ✅ ADD THIS RIGHT HERE
-  if (!isBusiness) {
-    const base = email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "");
-    const uniqueSuffix = Math.random().toString(36).slice(2, 6);
-    body.username = form.username?.trim() || `${base}_${uniqueSuffix}`;
-  }
-
-  try {
-    if (userType === "BUSINESS_OWNER") {
-      await registerBusinessOwner(body).unwrap();
-    } else {
-      await registerFreelancer(body).unwrap();
+    // Basic validation
+    if (
+      !email ||
+      !form.password ||
+      !form.firstName ||
+      !form.lastName ||
+      !form.gender ||
+      !form.phone ||
+      (!isBusiness && !form.username)
+    ) {
+      toast.error("Please fill in all required fields.");
+      return;
     }
 
-    toast.success("Register successful! Please login.");
-    navigate("/login", { replace: true });
-  } catch (err) {
-    console.log("REGISTER ERROR raw:", err);
+    if (form.password !== form.confirmPassword) {
+      toast.error("Passwords do not match.");
+      return;
+    }
 
-    const msg =
-      err?.data?.message ||
-      err?.data?.error ||
-      `Register failed (${err?.status || "unknown"})`;
+    // Build body matching API JSON shape
+    const body = {
+      fullName: `${form.firstName} ${form.lastName}`.trim(),
+      gender: form.gender,
+      profileImageUrl: form.profileImageUrl || "", // default ""
+      email,
+      phone: form.phone.trim(),
+      userType,
+      password: form.password,
+      // Business fields always sent; empty string for non-business
+      companyName: isBusiness ? form.companyName.trim() : "",
+      companyWebsite: isBusiness ? form.companyWebsite.trim() : "",
+      industry: isBusiness ? form.industry.trim() : "",
+    };
 
-    toast.error(msg);
-  }
-};
+    // Add username only for freelancers
+    if (!isBusiness) {
+      const base = email.split("@")[0].replace(/[^a-zA-Z0-9_]/g, "");
+      const uniqueSuffix = Math.random().toString(36).slice(2, 6);
+      body.username = form.username?.trim() || `${base}_${uniqueSuffix}`;
+    }
+
+    try {
+      if (isBusiness) {
+        await registerBusinessOwner(body).unwrap();
+      } else {
+        await registerFreelancer(body).unwrap();
+      }
+
+      toast.success("Register successful! Please login.");
+      navigate("/login", { replace: true });
+    } catch (err) {
+      console.log("REGISTER ERROR raw:", err);
+      const msg =
+        err?.data?.message ||
+        err?.data?.error ||
+        `Register failed (${err?.status || "unknown"})`;
+      toast.error(msg);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-white">
@@ -241,6 +252,7 @@ export default function SignUpPage() {
                 Sign up
               </h1>
 
+              {/* First & Last Name */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FloatingInput
                   label="First Name"
@@ -256,16 +268,18 @@ export default function SignUpPage() {
                 />
               </div>
 
+              {/* Gender */}
               <FloatingSelect
                 label="Gender"
                 name="gender"
                 value={form.gender}
                 onChange={handleChange}
+                placeholder="Select gender"
                 options={["Male", "Female", "Other"]}
               />
 
-              {/* ✅ Hide username when Business */}
-              {form.role !== "business" && (
+              {/* Username — freelancer only */}
+              {!isBusiness && (
                 <FloatingInput
                   label="Username"
                   name="username"
@@ -274,6 +288,7 @@ export default function SignUpPage() {
                 />
               )}
 
+              {/* Email */}
               <FloatingInput
                 label="Email"
                 type="email"
@@ -282,6 +297,54 @@ export default function SignUpPage() {
                 onChange={handleChange}
               />
 
+              {/* Phone */}
+              <FloatingInput
+                label="Phone"
+                type="tel"
+                name="phone"
+                value={form.phone}
+                onChange={handleChange}
+              />
+
+              {/* Business-only fields */}
+              {isBusiness && (
+                <>
+                  <FloatingInput
+                    label="Company Name"
+                    name="companyName"
+                    value={form.companyName}
+                    onChange={handleChange}
+                  />
+                  <FloatingInput
+                    label="Company Website"
+                    type="url"
+                    name="companyWebsite"
+                    value={form.companyWebsite}
+                    onChange={handleChange}
+                  />
+                  <FloatingSelect
+                    label="Industry"
+                    name="industry"
+                    value={form.industry}
+                    onChange={handleChange}
+                    placeholder="Select industry"
+                    options={[
+                      "Technology",
+                      "Finance",
+                      "Healthcare",
+                      "Education",
+                      "Retail",
+                      "Manufacturing",
+                      "Media & Entertainment",
+                      "Real Estate",
+                      "Transportation",
+                      "Other",
+                    ]}
+                  />
+                </>
+              )}
+
+              {/* Password */}
               <FloatingInput
                 label="Password"
                 type="password"
@@ -290,6 +353,7 @@ export default function SignUpPage() {
                 onChange={handleChange}
               />
 
+              {/* Confirm Password */}
               <FloatingInput
                 label="Confirm Password"
                 type="password"
@@ -359,6 +423,7 @@ export default function SignUpPage() {
                 </label>
               </div>
 
+              {/* Submit */}
               <button
                 type="submit"
                 disabled={isLoading}
