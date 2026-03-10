@@ -44,7 +44,7 @@ export default function MessageButton({ otherUser, className = "", label = "Mess
       disabled={loading}
       className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold
                   text-white bg-blue-500 hover:bg-blue-600 active:scale-95
-                  disabled:opacity-60 transition-all shadow-sm shadow-blue-200
+                  disabled:opacity-60 transition-all 
                   ${className}`}
     >
       {loading ? (

@@ -2,7 +2,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router";
 import { useSelector } from "react-redux";
-import { useDarkMode } from "../navbar/NavbarComponent";
 import { useGetAllJobsQuery, useGetJobByIdQuery } from "../../services/detailworkApi";
 import { useGetUserByIdQuery } from "../../services/userApi";
 import { selectAuthUser } from "../../features/auth/authSlice";
@@ -12,8 +11,8 @@ import MessageButton from "../message/MessageButton";
 
 /* ─── constants ─────────────────────────────────────────────────────────── */
 const FALLBACK_AVATAR = "https://placehold.co/64x64?text=?";
-const FALLBACK_COVER  = "https://placehold.co/900x320?text=No+Image";
-const FALLBACK_THUMB  = "https://placehold.co/80x56?text=img";
+const FALLBACK_COVER = "https://placehold.co/900x320?text=No+Image";
+const FALLBACK_THUMB = "https://placehold.co/80x56?text=img";
 
 /* ─── helpers ───────────────────────────────────────────────────────────── */
 function timeAgo(value) {
@@ -65,19 +64,24 @@ function asText(x, fallback = "—") {
 /* ─── icons ─────────────────────────────────────────────────────────────── */
 const IconClock = () => (
   <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-    <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
   </svg>
 );
+
 const IconLocation = () => (
   <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+    <circle cx="12" cy="10" r="3" />
   </svg>
 );
+
 const IconBack = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
   </svg>
 );
+
 const IconBriefcase = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
     <rect x="2" y="7" width="20" height="14" rx="2" />
@@ -85,18 +89,21 @@ const IconBriefcase = () => (
     <path d="M2 12h20" />
   </svg>
 );
+
 const IconCalendar = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
     <rect x="3" y="4" width="18" height="18" rx="2" />
     <path d="M16 2v4M8 2v4M3 10h18" />
   </svg>
 );
+
 const IconTimer = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
     <circle cx="12" cy="12" r="9" />
     <path d="M12 7v5l3 3" strokeLinecap="round" />
   </svg>
 );
+
 const IconHeart = ({ filled }) => (
   <svg
     className="w-5 h-5 transition-transform duration-200"
@@ -113,21 +120,21 @@ const IconHeart = ({ filled }) => (
   </svg>
 );
 
-/* ─── Skeleton ───────────────────────────────────────────────────────────── */
+/* ─── Skeleton ──────────────────────────────────────────────────────────── */
 function Skeleton() {
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] py-8 px-4">
       <div className="max-w-5xl mx-auto animate-pulse space-y-5">
-        <div className="h-7 w-24 bg-gray-200 rounded-lg" />
-        <div className="h-36 bg-gray-200 rounded-2xl" />
-        <div className="flex gap-5">
+        <div className="h-7 w-24 bg-gray-200 dark:bg-slate-700 rounded-lg" />
+        <div className="h-36 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+        <div className="flex flex-col lg:flex-row gap-5">
           <div className="flex-1 space-y-4">
-            <div className="h-64 bg-gray-200 rounded-2xl" />
-            <div className="h-32 bg-gray-200 rounded-2xl" />
+            <div className="h-64 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+            <div className="h-32 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
           </div>
-          <div className="w-72 space-y-4">
-            <div className="h-48 bg-gray-200 rounded-2xl" />
-            <div className="h-40 bg-gray-200 rounded-2xl" />
+          <div className="w-full lg:w-72 space-y-4">
+            <div className="h-48 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
+            <div className="h-40 bg-gray-200 dark:bg-slate-700 rounded-2xl" />
           </div>
         </div>
       </div>
@@ -137,16 +144,19 @@ function Skeleton() {
 
 function ErrorState({ message, onBack }) {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow border border-gray-100 p-8 max-w-md w-full text-center">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] flex items-center justify-center px-4">
+      <div className="bg-white dark:bg-[#1e293b] rounded-2xl shadow border border-slate-100 dark:border-slate-700 p-8 max-w-md w-full text-center">
         <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
           <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <p className="text-sm font-semibold text-gray-800 mb-1">Could not load</p>
-        <p className="text-xs text-gray-400 mb-5">{message}</p>
-        <button onClick={onBack} className="px-5 py-2 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors">
+        <p className="text-sm font-semibold text-slate-800 dark:text-white mb-1">Could not load</p>
+        <p className="text-xs text-slate-400 mb-5 break-words">{message}</p>
+        <button
+          onClick={onBack}
+          className="px-5 py-2 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors"
+        >
           Go Back
         </button>
       </div>
@@ -154,21 +164,30 @@ function ErrorState({ message, onBack }) {
   );
 }
 
-/* ─── Main ─────────────────────────────────────────────────────────────── */
+const card =
+  "bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-[#334155] rounded-2xl p-4 sm:p-6 shadow-sm";
+
 export default function CardDetailBusiness() {
-  const { darkMode } = useDarkMode();
-  const navigate     = useNavigate();
-  const { jobId }    = useParams();
-  const authUser     = useSelector(selectAuthUser);
+  const navigate = useNavigate();
+  const { jobId } = useParams();
+  const authUser = useSelector(selectAuthUser);
 
   const [activeImg, setActiveImg] = useState(0);
-  const [imgError,  setImgError]  = useState(false);
+  const [imgError, setImgError] = useState(false);
 
-  /* ── fetch job ── */
-  const { data: byIdResp, isLoading: byIdLoading, isError: byIdError, error: byIdErrObj } =
-    useGetJobByIdQuery(jobId, { skip: !jobId });
-  const { data: listResp, isLoading: listLoading, isError: listError, error: listErrObj } =
-    useGetAllJobsQuery(undefined, { skip: !jobId });
+  const {
+    data: byIdResp,
+    isLoading: byIdLoading,
+    isError: byIdError,
+    error: byIdErrObj,
+  } = useGetJobByIdQuery(jobId, { skip: !jobId });
+
+  const {
+    data: listResp,
+    isLoading: listLoading,
+    isError: listError,
+    error: listErrObj,
+  } = useGetAllJobsQuery(undefined, { skip: !jobId });
 
   const job = useMemo(() => {
     const byId = normalizeOne(byIdResp);
@@ -177,53 +196,59 @@ export default function CardDetailBusiness() {
     return list.find((x) => String(getJobId(x)) === String(jobId)) ?? null;
   }, [byIdResp, listResp, jobId]);
 
-  /* ── fetch poster/author by userId (same as freelancer) ── */
   const { data: userRes } = useGetUserByIdQuery(job?.userId, { skip: !job?.userId });
   const user = userRes?.data ?? userRes;
 
-  /* ── bookmarks via API ── */
   const { liked, toggle: toggleBookmark } = useBookmarks({ id: job?.id, type: "job" });
+
   const handleToggleFavorite = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!authUser) { navigate("/login"); return; }
+    if (!authUser) {
+      navigate("/login");
+      return;
+    }
     toggleBookmark();
   };
 
   const loading = (byIdLoading && !byIdError) || (listLoading && !listError);
 
-  /* ── derived fields ── */
-  const name   = user?.fullName || user?.companyName || user?.username ||
-                 job?.companyName || job?.company?.name || job?.company || "Company";
+  const name =
+    user?.fullName ||
+    user?.companyName ||
+    user?.username ||
+    job?.companyName ||
+    job?.company?.name ||
+    job?.company ||
+    "Company";
+
   const avatar = user?.profileImageUrl || FALLBACK_AVATAR;
-  const loc    = user?.address || job?.location || job?.address || null;
-  const title  = job?.title ?? "Untitled";
-  const desc   = job?.description ?? "No description.";
+  const loc = user?.address || job?.location || job?.address || null;
+  const title = job?.title ?? "Untitled";
+  const desc = job?.description ?? "No description.";
   const posted = timeAgo(job?.createdAt);
   const status = job?.status ?? null;
   const catName = job?.category?.name || job?.categoryName || null;
-  const exp      = job?.experienceLevel ?? job?.experience ?? null;
   const duration = job?.duration ?? null;
   const deadline = job?.deadline ?? job?.endDate ?? null;
 
   const responsibilities = Array.isArray(job?.responsibilities) ? job.responsibilities : [];
-  const requirements     = Array.isArray(job?.requirements)     ? job.requirements     : [];
-  const skillsArr        = Array.isArray(job?.skills) ? job.skills
-                         : Array.isArray(job?.skill)  ? job.skill : [];
+  const requirements = Array.isArray(job?.requirements) ? job.requirements : [];
+  const skillsArr = Array.isArray(job?.skills)
+    ? job.skills
+    : Array.isArray(job?.skill)
+    ? job.skill
+    : [];
 
-  /* ── images (same logic as freelancer) ── */
   const images = (() => {
-    if (Array.isArray(job?.jobImages) && job.jobImages.length)
-      return job.jobImages.filter(Boolean);
-    if (typeof job?.jobImages === "string" && job.jobImages)
-      return [job.jobImages];
-    if (Array.isArray(job?.imageUrls) && job.imageUrls.length)
-      return job.imageUrls.filter(Boolean);
+    if (Array.isArray(job?.jobImages) && job.jobImages.length) return job.jobImages.filter(Boolean);
+    if (typeof job?.jobImages === "string" && job.jobImages) return [job.jobImages];
+    if (Array.isArray(job?.imageUrls) && job.imageUrls.length) return job.imageUrls.filter(Boolean);
     return [];
   })();
+
   const coverSrc = !imgError && images[activeImg] ? images[activeImg] : FALLBACK_COVER;
 
-  /* ── guards ── */
   if (!jobId) return <ErrorState message="Missing job ID." onBack={() => navigate(-1)} />;
   if (loading) return <Skeleton />;
   if (!job) {
@@ -234,47 +259,156 @@ export default function CardDetailBusiness() {
     return <ErrorState message={msg} onBack={() => navigate(-1)} />;
   }
 
-  /* ── theme (identical to CardDetailFreelancer) ── */
-  const dm      = darkMode;
-  const bg      = dm ? "bg-[#0f172a]"     : "bg-slate-50";
-  const cardBg  = dm ? "bg-[#1e293b]"     : "bg-white";
-  const border  = dm ? "border-[#334155]" : "border-slate-100";
-  const t1      = dm ? "text-white"       : "text-slate-900";
-  const t2      = dm ? "text-slate-400"   : "text-slate-500";
-  const divLine = dm ? "border-[#334155]" : "border-slate-100";
-  const infoTag = `${cardBg} border ${border} rounded-2xl p-5 sm:p-6 shadow-sm`;
-
   return (
-    <div className={`min-h-screen ${bg} transition-colors duration-300`} style={{ fontFamily: "'Poppins', sans-serif" }}>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-        {/* ── Back ── */}
+    <div
+      className="min-h-screen bg-slate-50 dark:bg-[#0f172a] transition-colors duration-300"
+      style={{ fontFamily: "'Poppins', sans-serif" }}
+    >
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <button
           onClick={() => navigate(-1)}
-          className={`inline-flex items-center gap-2 text-sm font-medium mb-7 px-4 py-2 rounded-xl transition-all
-            ${dm ? "text-slate-400 hover:text-white hover:bg-white/5" : "text-slate-500 hover:text-slate-900 hover:bg-slate-100"}`}
+          className="inline-flex items-center gap-2 text-sm font-medium mb-6 px-4 py-2 rounded-xl transition-all
+          text-slate-500 hover:text-slate-900 hover:bg-slate-100
+          dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
         >
           <IconBack /> Back
         </button>
 
         <div className="flex flex-col lg:flex-row gap-6 items-start">
+          {/* RIGHT CARD */}
+          <div className="w-full lg:w-[38%] order-1 lg:order-2">
+            <div className="lg:sticky lg:top-6">
+              <div className={`${card} mb-5`}>
+                <div className="flex items-center justify-between mb-5">
+                  <div
+                    className="flex items-center gap-3 flex-1 p-3 rounded-xl
+                    bg-blue-50 border border-blue-100
+                    dark:bg-blue-950/50 dark:border-blue-900/40"
+                  >
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0
+                      bg-blue-100 text-blue-600 dark:bg-blue-900/60 dark:text-blue-300"
+                    >
+                      <IconBriefcase />
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider font-semibold mb-0.5 text-slate-500 dark:text-slate-400">
+                        Experience
+                      </p>
+                      <p className="text-[13px] font-bold text-slate-900 dark:text-white">Expert</p>
+                    </div>
+                  </div>
 
-          {/* ══════════ LEFT ══════════ */}
-          <div className="w-full lg:w-[62%] flex flex-col gap-5">
+                  <button
+                    onClick={handleToggleFavorite}
+                    aria-label={liked ? "Remove from favorites" : "Add to favorites"}
+                    className={`ml-3 w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-200 active:scale-90 hover:scale-110
+                      ${
+                        liked
+                          ? "bg-red-50 dark:bg-red-900/30"
+                          : "text-slate-400 hover:text-red-500 hover:bg-red-50 dark:text-slate-500 dark:hover:text-red-400 dark:hover:bg-white/5"
+                      }`}
+                  >
+                    <IconHeart filled={liked} />
+                  </button>
+                </div>
 
-            {/* ── Header card — identical structure to freelancer ── */}
-            <div className={infoTag}>
+                <div className="border-t border-slate-100 dark:border-[#334155] mb-4" />
+
+                {duration && (
+                  <div
+                    className="flex items-center gap-3 p-3 rounded-xl mb-3
+                    bg-slate-50 border border-slate-100 dark:bg-slate-700/50 dark:border-slate-700"
+                  >
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0
+                      bg-slate-200 text-slate-600 dark:bg-slate-600/60 dark:text-slate-300"
+                    >
+                      <IconTimer />
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider font-semibold mb-0.5 text-slate-500 dark:text-slate-400">
+                        Duration
+                      </p>
+                      <p className="text-[13px] font-bold text-slate-900 dark:text-white">{duration}</p>
+                    </div>
+                  </div>
+                )}
+
+                {deadline && (
+                  <div
+                    className="flex items-center gap-3 p-3 rounded-xl mb-3
+                    bg-slate-50 border border-slate-100 dark:bg-slate-700/50 dark:border-slate-700"
+                  >
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0
+                      bg-blue-50 text-blue-500 dark:bg-slate-600/60 dark:text-blue-300"
+                    >
+                      <IconCalendar />
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider font-semibold mb-0.5 text-slate-500 dark:text-slate-400">
+                        Deadline
+                      </p>
+                      <p className="text-[13px] font-bold text-blue-500 break-words">{deadline}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* <Link
+                  to={`/businesses/${job?.userId}`}
+                  className="flex items-center gap-3 p-3 rounded-xl mb-5 hover:opacity-80 transition-opacity
+                    bg-slate-50 border border-slate-100 dark:bg-slate-700/50 dark:border-slate-700"
+                >
+                  <img
+                    src={avatar}
+                    alt={name}
+                    className="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-white dark:ring-slate-700"
+                    onError={(e) => {
+                      e.currentTarget.src = FALLBACK_AVATAR;
+                    }}
+                  />
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase tracking-wider font-semibold mb-0.5 text-slate-500 dark:text-slate-400">
+                      Posted by
+                    </p>
+                    <p className="text-[13px] font-semibold truncate text-slate-900 dark:text-white">{name}</p>
+                  </div>
+                </Link> */}
+
+                {/* <button
+                  onClick={() => navigate(-1)}
+                  className="w-full py-3 rounded-xl text-[13px] font-semibold text-white
+                    bg-blue-500 hover:bg-blue-600 active:scale-[0.98] transition-all shadow-sm shadow-blue-200"
+                >
+                  ← Go Back
+                </button> */}
+              </div>
+
+              {/* comments on lg only, under right card */}
+              <div className="hidden lg:block">
+                <CommentsSection postType="job" postId={jobId} authUser={authUser} />
+              </div>
+            </div>
+          </div>
+
+          {/* LEFT CONTENT */}
+          <div className="w-full lg:w-[62%] flex flex-col gap-5 order-2 lg:order-1">
+            <div className={card}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-4 min-w-0">
-
-                  {/* Profile avatar — clickable */}
-                  <Link to={`/businesses/${job?.userId}`} className="relative shrink-0 hover:opacity-80 transition-opacity">
+                  <Link
+                    to={`/businesses/${job?.userId}`}
+                    className="relative shrink-0 hover:opacity-80 transition-opacity"
+                  >
                     <div className="w-14 h-14 rounded-2xl overflow-hidden ring-2 ring-blue-100">
                       <img
                         src={avatar}
                         alt={name}
                         className="w-full h-full object-cover"
-                        onError={(e) => { e.currentTarget.src = FALLBACK_AVATAR; }}
+                        onError={(e) => {
+                          e.currentTarget.src = FALLBACK_AVATAR;
+                        }}
                       />
                     </div>
                     {status === "OPEN" && (
@@ -283,7 +417,6 @@ export default function CardDetailBusiness() {
                   </Link>
 
                   <div className="min-w-0">
-                    {/* Name pill — clickable */}
                     <Link
                       to={`/businesses/${job?.userId}`}
                       className="flex items-center gap-2 mb-1.5 w-fit hover:opacity-75 transition-opacity"
@@ -291,46 +424,50 @@ export default function CardDetailBusiness() {
                       <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
                         {name.slice(0, 2).toUpperCase()}
                       </div>
-                      <span className={`text-[13px] font-semibold truncate underline-offset-2 hover:underline ${t1}`}>{name}</span>
+                      <span className="text-[13px] font-semibold truncate underline-offset-2 hover:underline text-slate-900 dark:text-white">
+                        {name}
+                      </span>
                     </Link>
 
-                    <h1 className="text-blue-500 text-xl sm:text-[22px] font-bold leading-snug mb-2">
-                      {title}
-                    </h1>
+                    <h1 className="text-blue-500 text-xl sm:text-[22px] font-bold leading-snug mb-2">{title}</h1>
 
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3 text-slate-500 dark:text-slate-400">
                       {loc && (
-                        <span className={`flex items-center gap-1.5 text-[12px] ${t2}`}>
-                          <IconLocation />{loc}
+                        <span className="flex items-center gap-1.5 text-[12px]">
+                          <IconLocation />
+                          {loc}
                         </span>
                       )}
-                      <span className={`flex items-center gap-1.5 text-[12px] ${t2}`}>
-                        <IconClock />Posted {posted}
+                      <span className="flex items-center gap-1.5 text-[12px]">
+                        <IconClock />
+                        Posted {posted}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <MessageButton
-                  otherUser={{
-                    id:              job?.userId || job?.postedBy,
-                    fullName:        name,
-                    profileImageUrl: avatar,
-                  }}
-                />
+                <div className="shrink-0">
+                  <MessageButton
+                    otherUser={{
+                      id: job?.userId || job?.postedBy,
+                      fullName: name,
+                      profileImageUrl: avatar,
+                    }}
+                  />
+                </div>
               </div>
 
               {(status || catName) && (
                 <>
-                  <div className={`my-4 border-t ${divLine}`} />
+                  <div className="my-4 border-t border-slate-100 dark:border-[#334155]" />
                   <div className="flex flex-wrap gap-2">
                     {catName && (
-                      <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
+                      <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-900/50">
                         {catName}
                       </span>
                     )}
                     {status && (
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-900/50">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
                         {status}
                       </span>
@@ -340,9 +477,8 @@ export default function CardDetailBusiness() {
               )}
             </div>
 
-            {/* ── Cover image + thumbnails ── */}
-            <div className={`${cardBg} border ${border} rounded-2xl overflow-hidden shadow-sm`}>
-              <div className="relative" style={{ height: 300 }}>
+            <div className="bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-[#334155] rounded-2xl overflow-hidden shadow-sm">
+              <div className="relative h-[220px] sm:h-[300px]">
                 <img
                   src={coverSrc}
                   alt={title}
@@ -353,21 +489,28 @@ export default function CardDetailBusiness() {
               </div>
 
               {images.length > 1 && (
-                <div className={`p-3 flex gap-2 overflow-x-auto border-t ${divLine}`}>
+                <div className="p-3 flex gap-2 overflow-x-auto border-t border-slate-100 dark:border-[#334155]">
                   {images.slice(0, 6).map((url, i) => (
                     <button
                       key={i}
-                      onClick={() => { setActiveImg(i); setImgError(false); }}
+                      onClick={() => {
+                        setActiveImg(i);
+                        setImgError(false);
+                      }}
                       className={`shrink-0 w-[72px] h-12 rounded-xl overflow-hidden border-2 transition-all
-                        ${i === activeImg
-                          ? "border-blue-500 shadow-md scale-105"
-                          : "border-transparent opacity-55 hover:opacity-90 hover:border-slate-200"}`}
+                        ${
+                          i === activeImg
+                            ? "border-blue-500 shadow-md scale-105"
+                            : "border-transparent opacity-55 hover:opacity-90 hover:border-slate-200 dark:hover:border-slate-600"
+                        }`}
                     >
                       <img
                         src={url}
                         alt=""
                         className="w-full h-full object-cover"
-                        onError={(e) => { e.currentTarget.src = FALLBACK_THUMB; }}
+                        onError={(e) => {
+                          e.currentTarget.src = FALLBACK_THUMB;
+                        }}
                       />
                     </button>
                   ))}
@@ -375,19 +518,19 @@ export default function CardDetailBusiness() {
               )}
             </div>
 
-            {/* ── Description ── */}
-            <div className={infoTag}>
-              <h2 className={`text-[14px] font-bold mb-3 ${t1}`}>Job Description</h2>
-              <p className={`text-[13px] leading-[1.75] whitespace-pre-line ${t2}`}>{desc}</p>
+            <div className={card}>
+              <h2 className="text-[20px] font-bold mb-3 text-slate-900 dark:text-white">Job Description</h2>
+              <p className="text-[16px] leading-[1.75] whitespace-pre-line text-slate-500 dark:text-gray-200">
+                {desc}
+              </p>
             </div>
 
-            {/* ── Responsibilities ── */}
             {responsibilities.length > 0 && (
-              <div className={infoTag}>
-                <h2 className={`text-[14px] font-bold mb-4 ${t1}`}>Responsibilities</h2>
+              <div className={card}>
+                <h2 className="text-[14px] font-bold mb-4 text-slate-900 dark:text-white">Responsibilities</h2>
                 <ul className="space-y-3">
                   {responsibilities.map((r, i) => (
-                    <li key={i} className={`flex items-start gap-2.5 text-[13px] ${t2}`}>
+                    <li key={i} className="flex items-start gap-2.5 text-[13px] text-slate-500 dark:text-slate-400">
                       <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0 mt-2" />
                       {asText(r)}
                     </li>
@@ -396,42 +539,42 @@ export default function CardDetailBusiness() {
               </div>
             )}
 
-            {/* ── Requirements + Skills ── */}
             {(requirements.length > 0 || skillsArr.length > 0) && (
-              <div className={infoTag}>
-                <div className="flex gap-0">
-                  <div style={{ width: "45%", paddingRight: "24px" }}>
-                    <h2 className={`text-[14px] font-bold mb-4 ${t1}`}>Requirements</h2>
+              <div className={card}>
+                <div className="flex flex-col md:flex-row gap-6 md:gap-0">
+                  <div className="w-full md:w-[45%] md:pr-6">
+                    <h2 className="text-[14px] font-bold mb-4 text-slate-900 dark:text-white">Requirements</h2>
                     {requirements.length > 0 ? (
                       <ul className="space-y-3">
                         {requirements.map((req, i) => (
-                          <li key={i} className={`flex items-start gap-2.5 text-[13px] ${t2}`}>
+                          <li
+                            key={i}
+                            className="flex items-start gap-2.5 text-[13px] text-slate-500 dark:text-slate-400"
+                          >
                             <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0 mt-2" />
                             {asText(req)}
                           </li>
                         ))}
                       </ul>
                     ) : (
-                      <p className={`text-[12px] italic opacity-40 ${t2}`}>—</p>
+                      <p className="text-[12px] italic opacity-40 text-slate-500 dark:text-slate-400">—</p>
                     )}
                   </div>
 
-                  <div style={{ width: "1px", background: dm ? "#334155" : "#f1f5f9", flexShrink: 0 }} />
+                  <div className="hidden md:block w-px bg-slate-100 dark:bg-[#334155] shrink-0" />
 
-                  <div style={{ flex: 1, paddingLeft: "24px" }}>
-                    <h2 className={`text-[14px] font-bold mb-4 ${t1}`}>Skills</h2>
+                  <div className="flex-1 md:pl-6">
+                    <h2 className="text-[14px] font-bold mb-4 text-slate-900 dark:text-white">Skills</h2>
                     <div className="flex flex-wrap gap-2">
                       {skillsArr.map((s, i) => {
                         const label = typeof s === "string" ? s : s?.name || s?.title || "—";
                         return (
                           <span
                             key={i}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-medium cursor-default transition-colors
+                              bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-100
+                              dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800 dark:hover:bg-indigo-900/60"
                             style={{ whiteSpace: "nowrap" }}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-medium cursor-default transition-colors
-                              ${dm
-                                ? "bg-indigo-950/60 text-indigo-300 border border-indigo-800 hover:bg-indigo-900/60"
-                                : "bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-100"
-                              }`}
                           >
                             <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
                             {label}
@@ -445,118 +588,9 @@ export default function CardDetailBusiness() {
             )}
           </div>
 
-          {/* ══════════ RIGHT ══════════ */}
-          <div className="w-full lg:w-[38%] flex flex-col gap-5 lg:sticky lg:top-6">
-            <div className={infoTag}>
-
-              {/* Experience + Heart */}
-              <div className="flex items-center justify-between mb-5">
-                <div className={`flex items-center gap-3 flex-1 p-3 rounded-xl
-                  ${dm ? "bg-blue-950/50 border border-blue-900/40" : "bg-blue-50 border border-blue-100"}`}
-                >
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
-                    ${dm ? "bg-blue-900/60 text-blue-300" : "bg-blue-100 text-blue-600"}`}
-                  >
-                    <IconBriefcase />
-                  </div>
-                  <div>
-                    <p className={`text-[10px] uppercase tracking-wider font-semibold mb-0.5 ${t2}`}>Experience</p>
-                    <p className={`text-[13px] font-bold ${t1}`}>{exp || "—"}</p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={handleToggleFavorite}
-                  aria-label={liked ? "Remove from favorites" : "Add to favorites"}
-                  className={`ml-3 w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-200
-                    active:scale-90 hover:scale-110
-                    ${liked
-                      ? "bg-red-50 dark:bg-red-900/30"
-                      : dm
-                        ? "text-slate-500 hover:text-red-400 hover:bg-white/5"
-                        : "text-slate-400 hover:text-red-500 hover:bg-red-50"
-                    }`}
-                >
-                  <IconHeart filled={liked} />
-                </button>
-              </div>
-
-              <div className={`border-t ${divLine} mb-4`} />
-
-              {/* Duration */}
-              {duration && (
-                <div className={`flex items-center gap-3 p-3 rounded-xl mb-3
-                  ${dm ? "bg-slate-700/50 border border-slate-700" : "bg-slate-50 border border-slate-100"}`}
-                >
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
-                    ${dm ? "bg-slate-600/60 text-slate-300" : "bg-slate-200 text-slate-600"}`}
-                  >
-                    <IconTimer />
-                  </div>
-                  <div>
-                    <p className={`text-[10px] uppercase tracking-wider font-semibold mb-0.5 ${t2}`}>Duration</p>
-                    <p className={`text-[13px] font-bold ${t1}`}>{duration}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Deadline */}
-              {deadline && (
-                <div className={`flex items-center gap-3 p-3 rounded-xl mb-3
-                  ${dm ? "bg-slate-700/50 border border-slate-700" : "bg-slate-50 border border-slate-100"}`}
-                >
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
-                    ${dm ? "bg-slate-600/60 text-blue-300" : "bg-blue-50 text-blue-500"}`}
-                  >
-                    <IconCalendar />
-                  </div>
-                  <div>
-                    <p className={`text-[10px] uppercase tracking-wider font-semibold mb-0.5 ${t2}`}>Deadline</p>
-                    <p className="text-[13px] font-bold text-blue-500">{deadline}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Author mini card — clickable */}
-              <Link
-                to={`/businesses/${job?.userId}`}
-                className={`flex items-center gap-3 p-3 rounded-xl mb-5 hover:opacity-80 transition-opacity
-                  ${dm ? "bg-slate-700/50 border border-slate-700" : "bg-slate-50 border border-slate-100"}`}
-              >
-                <img
-                  src={avatar}
-                  alt={name}
-                  className="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-white"
-                  onError={(e) => { e.currentTarget.src = FALLBACK_AVATAR; }}
-                />
-                <div className="min-w-0">
-                  <p className={`text-[10px] uppercase tracking-wider font-semibold mb-0.5 ${t2}`}>Posted by</p>
-                  <p className={`text-[13px] font-semibold truncate ${t1}`}>{name}</p>
-                </div>
-              </Link>
-
-              {/* Go Back */}
-              {/* <button
-                onClick={() => navigate(-1)}
-                className="w-full py-3 rounded-xl text-[13px] font-semibold text-white
-                           bg-blue-500 hover:bg-blue-600 active:scale-[0.98] transition-all shadow-sm shadow-blue-200"
-              >
-                ← Go Back
-              </button> */}
-            </div>
-
-            {/* ── Comments ── */}
-            <CommentsSection
-              postType="job"
-              postId={jobId}
-              authUser={authUser}
-              dm={dm}
-              t1={t1}
-              t2={t2}
-              cardBg={cardBg}
-              border={border}
-              divLine={divLine}
-            />
+          {/* comments at very bottom on mobile */}
+          <div className="w-full order-3 lg:hidden">
+            <CommentsSection postType="job" postId={jobId} authUser={authUser} />
           </div>
         </div>
       </div>
