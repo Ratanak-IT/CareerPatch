@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useUploadProfileImageMutation } from "../../services/profileApi"; // ✅ adjust path if yours is different
+import { useUploadProfileImageMutation } from "../../services/profileApi";
 import { uploadImageToCloudinary } from "../../utils/uploadToCloudinary";
 export default function FreelancerProfileUpdate({
   editOpen,
@@ -79,10 +79,10 @@ export default function FreelancerProfileUpdate({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4">
-      <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[94vh] overflow-y-auto shadow-2xl">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl max-h-[94vh] overflow-y-auto shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-9 pt-8 pb-2">
-          <h2 className="text-xl font-bold text-gray-900">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
             Freelancer Profile Update
           </h2>
           <button
@@ -99,12 +99,12 @@ export default function FreelancerProfileUpdate({
           {/* Row 1 */}
           <div className="grid grid-cols-2 gap-6">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Full Name
               </label>
               <input
                 disabled={busy}
-                className="bg-slate-100 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-blue-400 transition"
+                className="bg-slate-100 dark:bg-gray-700 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-400 transition placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 placeholder="Full name"
                 value={form.fullName}
                 onChange={(e) =>
@@ -113,10 +113,10 @@ export default function FreelancerProfileUpdate({
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">Phone</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
               <input
                 disabled={busy}
-                className="bg-slate-100 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-blue-400 transition"
+                className="bg-slate-100 dark:bg-gray-700 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-400 transition placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 placeholder="Phone"
                 value={form.phone}
                 onChange={(e) =>
@@ -129,12 +129,12 @@ export default function FreelancerProfileUpdate({
           {/* Row 2 */}
           <div className="grid grid-cols-2 gap-6">
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Address
               </label>
               <input
                 disabled={busy}
-                className="bg-slate-100 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-blue-400 transition"
+                className="bg-slate-100 dark:bg-gray-700 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-400 transition placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 placeholder="Address"
                 value={form.address}
                 onChange={(e) =>
@@ -143,13 +143,13 @@ export default function FreelancerProfileUpdate({
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 Experience Years
               </label>
               <input
                 disabled={busy}
                 type="number"
-                className="bg-slate-100 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-blue-400 transition"
+                className="bg-slate-100 dark:bg-gray-700 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-400 transition placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 placeholder="Experience years"
                 value={form.experienceYears}
                 onChange={(e) =>
@@ -166,9 +166,9 @@ export default function FreelancerProfileUpdate({
           <div className="grid grid-cols-2 gap-6">
             {/* Skills */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700">Skill</label>
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Skill</label>
 
-              <div className="border border-slate-200 rounded-xl px-3.5 py-2.5 flex flex-wrap gap-2 items-center min-h-[46px] bg-white">
+              <div className="border border-slate-200 dark:border-gray-600 rounded-xl px-3.5 py-2.5 flex flex-wrap gap-2 items-center min-h-[46px] bg-white dark:bg-gray-700">
                 {skills.map((s) => (
                   <span
                     key={s}
@@ -198,7 +198,7 @@ export default function FreelancerProfileUpdate({
 
               <input
                 disabled={busy}
-                className="bg-slate-100 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-blue-400 transition"
+                className="bg-slate-100 dark:bg-gray-700 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-400 transition placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 placeholder="Type skill then press Enter"
                 value={skillText}
                 onChange={(e) => setSkillText(e.target.value)}
@@ -214,7 +214,7 @@ export default function FreelancerProfileUpdate({
             {/* Image Upload */}
             <div className="flex flex-col gap-2">
               <div
-                className="border-2 border-dashed border-slate-300 rounded-xl py-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-colors"
+                className="border-2 border-dashed border-slate-300 dark:border-gray-600 rounded-xl py-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors"
                 onDrop={handleDrop}
                 onDragOver={(e) => e.preventDefault()}
                 onClick={() => fileRef.current?.click()}
@@ -232,7 +232,7 @@ export default function FreelancerProfileUpdate({
                     strokeLinejoin="round"
                   />
                 </svg>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 dark:text-gray-400">
                   {imageFile ? "Image selected" : "Choose a image here"}
                 </p>
 
@@ -247,13 +247,13 @@ export default function FreelancerProfileUpdate({
               </div>
 
               {imageFile && (
-                <div className="border border-dashed border-slate-300 rounded-xl px-3 py-2.5 flex items-center gap-3 bg-slate-50">
+                <div className="border border-dashed border-slate-300 dark:border-gray-600 rounded-xl px-3 py-2.5 flex items-center gap-3 bg-slate-50 dark:bg-gray-700/50">
                   <img
                     src={imagePreview || "https://placehold.co/48x48?text=IMG"}
                     alt="preview"
                     className="w-12 h-12 rounded-lg object-cover shrink-0"
                   />
-                  <span className="flex-1 text-sm font-medium text-gray-700 truncate">
+                  <span className="flex-1 text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
                     {imageFile.name}
                   </span>
 
@@ -284,12 +284,12 @@ export default function FreelancerProfileUpdate({
 
           {/* Bio */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               About me
             </label>
             <textarea
               disabled={busy}
-              className="bg-slate-100 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-blue-400 transition resize-none"
+              className="bg-slate-100 dark:bg-gray-700 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-400 transition resize-none placeholder:text-gray-400 dark:placeholder:text-gray-500"
               placeholder="Bio / description"
               rows={4}
               value={form.bio}
@@ -303,7 +303,7 @@ export default function FreelancerProfileUpdate({
           <button
             onClick={() => setEditOpen(false)}
             disabled={busy}
-            className="px-8 py-2.5 rounded-full border border-slate-300 text-sm font-semibold text-gray-600 hover:bg-slate-50 disabled:opacity-60 transition-colors"
+            className="px-8 py-2.5 rounded-full border border-slate-300 dark:border-gray-600 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700 disabled:opacity-60 transition-colors"
           >
             Cancel
           </button>

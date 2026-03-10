@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, Link } from "react-router";
 import { useSelector } from "react-redux";
 import { useDarkMode } from "../navbar/NavbarComponent";
 import {
@@ -8,6 +8,7 @@ import {
 } from "../../services/freelancerPostApi";
 import { useGetUserByIdQuery } from "../../services/userApi";
 import { selectAuthUser } from "../../features/auth/authSlice";
+import { useBookmarks } from "../../hooks/useBookmarks";
 import CommentsSection from "../comments/CommentsSection";
 import MessageButton from "../message/MessageButton";
 
@@ -26,11 +27,7 @@ function timeAgo(value) {
   if (sec < 3600) return `${Math.floor(sec / 60)}m ago`;
   if (sec < 86400) return `${Math.floor(sec / 3600)}h ago`;
   if (sec < 604800) return `${Math.floor(sec / 86400)}d ago`;
-  return d.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 function normalizeList(resp) {
@@ -44,85 +41,44 @@ function normalizeList(resp) {
 
 // ─── icons ────────────────────────────────────────────────────────────────────
 const IconClock = () => (
-  <svg
-    className="w-3.5 h-3.5 shrink-0"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.8}
-    viewBox="0 0 24 24"
-  >
+  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
     <circle cx="12" cy="12" r="10" />
     <polyline points="12 6 12 12 16 14" />
   </svg>
 );
 const IconLocation = () => (
-  <svg
-    className="w-3.5 h-3.5 shrink-0"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.8}
-    viewBox="0 0 24 24"
-  >
+  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
     <circle cx="12" cy="10" r="3" />
   </svg>
 );
-const IconSend = () => (
-  <svg
-    className="w-3.5 h-3.5"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2}
-    viewBox="0 0 24 24"
-  >
-    <line x1="22" y1="2" x2="11" y2="13" />
-    <polygon points="22 2 15 22 11 13 2 9 22 2" />
-  </svg>
-);
-const IconBookmark = ({ filled }) => (
-  <svg
-    className="w-[18px] h-[18px]"
-    fill={filled ? "#3B82F6" : "none"}
-    stroke={filled ? "#3B82F6" : "currentColor"}
-    strokeWidth={2}
-    viewBox="0 0 24 24"
-  >
-    <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+const IconBack = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
   </svg>
 );
 const IconBriefcase = () => (
-  <svg
-    className="w-4 h-4"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={1.8}
-    viewBox="0 0 24 24"
-  >
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
     <rect x="2" y="7" width="20" height="14" rx="2" />
     <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
     <path d="M2 12h20" />
   </svg>
 );
-const IconBack = () => (
+
+// ─── Heart icon ───────────────────────────────────────────────────────────────
+const IconHeart = ({ filled }) => (
   <svg
-    className="w-4 h-4"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2.2}
+    className="w-5 h-5 transition-transform duration-200"
     viewBox="0 0 24 24"
+    fill={filled ? "#ef4444" : "none"}
+    stroke={filled ? "#ef4444" : "currentColor"}
+    strokeWidth={2}
   >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-  </svg>
-);
-const IconCheck = () => (
-  <svg
-    className="w-3 h-3"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2.5}
-    viewBox="0 0 24 24"
-  >
-    <polyline points="20 6 9 17 4 12" />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+    />
   </svg>
 );
 
@@ -154,23 +110,11 @@ function ErrorState({ message, onBack }) {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow border border-gray-100 p-8 max-w-md w-full text-center">
         <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
-          <svg
-            className="w-5 h-5 text-red-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
+          <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         </div>
-        <p className="text-sm font-semibold text-gray-800 mb-1">
-          Could not load
-        </p>
+        <p className="text-sm font-semibold text-gray-800 mb-1">Could not load</p>
         <p className="text-xs text-gray-400 mb-5">{message}</p>
         <button
           onClick={onBack}
@@ -190,7 +134,6 @@ export default function CardDetailFreelancer() {
   const { serviceId } = useParams();
   const authUser = useSelector(selectAuthUser);
 
-  const [bookmarked, setBookmarked] = useState(false);
   const [activeImg, setActiveImg] = useState(0);
   const [imgError, setImgError] = useState(false);
 
@@ -199,6 +142,7 @@ export default function CardDetailFreelancer() {
     isLoading: byIdLoading,
     isError: byIdError,
   } = useGetServiceByIdQuery(serviceId, { skip: !serviceId });
+
   const {
     data: listResp,
     isLoading: listLoading,
@@ -213,6 +157,20 @@ export default function CardDetailFreelancer() {
     );
   }, [byIdResp, listResp, serviceId]);
 
+  // ── Favorites via API (same as FreelancerCard / JobsGrid) ──
+  const { liked, toggle: toggleBookmark } = useBookmarks({ id: service?.id, type: "service" });
+  const handleToggleFavorite = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!authUser) { navigate("/login"); return; }
+    toggleBookmark();
+  };
+
+  // Only BUSINESS users can favorite — freelancers (who own their own posts) cannot
+  const viewerType = authUser?.userType ?? authUser?.role ?? "";
+  const isOwner = authUser && service?.userId && String(authUser?.id ?? authUser?.userId) === String(service?.userId);
+  const canFavorite = !isOwner && viewerType.toUpperCase() !== "FREELANCER";
+
   const { data: userRes } = useGetUserByIdQuery(service?.userId, {
     skip: !service?.userId,
   });
@@ -220,16 +178,13 @@ export default function CardDetailFreelancer() {
   const loading = (byIdLoading && !byIdError) || (listLoading && !listError);
 
   // derived
-  const name =
-    user?.fullName || user?.username || service?.username || "Freelancer";
-  const avatar =
-    user?.profileImageUrl || service?.profileImageUrl || FALLBACK_AVATAR;
+  const name = user?.fullName || user?.username || service?.username || "Freelancer";
+  const avatar = user?.profileImageUrl || service?.profileImageUrl || FALLBACK_AVATAR;
   const loc = user?.address || service?.location || null;
   const title = service?.title ?? "Untitled";
   const desc = service?.description ?? "No description.";
   const status = service?.status ?? null;
   const catName = service?.category?.name || service?.categoryName || null;
-  const budget = service?.budget ?? service?.price ?? null;
   const exp =
     service?.experienceLevel ||
     (user?.experienceYears ? `${user.experienceYears} yrs exp` : null);
@@ -243,8 +198,7 @@ export default function CardDetailFreelancer() {
       return service.imageUrls.filter(Boolean);
     return [];
   })();
-  const coverSrc =
-    !imgError && images[activeImg] ? images[activeImg] : FALLBACK_COVER;
+  const coverSrc = !imgError && images[activeImg] ? images[activeImg] : FALLBACK_COVER;
 
   const skillsArr = Array.isArray(service?.skills)
     ? service.skills
@@ -254,19 +208,11 @@ export default function CardDetailFreelancer() {
   const tools = Array.isArray(user?.tools) ? user.tools : [];
 
   // guards
-  if (!serviceId)
-    return (
-      <ErrorState message="Missing service ID." onBack={() => navigate(-1)} />
-    );
+  if (!serviceId) return <ErrorState message="Missing service ID." onBack={() => navigate(-1)} />;
   if (loading) return <Skeleton />;
-  if (!service) {
-    return (
-      <ErrorState
-        message="This service is unavailable or has been removed."
-        onBack={() => navigate(-1)}
-      />
-    );
-  }
+  if (!service) return (
+    <ErrorState message="This service is unavailable or has been removed." onBack={() => navigate(-1)} />
+  );
 
   // theme helpers
   const dm = darkMode;
@@ -296,74 +242,63 @@ export default function CardDetailFreelancer() {
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           {/* ══════════ LEFT ══════════ */}
           <div className="w-full lg:w-[62%] flex flex-col gap-5">
+
             {/* ── Header card ── */}
             <div className={infoTag}>
               <div className="flex items-start justify-between gap-4">
                 {/* Avatar + info */}
                 <div className="flex items-start gap-4 min-w-0">
-                  <div className="relative shrink-0">
+                  <Link to={`/freelancers/${service?.userId}`} className="relative shrink-0 hover:opacity-80 transition-opacity">
                     <div className="w-14 h-14 rounded-2xl overflow-hidden ring-2 ring-blue-100">
                       <img
                         src={avatar}
                         alt={name}
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = FALLBACK_AVATAR;
-                        }}
+                        onError={(e) => { e.currentTarget.src = FALLBACK_AVATAR; }}
                       />
                     </div>
                     {status === "AVAILABLE" && (
                       <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white" />
                     )}
-                  </div>
+                  </Link>
 
                   <div className="min-w-0">
-                    {/* Name tag */}
-                    <div className="flex items-center gap-2 mb-1.5">
+                    <Link
+                      to={`/freelancers/${service?.userId}`}
+                      className="flex items-center gap-2 mb-1.5 w-fit hover:opacity-75 transition-opacity"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
                         {name.slice(0, 2).toUpperCase()}
                       </div>
-                      <span
-                        className={`text-[13px] font-semibold truncate ${t1}`}
-                      >
-                        {name}
-                      </span>
-                    </div>
+                      <span className={`text-[13px] font-semibold truncate underline-offset-2 hover:underline ${t1}`}>{name}</span>
+                    </Link>
 
                     <h1 className="text-blue-500 text-xl sm:text-[22px] font-bold leading-snug mb-2">
                       {title}
                     </h1>
 
-                    {/* Meta */}
                     <div className="flex flex-wrap items-center gap-3">
                       {loc && (
-                        <span
-                          className={`flex items-center gap-1.5 text-[12px] ${t2}`}
-                        >
-                          <IconLocation />
-                          {loc}
+                        <span className={`flex items-center gap-1.5 text-[12px] ${t2}`}>
+                          <IconLocation />{loc}
                         </span>
                       )}
-                      <span
-                        className={`flex items-center gap-1.5 text-[12px] ${t2}`}
-                      >
-                        <IconClock />
-                        Posted {posted}
+                      <span className={`flex items-center gap-1.5 text-[12px] ${t2}`}>
+                        <IconClock />Posted {posted}
                       </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Message btn */}
-               
-                  <MessageButton
-                    otherUser={{
-                      id: user?.id || service?.userId,
-                      fullName: name,
-                      profileImageUrl: avatar,
-                    }}
-                  />
-                
+                <MessageButton
+                  otherUser={{
+                    id: user?.id || service?.userId,
+                    fullName: name,
+                    profileImageUrl: avatar,
+                  }}
+                />
               </div>
 
               {/* Badges */}
@@ -372,10 +307,7 @@ export default function CardDetailFreelancer() {
                   <div className={`my-4 border-t ${divLine}`} />
                   <div className="flex flex-wrap gap-2">
                     {status && (
-                      <span
-                        className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full
-                                       bg-emerald-50 text-emerald-600 border border-emerald-100"
-                      >
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
                         {status}
                       </span>
@@ -391,9 +323,7 @@ export default function CardDetailFreelancer() {
             </div>
 
             {/* ── Cover image ── */}
-            <div
-              className={`${cardBg} border ${border} rounded-2xl overflow-hidden shadow-sm`}
-            >
+            <div className={`${cardBg} border ${border} rounded-2xl overflow-hidden shadow-sm`}>
               <div className="relative" style={{ height: 300 }}>
                 <img
                   src={coverSrc}
@@ -401,32 +331,23 @@ export default function CardDetailFreelancer() {
                   className="w-full h-full object-cover"
                   onError={() => setImgError(true)}
                 />
-                {/* gradient overlay for depth */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
               </div>
 
-              {/* Thumbnails */}
               {images.length > 1 && (
-                <div
-                  className={`p-3 flex gap-2 overflow-x-auto border-t ${divLine}`}
-                >
+                <div className={`p-3 flex gap-2 overflow-x-auto border-t ${divLine}`}>
                   {images.slice(0, 6).map((url, i) => (
                     <button
                       key={i}
-                      onClick={() => {
-                        setActiveImg(i);
-                        setImgError(false);
-                      }}
+                      onClick={() => { setActiveImg(i); setImgError(false); }}
                       className={`shrink-0 w-[72px] h-12 rounded-xl overflow-hidden border-2 transition-all
-                        ${i === activeImg ? "border-blue-500 shadow-md scale-105" : `border-transparent opacity-55 hover:opacity-90 hover:border-slate-200`}`}
+                        ${i === activeImg ? "border-blue-500 shadow-md scale-105" : "border-transparent opacity-55 hover:opacity-90 hover:border-slate-200"}`}
                     >
                       <img
                         src={url}
                         alt=""
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = FALLBACK_THUMB;
-                        }}
+                        onError={(e) => { e.currentTarget.src = FALLBACK_THUMB; }}
                       />
                     </button>
                   ))}
@@ -436,85 +357,53 @@ export default function CardDetailFreelancer() {
 
             {/* ── Description ── */}
             <div className={infoTag}>
-              <h2 className={`text-[14px] font-bold mb-3 ${t1}`}>
-                Description
-              </h2>
-              <p
-                className={`text-[13px] leading-[1.75] whitespace-pre-line ${t2}`}
-              >
-                {desc}
-              </p>
+              <h2 className={`text-[14px] font-bold mb-3 ${t1}`}>Description</h2>
+              <p className={`text-[13px] leading-[1.75] whitespace-pre-line ${t2}`}>{desc}</p>
             </div>
 
             {/* ── Availability ── */}
             {user?.bio && (
               <div className={infoTag}>
-                <h2 className={`text-[14px] font-bold mb-3 ${t1}`}>
-                  Availability
-                </h2>
+                <h2 className={`text-[14px] font-bold mb-3 ${t1}`}>Availability</h2>
                 <p className={`text-[13px] leading-[1.75] ${t2}`}>{user.bio}</p>
               </div>
             )}
 
-            {/* ── Tools & Skills — side by side, always both visible ── */}
+            {/* ── Tools & Skills ── */}
             {(tools.length > 0 || skillsArr.length > 0) && (
               <div className={infoTag}>
                 <div className="flex gap-0">
-                  {/* LEFT: Tools & Technologies */}
                   <div style={{ width: "45%", paddingRight: "24px" }}>
-                    <h2 className={`text-[14px] font-bold mb-4 ${t1}`}>
-                      Tools & Technologies
-                    </h2>
+                    <h2 className={`text-[14px] font-bold mb-4 ${t1}`}>Tools & Technologies</h2>
                     {tools.length > 0 ? (
                       <ul className="space-y-3">
                         {tools.map((tool, i) => (
-                          <li
-                            key={i}
-                            className={`flex items-center gap-2.5 text-[13px] ${t2}`}
-                          >
+                          <li key={i} className={`flex items-center gap-2.5 text-[13px] ${t2}`}>
                             <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
-                            {typeof tool === "string"
-                              ? tool
-                              : tool?.name || "—"}
+                            {typeof tool === "string" ? tool : tool?.name || "—"}
                           </li>
                         ))}
                       </ul>
                     ) : (
-                      <p className={`text-[12px] italic opacity-40 ${t2}`}>
-                        Static
-                      </p>
+                      <p className={`text-[12px] italic opacity-40 ${t2}`}>Static</p>
                     )}
                   </div>
 
-                  {/* Divider */}
-                  <div
-                    style={{
-                      width: "1px",
-                      background: dm ? "#334155" : "#f1f5f9",
-                      flexShrink: 0,
-                    }}
-                  />
+                  <div style={{ width: "1px", background: dm ? "#334155" : "#f1f5f9", flexShrink: 0 }} />
 
-                  {/* RIGHT: Skills */}
                   <div style={{ flex: 1, paddingLeft: "24px" }}>
-                    <h2 className={`text-[14px] font-bold mb-4 ${t1}`}>
-                      Skills
-                    </h2>
+                    <h2 className={`text-[14px] font-bold mb-4 ${t1}`}>Skills</h2>
                     <div className="flex flex-wrap gap-2">
                       {skillsArr.map((s, i) => {
-                        const label =
-                          typeof s === "string"
-                            ? s
-                            : s?.name || s?.title || "—";
+                        const label = typeof s === "string" ? s : s?.name || s?.title || "—";
                         return (
                           <span
                             key={i}
                             style={{ whiteSpace: "nowrap" }}
                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-medium cursor-default transition-colors
-                              ${
-                                dm
-                                  ? "bg-indigo-950/60 text-indigo-300 border border-indigo-800 hover:bg-indigo-900/60"
-                                  : "bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-100"
+                              ${dm
+                                ? "bg-indigo-950/60 text-indigo-300 border border-indigo-800 hover:bg-indigo-900/60"
+                                : "bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-100"
                               }`}
                           >
                             <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
@@ -531,96 +420,80 @@ export default function CardDetailFreelancer() {
 
           {/* ══════════ RIGHT ══════════ */}
           <div className="w-full lg:w-[38%] flex flex-col gap-5 lg:sticky lg:top-6">
-            {/* ── Quotation card ── */}
+
+            {/* ── Sidebar card ── */}
             <div className={infoTag}>
-              {/* Price row */}
+
+              {/* ── Experience row (was "Project Cost") ── */}
               <div className="flex items-center justify-between mb-5">
-                <div>
-                  <p className={`text-[11px] font-medium mb-0.5 ${t2}`}>
-                    Project Cost
-                  </p>
-                  <span
-                    className={`text-[28px] font-extrabold leading-none ${t1}`}
-                  >
-                    {budget != null
-                      ? `$${Number(budget).toLocaleString()}`
-                      : "—"}
-                  </span>
-                </div>
-                <button
-                  onClick={() => setBookmarked((b) => !b)}
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all
-                    ${
-                      bookmarked
-                        ? "bg-blue-50 text-blue-500"
-                        : `${dm ? "text-slate-500 hover:text-slate-300 hover:bg-white/5" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"}`
-                    }`}
-                >
-                  <IconBookmark filled={bookmarked} />
-                </button>
-              </div>
-
-              {/* Divider */}
-              <div className={`border-t ${divLine} mb-4`} />
-
-              {/* Experience */}
-              {exp && (
                 <div
-                  className={`flex items-center gap-3 p-3 rounded-xl mb-3
-                  ${dm ? "bg-blue-950/50 border border-blue-900/40" : "bg-blue-50 border border-blue-100"}`}
+                  className={`flex items-center gap-3 flex-1 p-3 rounded-xl
+                    ${dm ? "bg-blue-950/50 border border-blue-900/40" : "bg-blue-50 border border-blue-100"}`}
                 >
-                  <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
-                    ${dm ? "bg-blue-900/60 text-blue-300" : "bg-blue-100 text-blue-600"}`}
-                  >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
+                    ${dm ? "bg-blue-900/60 text-blue-300" : "bg-blue-100 text-blue-600"}`}>
                     <IconBriefcase />
                   </div>
                   <div>
-                    <p
-                      className={`text-[10px] uppercase tracking-wider font-semibold mb-0.5 ${t2}`}
-                    >
+                    <p className={`text-[10px] uppercase tracking-wider font-semibold mb-0.5 ${t2}`}>
                       Experience
                     </p>
-                    <p className={`text-[13px] font-bold ${t1}`}>{exp}</p>
+                    <p className={`text-[13px] font-bold ${t1}`}>
+                      {exp ?? "—"}
+                    </p>
                   </div>
                 </div>
-              )}
 
-              {/* Freelancer mini card */}
-              <div
-                className={`flex items-center gap-3 p-3 rounded-xl mb-5
-                ${dm ? "bg-slate-700/50 border border-slate-700" : "bg-slate-50 border border-slate-100"}`}
+                {/* ── Heart / Favorite button — only for BUSINESS viewers ── */}
+                {canFavorite && (
+                  <button
+                    onClick={handleToggleFavorite}
+                    aria-label={liked ? "Remove from favorites" : "Add to favorites"}
+                    className={`ml-3 w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-200
+                      active:scale-90 hover:scale-110
+                      ${liked
+                        ? "bg-red-50 dark:bg-red-900/30"
+                        : dm
+                          ? "text-slate-500 hover:text-red-400 hover:bg-white/5"
+                          : "text-slate-400 hover:text-red-500 hover:bg-red-50"
+                      }`}
+                  >
+                    <IconHeart filled={liked} />
+                  </button>
+                )}
+              </div>
+
+              <div className={`border-t ${divLine} mb-4`} />
+
+              {/* Author mini card — clickable */}
+              <Link
+                to={`/freelancers/${service?.userId}`}
+                className={`flex items-center gap-3 p-3 rounded-xl mb-5 hover:opacity-80 transition-opacity
+                  ${dm ? "bg-slate-700/50 border border-slate-700" : "bg-slate-50 border border-slate-100"}`}
               >
                 <img
                   src={avatar}
                   alt={name}
                   className="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-white"
-                  onError={(e) => {
-                    e.currentTarget.src = FALLBACK_AVATAR;
-                  }}
+                  onError={(e) => { e.currentTarget.src = FALLBACK_AVATAR; }}
                 />
                 <div className="min-w-0">
-                  <p
-                    className={`text-[10px] uppercase tracking-wider font-semibold mb-0.5 ${t2}`}
-                  >
-                    Freelancer
-                  </p>
-                  <p className={`text-[13px] font-semibold truncate ${t1}`}>
-                    {name}
-                  </p>
+                  <p className={`text-[10px] uppercase tracking-wider font-semibold mb-0.5 ${t2}`}>Freelancer</p>
+                  <p className={`text-[13px] font-semibold truncate ${t1}`}>{name}</p>
                 </div>
-              </div>
+              </Link>
 
-              <button
+              {/* Go Back */}
+              {/* <button
                 onClick={() => navigate(-1)}
                 className="w-full py-3 rounded-xl text-[13px] font-semibold text-white
                            bg-blue-500 hover:bg-blue-600 active:scale-[0.98] transition-all shadow-sm shadow-blue-200"
               >
                 ← Go Back
-              </button>
+              </button> */}
             </div>
 
-            {/* ── Comments (Supabase real-time) ── */}
+            {/* ── Comments ── */}
             <CommentsSection
               postType="service"
               postId={serviceId}

@@ -1,12 +1,19 @@
 // src/components/carddetail/CardDetailBusiness.jsx
 import { useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, Link } from "react-router";
 import { useSelector } from "react-redux";
 import { useDarkMode } from "../navbar/NavbarComponent";
 import { useGetAllJobsQuery, useGetJobByIdQuery } from "../../services/detailworkApi";
+import { useGetUserByIdQuery } from "../../services/userApi";
 import { selectAuthUser } from "../../features/auth/authSlice";
+import { useBookmarks } from "../../hooks/useBookmarks";
 import CommentsSection from "../comments/CommentsSection";
 import MessageButton from "../message/MessageButton";
+
+/* ─── constants ─────────────────────────────────────────────────────────── */
+const FALLBACK_AVATAR = "https://placehold.co/64x64?text=?";
+const FALLBACK_COVER  = "https://placehold.co/900x320?text=No+Image";
+const FALLBACK_THUMB  = "https://placehold.co/80x56?text=img";
 
 /* ─── helpers ───────────────────────────────────────────────────────────── */
 function timeAgo(value) {
@@ -14,10 +21,8 @@ function timeAgo(value) {
   let v = value;
   if (typeof v === "string" && /^\d+$/.test(v)) v = Number(v);
   if (typeof v === "number" && v < 1e12) v = v * 1000;
-
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return "—";
-
   const sec = Math.floor((Date.now() - d.getTime()) / 1000);
   if (sec < 60) return "just now";
   if (sec < 3600) return `${Math.floor(sec / 60)}m ago`;
@@ -57,34 +62,20 @@ function asText(x, fallback = "—") {
   return fallback;
 }
 
-/* ─── icons (same style) ───────────────────────────────────────────────── */
+/* ─── icons ─────────────────────────────────────────────────────────────── */
 const IconClock = () => (
   <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-    <circle cx="12" cy="12" r="10" />
-    <polyline points="12 6 12 12 16 14" />
+    <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
   </svg>
 );
 const IconLocation = () => (
   <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
-    <circle cx="12" cy="10" r="3" />
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
   </svg>
 );
-const IconSend = () => (
-  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-    <line x1="22" y1="2" x2="11" y2="13" />
-    <polygon points="22 2 15 22 11 13 2 9 22 2" />
-  </svg>
-);
-const IconBookmark = ({ filled }) => (
-  <svg
-    className="w-[18px] h-[18px]"
-    fill={filled ? "#3B82F6" : "none"}
-    stroke={filled ? "#3B82F6" : "currentColor"}
-    strokeWidth={2}
-    viewBox="0 0 24 24"
-  >
-    <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
+const IconBack = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
   </svg>
 );
 const IconBriefcase = () => (
@@ -94,13 +85,35 @@ const IconBriefcase = () => (
     <path d="M2 12h20" />
   </svg>
 );
-const IconBack = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+const IconCalendar = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+    <rect x="3" y="4" width="18" height="18" rx="2" />
+    <path d="M16 2v4M8 2v4M3 10h18" />
+  </svg>
+);
+const IconTimer = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 3" strokeLinecap="round" />
+  </svg>
+);
+const IconHeart = ({ filled }) => (
+  <svg
+    className="w-5 h-5 transition-transform duration-200"
+    viewBox="0 0 24 24"
+    fill={filled ? "#ef4444" : "none"}
+    stroke={filled ? "#ef4444" : "currentColor"}
+    strokeWidth={2}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+    />
   </svg>
 );
 
-/* ─── Skeleton / Error (same style) ─────────────────────────────────────── */
+/* ─── Skeleton ───────────────────────────────────────────────────────────── */
 function Skeleton() {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4">
@@ -142,30 +155,21 @@ function ErrorState({ message, onBack }) {
 }
 
 /* ─── Main ─────────────────────────────────────────────────────────────── */
-const MOCK_PANEL = {
-  projectCost: "$1500",
-  experience: "Expert",
-  duration: "1–2 months",
-  deadline: "Mar 1, 2026",
-};
-
 export default function CardDetailBusiness() {
   const { darkMode } = useDarkMode();
-  const navigate = useNavigate();
-  const { jobId } = useParams();
-  const authUser = useSelector(selectAuthUser);
+  const navigate     = useNavigate();
+  const { jobId }    = useParams();
+  const authUser     = useSelector(selectAuthUser);
 
-  const [bookmarked, setBookmarked] = useState(false);
+  const [activeImg, setActiveImg] = useState(0);
+  const [imgError,  setImgError]  = useState(false);
 
-  // fetch detail by id
+  /* ── fetch job ── */
   const { data: byIdResp, isLoading: byIdLoading, isError: byIdError, error: byIdErrObj } =
     useGetJobByIdQuery(jobId, { skip: !jobId });
-
-  // fallback fetch list (useful if backend returns weird structure)
   const { data: listResp, isLoading: listLoading, isError: listError, error: listErrObj } =
     useGetAllJobsQuery(undefined, { skip: !jobId });
 
-  // resolve job
   const job = useMemo(() => {
     const byId = normalizeOne(byIdResp);
     if (byId) return byId;
@@ -173,42 +177,53 @@ export default function CardDetailBusiness() {
     return list.find((x) => String(getJobId(x)) === String(jobId)) ?? null;
   }, [byIdResp, listResp, jobId]);
 
+  /* ── fetch poster/author by userId (same as freelancer) ── */
+  const { data: userRes } = useGetUserByIdQuery(job?.userId, { skip: !job?.userId });
+  const user = userRes?.data ?? userRes;
+
+  /* ── bookmarks via API ── */
+  const { liked, toggle: toggleBookmark } = useBookmarks({ id: job?.id, type: "job" });
+  const handleToggleFavorite = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!authUser) { navigate("/login"); return; }
+    toggleBookmark();
+  };
+
   const loading = (byIdLoading && !byIdError) || (listLoading && !listError);
 
-  // derived fields (map job api -> UI)
-  const companyName = job?.company?.name || job?.companyName || job?.company || "Company";
-  const companyLogoText =
-    (job?.company?.logo || companyName?.slice(0, 2) || "CO").toString().slice(0, 2).toUpperCase();
-  const logoColor = job?.company?.logoColor || "#2B5F75";
-
-  const title = job?.title ?? "Untitled";
-  const loc = job?.location ?? job?.address ?? null;
+  /* ── derived fields ── */
+  const name   = user?.fullName || user?.companyName || user?.username ||
+                 job?.companyName || job?.company?.name || job?.company || "Company";
+  const avatar = user?.profileImageUrl || FALLBACK_AVATAR;
+  const loc    = user?.address || job?.location || job?.address || null;
+  const title  = job?.title ?? "Untitled";
+  const desc   = job?.description ?? "No description.";
   const posted = timeAgo(job?.createdAt);
-  const desc = job?.description ?? "No description.";
+  const status = job?.status ?? null;
+  const catName = job?.category?.name || job?.categoryName || null;
+  const exp      = job?.experienceLevel ?? job?.experience ?? null;
+  const duration = job?.duration ?? null;
+  const deadline = job?.deadline ?? job?.endDate ?? null;
 
   const responsibilities = Array.isArray(job?.responsibilities) ? job.responsibilities : [];
-  const requirements = Array.isArray(job?.requirements) ? job.requirements : [];
+  const requirements     = Array.isArray(job?.requirements)     ? job.requirements     : [];
+  const skillsArr        = Array.isArray(job?.skills) ? job.skills
+                         : Array.isArray(job?.skill)  ? job.skill : [];
 
-  const skillsArr = Array.isArray(job?.skills)
-    ? job.skills
-    : Array.isArray(job?.skill)
-      ? job.skill
-      : [];
+  /* ── images (same logic as freelancer) ── */
+  const images = (() => {
+    if (Array.isArray(job?.jobImages) && job.jobImages.length)
+      return job.jobImages.filter(Boolean);
+    if (typeof job?.jobImages === "string" && job.jobImages)
+      return [job.jobImages];
+    if (Array.isArray(job?.imageUrls) && job.imageUrls.length)
+      return job.imageUrls.filter(Boolean);
+    return [];
+  })();
+  const coverSrc = !imgError && images[activeImg] ? images[activeImg] : FALLBACK_COVER;
 
-  // Right panel (you can replace MOCK_PANEL with real job fields later)
-  const budget =
-    job?.budget ?? job?.salary ?? job?.price ?? job?.projectCost ?? null;
-
-  const exp =
-    job?.experienceLevel ?? job?.experience ?? MOCK_PANEL.experience;
-
-  const duration =
-    job?.duration ?? MOCK_PANEL.duration;
-
-  const deadline =
-    job?.deadline ?? job?.endDate ?? MOCK_PANEL.deadline;
-
-  // guards
+  /* ── guards ── */
   if (!jobId) return <ErrorState message="Missing job ID." onBack={() => navigate(-1)} />;
   if (loading) return <Skeleton />;
   if (!job) {
@@ -219,13 +234,13 @@ export default function CardDetailBusiness() {
     return <ErrorState message={msg} onBack={() => navigate(-1)} />;
   }
 
-  // theme helpers (same pattern as freelancer)
-  const dm = darkMode;
-  const bg = dm ? "bg-[#0f172a]" : "bg-slate-50";
-  const cardBg = dm ? "bg-[#1e293b]" : "bg-white";
-  const border = dm ? "border-[#334155]" : "border-slate-100";
-  const t1 = dm ? "text-white" : "text-slate-900";
-  const t2 = dm ? "text-slate-400" : "text-slate-500";
+  /* ── theme (identical to CardDetailFreelancer) ── */
+  const dm      = darkMode;
+  const bg      = dm ? "bg-[#0f172a]"     : "bg-slate-50";
+  const cardBg  = dm ? "bg-[#1e293b]"     : "bg-white";
+  const border  = dm ? "border-[#334155]" : "border-slate-100";
+  const t1      = dm ? "text-white"       : "text-slate-900";
+  const t2      = dm ? "text-slate-400"   : "text-slate-500";
   const divLine = dm ? "border-[#334155]" : "border-slate-100";
   const infoTag = `${cardBg} border ${border} rounded-2xl p-5 sm:p-6 shadow-sm`;
 
@@ -233,7 +248,7 @@ export default function CardDetailBusiness() {
     <div className={`min-h-screen ${bg} transition-colors duration-300`} style={{ fontFamily: "'Poppins', sans-serif" }}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        {/* Back */}
+        {/* ── Back ── */}
         <button
           onClick={() => navigate(-1)}
           className={`inline-flex items-center gap-2 text-sm font-medium mb-7 px-4 py-2 rounded-xl transition-all
@@ -244,29 +259,40 @@ export default function CardDetailBusiness() {
 
         <div className="flex flex-col lg:flex-row gap-6 items-start">
 
-          {/* LEFT */}
+          {/* ══════════ LEFT ══════════ */}
           <div className="w-full lg:w-[62%] flex flex-col gap-5">
 
-            {/* Header card (same style) */}
+            {/* ── Header card — identical structure to freelancer ── */}
             <div className={infoTag}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-start gap-4 min-w-0">
-                  <div className="relative shrink-0">
-                    <div
-                      className="w-14 h-14 rounded-2xl overflow-hidden ring-2 ring-blue-100 flex items-center justify-center text-white font-extrabold text-sm"
-                      style={{ background: logoColor }}
-                    >
-                      {companyLogoText}
+
+                  {/* Profile avatar — clickable */}
+                  <Link to={`/businesses/${job?.userId}`} className="relative shrink-0 hover:opacity-80 transition-opacity">
+                    <div className="w-14 h-14 rounded-2xl overflow-hidden ring-2 ring-blue-100">
+                      <img
+                        src={avatar}
+                        alt={name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.currentTarget.src = FALLBACK_AVATAR; }}
+                      />
                     </div>
-                  </div>
+                    {status === "OPEN" && (
+                      <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white" />
+                    )}
+                  </Link>
 
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5">
+                    {/* Name pill — clickable */}
+                    <Link
+                      to={`/businesses/${job?.userId}`}
+                      className="flex items-center gap-2 mb-1.5 w-fit hover:opacity-75 transition-opacity"
+                    >
                       <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
-                        {companyLogoText}
+                        {name.slice(0, 2).toUpperCase()}
                       </div>
-                      <span className={`text-[13px] font-semibold truncate ${t1}`}>{companyName}</span>
-                    </div>
+                      <span className={`text-[13px] font-semibold truncate underline-offset-2 hover:underline ${t1}`}>{name}</span>
+                    </Link>
 
                     <h1 className="text-blue-500 text-xl sm:text-[22px] font-bold leading-snug mb-2">
                       {title}
@@ -275,53 +301,87 @@ export default function CardDetailBusiness() {
                     <div className="flex flex-wrap items-center gap-3">
                       {loc && (
                         <span className={`flex items-center gap-1.5 text-[12px] ${t2}`}>
-                          <IconLocation />
-                          {loc}
+                          <IconLocation />{loc}
                         </span>
                       )}
                       <span className={`flex items-center gap-1.5 text-[12px] ${t2}`}>
-                        <IconClock />
-                        Posted {posted}
+                        <IconClock />Posted {posted}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                     <MessageButton
-      otherUser={{
-        id:              job?.userId || job?.postedBy,
-        fullName:        companyName,
-        profileImageUrl: null,
-      }}
-    />
+                <MessageButton
+                  otherUser={{
+                    id:              job?.userId || job?.postedBy,
+                    fullName:        name,
+                    profileImageUrl: avatar,
+                  }}
+                />
               </div>
 
-              <div className={`my-4 border-t ${divLine}`} />
-
-              {/* optional chips */}
-              <div className="flex flex-wrap gap-2">
-                {job?.category?.name && (
-                  <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
-                    {job.category.name}
-                  </span>
-                )}
-                {job?.status && (
-                  <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full
-                                   bg-emerald-50 text-emerald-600 border border-emerald-100">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-                    {job.status}
-                  </span>
-                )}
-              </div>
+              {(status || catName) && (
+                <>
+                  <div className={`my-4 border-t ${divLine}`} />
+                  <div className="flex flex-wrap gap-2">
+                    {catName && (
+                      <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
+                        {catName}
+                      </span>
+                    )}
+                    {status && (
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                        {status}
+                      </span>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
 
-            {/* Description */}
+            {/* ── Cover image + thumbnails ── */}
+            <div className={`${cardBg} border ${border} rounded-2xl overflow-hidden shadow-sm`}>
+              <div className="relative" style={{ height: 300 }}>
+                <img
+                  src={coverSrc}
+                  alt={title}
+                  className="w-full h-full object-cover"
+                  onError={() => setImgError(true)}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+              </div>
+
+              {images.length > 1 && (
+                <div className={`p-3 flex gap-2 overflow-x-auto border-t ${divLine}`}>
+                  {images.slice(0, 6).map((url, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { setActiveImg(i); setImgError(false); }}
+                      className={`shrink-0 w-[72px] h-12 rounded-xl overflow-hidden border-2 transition-all
+                        ${i === activeImg
+                          ? "border-blue-500 shadow-md scale-105"
+                          : "border-transparent opacity-55 hover:opacity-90 hover:border-slate-200"}`}
+                    >
+                      <img
+                        src={url}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        onError={(e) => { e.currentTarget.src = FALLBACK_THUMB; }}
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* ── Description ── */}
             <div className={infoTag}>
               <h2 className={`text-[14px] font-bold mb-3 ${t1}`}>Job Description</h2>
               <p className={`text-[13px] leading-[1.75] whitespace-pre-line ${t2}`}>{desc}</p>
             </div>
 
-            {/* Responsibilities */}
+            {/* ── Responsibilities ── */}
             {responsibilities.length > 0 && (
               <div className={infoTag}>
                 <h2 className={`text-[14px] font-bold mb-4 ${t1}`}>Responsibilities</h2>
@@ -336,11 +396,10 @@ export default function CardDetailBusiness() {
               </div>
             )}
 
-            {/* Requirements + Skills (same layout like freelancer Tools/Skills block) */}
+            {/* ── Requirements + Skills ── */}
             {(requirements.length > 0 || skillsArr.length > 0) && (
               <div className={infoTag}>
                 <div className="flex gap-0">
-                  {/* LEFT: Requirements */}
                   <div style={{ width: "45%", paddingRight: "24px" }}>
                     <h2 className={`text-[14px] font-bold mb-4 ${t1}`}>Requirements</h2>
                     {requirements.length > 0 ? (
@@ -353,14 +412,12 @@ export default function CardDetailBusiness() {
                         ))}
                       </ul>
                     ) : (
-                      <p className={`text-[12px] italic opacity-40 ${t2}`}>Static</p>
+                      <p className={`text-[12px] italic opacity-40 ${t2}`}>—</p>
                     )}
                   </div>
 
-                  {/* Divider */}
                   <div style={{ width: "1px", background: dm ? "#334155" : "#f1f5f9", flexShrink: 0 }} />
 
-                  {/* RIGHT: Skills */}
                   <div style={{ flex: 1, paddingLeft: "24px" }}>
                     <h2 className={`text-[14px] font-bold mb-4 ${t1}`}>Skills</h2>
                     <div className="flex flex-wrap gap-2">
@@ -388,80 +445,118 @@ export default function CardDetailBusiness() {
             )}
           </div>
 
-          {/* RIGHT */}
+          {/* ══════════ RIGHT ══════════ */}
           <div className="w-full lg:w-[38%] flex flex-col gap-5 lg:sticky lg:top-6">
-
-            {/* Quotation card (same as freelancer) */}
             <div className={infoTag}>
+
+              {/* Experience + Heart */}
               <div className="flex items-center justify-between mb-5">
-                <div>
-                  <p className={`text-[11px] font-medium mb-0.5 ${t2}`}>Project Cost</p>
-                  <span className={`text-[28px] font-extrabold leading-none ${t1}`}>
-                    {budget != null ? `$${Number(budget).toLocaleString()}` : MOCK_PANEL.projectCost}
-                  </span>
+                <div className={`flex items-center gap-3 flex-1 p-3 rounded-xl
+                  ${dm ? "bg-blue-950/50 border border-blue-900/40" : "bg-blue-50 border border-blue-100"}`}
+                >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
+                    ${dm ? "bg-blue-900/60 text-blue-300" : "bg-blue-100 text-blue-600"}`}
+                  >
+                    <IconBriefcase />
+                  </div>
+                  <div>
+                    <p className={`text-[10px] uppercase tracking-wider font-semibold mb-0.5 ${t2}`}>Experience</p>
+                    <p className={`text-[13px] font-bold ${t1}`}>{exp || "—"}</p>
+                  </div>
                 </div>
 
                 <button
-                  onClick={() => setBookmarked((b) => !b)}
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all
-                    ${bookmarked
-                      ? "bg-blue-50 text-blue-500"
-                      : `${dm ? "text-slate-500 hover:text-slate-300 hover:bg-white/5" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"}`
+                  onClick={handleToggleFavorite}
+                  aria-label={liked ? "Remove from favorites" : "Add to favorites"}
+                  className={`ml-3 w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-200
+                    active:scale-90 hover:scale-110
+                    ${liked
+                      ? "bg-red-50 dark:bg-red-900/30"
+                      : dm
+                        ? "text-slate-500 hover:text-red-400 hover:bg-white/5"
+                        : "text-slate-400 hover:text-red-500 hover:bg-red-50"
                     }`}
                 >
-                  <IconBookmark filled={bookmarked} />
+                  <IconHeart filled={liked} />
                 </button>
               </div>
 
               <div className={`border-t ${divLine} mb-4`} />
 
-              {/* Experience */}
-              <div className={`flex items-center gap-3 p-3 rounded-xl mb-3
-                ${dm ? "bg-blue-950/50 border border-blue-900/40" : "bg-blue-50 border border-blue-100"}`}
-              >
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
-                  ${dm ? "bg-blue-900/60 text-blue-300" : "bg-blue-100 text-blue-600"}`}
+              {/* Duration */}
+              {duration && (
+                <div className={`flex items-center gap-3 p-3 rounded-xl mb-3
+                  ${dm ? "bg-slate-700/50 border border-slate-700" : "bg-slate-50 border border-slate-100"}`}
                 >
-                  <IconBriefcase />
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
+                    ${dm ? "bg-slate-600/60 text-slate-300" : "bg-slate-200 text-slate-600"}`}
+                  >
+                    <IconTimer />
+                  </div>
+                  <div>
+                    <p className={`text-[10px] uppercase tracking-wider font-semibold mb-0.5 ${t2}`}>Duration</p>
+                    <p className={`text-[13px] font-bold ${t1}`}>{duration}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className={`text-[10px] uppercase tracking-wider font-semibold mb-0.5 ${t2}`}>Experience</p>
-                  <p className={`text-[13px] font-bold ${t1}`}>{exp || "—"}</p>
+              )}
+
+              {/* Deadline */}
+              {deadline && (
+                <div className={`flex items-center gap-3 p-3 rounded-xl mb-3
+                  ${dm ? "bg-slate-700/50 border border-slate-700" : "bg-slate-50 border border-slate-100"}`}
+                >
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0
+                    ${dm ? "bg-slate-600/60 text-blue-300" : "bg-blue-50 text-blue-500"}`}
+                  >
+                    <IconCalendar />
+                  </div>
+                  <div>
+                    <p className={`text-[10px] uppercase tracking-wider font-semibold mb-0.5 ${t2}`}>Deadline</p>
+                    <p className="text-[13px] font-bold text-blue-500">{deadline}</p>
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Duration + deadline */}
-              <div className={`p-3 rounded-xl mb-5 ${dm ? "bg-slate-700/50 border border-slate-700" : "bg-slate-50 border border-slate-100"}`}>
-                <p className={`text-[10px] uppercase tracking-wider font-semibold mb-1 ${t2}`}>Duration</p>
-                <p className={`text-[13px] font-semibold ${t1}`}>{duration || "—"}</p>
+              {/* Author mini card — clickable */}
+              <Link
+                to={`/businesses/${job?.userId}`}
+                className={`flex items-center gap-3 p-3 rounded-xl mb-5 hover:opacity-80 transition-opacity
+                  ${dm ? "bg-slate-700/50 border border-slate-700" : "bg-slate-50 border border-slate-100"}`}
+              >
+                <img
+                  src={avatar}
+                  alt={name}
+                  className="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-white"
+                  onError={(e) => { e.currentTarget.src = FALLBACK_AVATAR; }}
+                />
+                <div className="min-w-0">
+                  <p className={`text-[10px] uppercase tracking-wider font-semibold mb-0.5 ${t2}`}>Posted by</p>
+                  <p className={`text-[13px] font-semibold truncate ${t1}`}>{name}</p>
+                </div>
+              </Link>
 
-                <div className={`mt-3 border-t ${divLine}`} />
-
-                <p className={`mt-3 text-[10px] uppercase tracking-wider font-semibold mb-1 ${t2}`}>Deadline</p>
-                <p className={`text-[13px] font-semibold text-blue-500`}>{deadline || "—"}</p>
-              </div>
-
-              <button
+              {/* Go Back */}
+              {/* <button
                 onClick={() => navigate(-1)}
                 className="w-full py-3 rounded-xl text-[13px] font-semibold text-white
                            bg-blue-500 hover:bg-blue-600 active:scale-[0.98] transition-all shadow-sm shadow-blue-200"
               >
                 ← Go Back
-              </button>
+              </button> */}
             </div>
 
-            {/* ── Comments (Supabase real-time) ── */}
+            {/* ── Comments ── */}
             <CommentsSection
               postType="job"
               postId={jobId}
               authUser={authUser}
               dm={dm}
-              t1={t1} t2={t2}
+              t1={t1}
+              t2={t2}
               cardBg={cardBg}
               border={border}
               divLine={divLine}
             />
-
           </div>
         </div>
       </div>
