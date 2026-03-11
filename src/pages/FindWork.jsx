@@ -88,7 +88,7 @@ export default function FindWork() {
 
   useEffect(() => {
     setVisibleCount(PAGE_SIZE);
-  }, [selectedCategory, budgetRange]);
+  }, [selectedCategory, budgetRange, appliedSearch]);
 
   function handleSearch() {
     setAppliedSearch(searchText);
@@ -112,10 +112,11 @@ export default function FindWork() {
         <JobsGrid
           filtered={filtered}
           visibleCount={visibleCount}
-          onSeeMore={() => setVisibleCount((c) => c + PAGE_SIZE)}
+          setVisibleCount={setVisibleCount}
           isLoading={isLoading}
           isError={isError}
           categoryMap={categoryMap}
+          pageSize={PAGE_SIZE}
         />
       </div>
     </div>

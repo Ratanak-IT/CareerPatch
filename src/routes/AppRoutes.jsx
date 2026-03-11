@@ -2,6 +2,8 @@
 import { Routes, Route } from "react-router";
 import { useSelector } from "react-redux";
 import RootLayout from "../layouts/RootLayout.jsx";
+import AuthLayout from "../layouts/AuthLayout.jsx";
+
 import About from "../pages/About.jsx";
 import Register from "../pages/Register.jsx";
 import LoginPage from "../pages/Login.jsx";
@@ -13,7 +15,7 @@ import ProfileBusiness from "../pages/ProfileBusiness.jsx";
 import FindWork from "../pages/FindWork.jsx";
 
 import { selectIsAuthed, selectAuthUser } from "../features/auth/authSlice.js";
-import { useMeQuery } from "../services/authApi.js"; // ← MUST use authApi, not profileApi
+import { useMeQuery } from "../services/authApi.js";
 import FreelancerPublicProfile from "../pages/FreelancerPublicProfile.jsx";
 import CardDetailBusiness from "../components/carddetail/CarddetailBusiness.jsx";
 import DetailWorkPage from "../pages/DetailWork.jsx";
@@ -27,10 +29,10 @@ function ProfileRouter() {
   const { data: meRes, isLoading } = useMeQuery(undefined, { skip: !isAuthed });
 
   if (!isAuthed) return <LoginPage />;
+
   const userFromMe = meRes?.data ?? meRes;
   const user = authUser || userFromMe;
 
-  // If we have no user data at all yet, wait for the query
   if (!user && isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -51,28 +53,29 @@ function ProfileRouter() {
 export default function AppRoutes() {
   return (
     <Routes>
+      {/* Main Layout = show navbar/footer */}
       <Route element={<RootLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/findwork" element={<FindWork />} />
         <Route path="/findfreelan" element={<FindFreelancers />} />
         <Route path="/about" element={<About />} />
-
         <Route path="/chat" element={<ChatComponent />} />
-
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/profile" element={<ProfileRouter />} />
         <Route
           path="/freelancers/:userId"
           element={<FreelancerPublicProfile />}
         />
-        <Route path="/jobs/:jobId" element={<DetailWorkPage />} />
-
         <Route path="/services/:serviceId" element={<CardDetailFreelancer />} />
-        <Route path="/jobs/:jobId" element={<CardDetailBusiness />} />
+        <Route path="/jobs/:jobId" element={<DetailWorkPage />} />
+      </Route>
 
+      {/* Auth Layout = no navbar/footer */}
+      <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<Register />} />
       </Route>
+
       <Route
         path="*"
         element={<div style={{ padding: 24 }}>404 Not Found</div>}

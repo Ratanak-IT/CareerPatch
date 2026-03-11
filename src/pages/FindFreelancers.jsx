@@ -1,5 +1,4 @@
-// src/pages/FindFreelancers.jsx
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import HeroSectionComponent from "../components/freelancer/HeroSectionComponent";
 import FreelancerCard from "../components/freelancer/FreelancerCard";
 import { useGetServicesQuery } from "../services/freelancerPostApi";
@@ -8,6 +7,7 @@ import { FreelancerCardSkeleton } from "../components/loading/FreelancerCardSkel
 
 const FALLBACK_IMAGE = "https://placehold.co/285x253?text=No+Image";
 const FALLBACK_AVATAR = "https://placehold.co/32x32?text=?";
+const PAGE_SIZE = 8;
 
 function formatDate(value) {
   if (!value) return "—";
@@ -25,10 +25,11 @@ function getServiceId(service) {
   );
 }
 
-function ServiceCardWithAuthor({ service, searchText, category }) {
+function ServiceCardWithAuthor({ service }) {
   const { data: userRes } = useGetUserByIdQuery(service?.userId, {
     skip: !service?.userId,
   });
+
   const user = userRes?.data || userRes;
 
   const serviceId = getServiceId(service);
@@ -47,17 +48,7 @@ function ServiceCardWithAuthor({ service, searchText, category }) {
 
   const tags = categoryName && categoryName !== "—" ? [categoryName] : [];
 
-  const q = searchText.trim().toLowerCase();
-  const matchSearch =
-    !q ||
-    title.toLowerCase().includes(q) ||
-    categoryName.toLowerCase().includes(q) ||
-    authorName.toLowerCase().includes(q);
-  const matchCategory =
-    category === "All" ||
-    categoryName.toLowerCase().includes(String(category).toLowerCase());
-
-  if (!matchSearch || !matchCategory || !serviceId) return null;
+  if (!serviceId) return null;
 
   return (
     <FreelancerCard
@@ -77,8 +68,13 @@ function ServiceCardWithAuthor({ service, searchText, category }) {
 
 export default function FindFreelancers() {
   const { data, isLoading, isError } = useGetServicesQuery();
+
   const [category, setCategory] = useState("All");
   const [searchText, setSearchText] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  const loadMoreRef = useRef(null);
 
   const services = useMemo(() => {
     if (Array.isArray(data?.content)) return data.content;
@@ -88,53 +84,106 @@ export default function FindFreelancers() {
     return [];
   }, [data]);
 
+  const filteredServices = useMemo(() => {
+    const q = appliedSearch.trim().toLowerCase();
+
+    return services.filter((service) => {
+      const title = String(service?.title || "").toLowerCase();
+      const categoryName = String(
+        service?.category?.name || service?.categoryName || ""
+      ).toLowerCase();
+
+      const matchSearch =
+        !q || title.includes(q) || categoryName.includes(q);
+
+      const matchCategory =
+        category === "All" ||
+        categoryName.includes(String(category).toLowerCase());
+
+      return matchSearch && matchCategory && getServiceId(service);
+    });
+  }, [services, appliedSearch, category]);
+
+  const visibleServices = filteredServices.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredServices.length;
+
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [category, appliedSearch]);
+
+  useEffect(() => {
+    if (!hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const firstEntry = entries[0];
+        if (firstEntry?.isIntersecting) {
+          setVisibleCount((prev) =>
+            Math.min(prev + PAGE_SIZE, filteredServices.length)
+          );
+        }
+      },
+      {
+        root: null,
+        rootMargin: "200px",
+        threshold: 0.1,
+      }
+    );
+
+    const currentRef = loadMoreRef.current;
+    if (currentRef) observer.observe(currentRef);
+
+    return () => {
+      if (currentRef) observer.unobserve(currentRef);
+      observer.disconnect();
+    };
+  }, [hasMore, filteredServices.length]);
+
+  const handleSubmitSearch = () => {
+    setAppliedSearch(searchText);
+    setVisibleCount(PAGE_SIZE);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-[#07111f]">
-      {/* ── Hero — NO wrapper, goes full width flush with navbar ── */}
       <HeroSectionComponent
         category={category}
         searchText={searchText}
         onChangeCategory={setCategory}
         onChangeSearch={setSearchText}
-        onSubmitSearch={() => {}}
+        onSubmitSearch={handleSubmitSearch}
       />
 
-      {/* ── Cards grid — centered container ── */}
       <div className="max-w-[1440px] mx-auto px-6 lg:px-[120px] pt-8 pb-16">
-        {/* Loading */}
         {isLoading && (
-  <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-    {Array.from({ length: 8 }).map((_, i) => (
-      <FreelancerCardSkeleton key={i} />
-    ))}
-  </div>
-)}
-        {/* Error */}
+          <div className="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <FreelancerCardSkeleton key={i} />
+            ))}
+          </div>
+        )}
+
         {isError && (
           <p className="text-red-500 dark:text-red-400 text-center py-8">
             Failed to load services.
           </p>
         )}
 
-        {/* Grid */}
         {!isLoading && !isError && (
           <>
             <div className="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {services.map((service) => {
+              {visibleServices.map((service) => {
                 const id = getServiceId(service);
                 return (
                   <ServiceCardWithAuthor
                     key={id || service?.userId || service?.title}
                     service={service}
-                    searchText={searchText}
-                    category={category}
                   />
                 );
               })}
             </div>
 
-            {/* Empty state */}
-            {services.length === 0 && (
+            {filteredServices.length === 0 && (
               <div className="flex flex-col items-center justify-center py-20">
                 <svg
                   className="w-14 h-14 mb-4 text-gray-200 dark:text-slate-700"
@@ -155,6 +204,25 @@ export default function FindFreelancers() {
                 <p className="text-xs mt-1 text-gray-400 dark:text-slate-500">
                   Try adjusting your search or category
                 </p>
+              </div>
+            )}
+
+            {hasMore && (
+              <div
+                ref={loadMoreRef}
+                className="flex justify-center items-center py-10"
+              >
+                <div className="flex gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#1E88E5] animate-bounce" />
+                  <span
+                    className="w-2.5 h-2.5 rounded-full bg-[#1E88E5] animate-bounce"
+                    style={{ animationDelay: "0.15s" }}
+                  />
+                  <span
+                    className="w-2.5 h-2.5 rounded-full bg-[#1E88E5] animate-bounce"
+                    style={{ animationDelay: "0.3s" }}
+                  />
+                </div>
               </div>
             )}
           </>

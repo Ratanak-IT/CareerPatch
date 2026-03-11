@@ -67,21 +67,21 @@ function ConversationItem({ conv, myId, isActive, onClick }) {
       onClick={onClick}
       className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left
         ${isActive
-          ? "bg-blue-50 border border-blue-100"
-          : "hover:bg-gray-50 border border-transparent"
+          ? "bg-blue-50 border border-blue-100 dark:bg-blue-950/40 dark:border-blue-800/50"
+          : "hover:bg-gray-50 border border-transparent dark:hover:bg-gray-800/50"
         }`}
     >
       <Avatar src={avatar} name={name} size={11} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-0.5">
-          <span className={`font-semibold text-sm truncate ${isActive ? "text-blue-600" : "text-gray-800"}`}>
+          <span className={`font-semibold text-sm truncate ${isActive ? "text-blue-600 dark:text-blue-400" : "text-gray-800 dark:text-gray-100"}`}>
             {name}
           </span>
-          <span className="text-gray-400 text-[10px] flex-shrink-0 ml-2">
+          <span className="text-gray-400 dark:text-gray-500 text-[10px] flex-shrink-0 ml-2">
             {timeAgo(conv.last_message_at)}
           </span>
         </div>
-        <p className="text-gray-400 text-xs truncate">
+        <p className="text-gray-400 dark:text-gray-500 text-xs truncate">
           {conv.last_message || "No messages yet"}
         </p>
       </div>
@@ -99,11 +99,11 @@ function MessageBubble({ msg, myId }) {
         <div className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed break-words
           ${isMe
             ? "bg-blue-500 text-white rounded-br-md"
-            : "bg-gray-100 text-gray-800 rounded-bl-md"
+            : "bg-gray-100 text-gray-800 rounded-bl-md dark:bg-gray-700 dark:text-gray-100"
           }`}>
           {msg.content}
         </div>
-        <span className={`text-[10px] text-gray-400 ${isMe ? "text-right" : "text-left"}`}>
+        <span className={`text-[10px] text-gray-400 dark:text-gray-500 ${isMe ? "text-right" : "text-left"}`}>
           {timeAgo(msg.created_at)}
         </span>
       </div>
@@ -144,7 +144,7 @@ function ChatWindow({ conv, myId, myUser, onBack }) {
 
   if (!conv) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3">
+      <div className="flex-1 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 gap-3">
         <IconChat />
         <p className="text-sm font-medium">Select a conversation</p>
         <p className="text-xs opacity-60">Choose from the list on the left</p>
@@ -155,14 +155,14 @@ function ChatWindow({ conv, myId, myUser, onBack }) {
   return (
     <>
       {/* Header */}
-      <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 flex-shrink-0">
-        <button onClick={onBack} className="sm:hidden text-gray-400 hover:text-gray-700 mr-1">
+      <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-gray-700/60 flex-shrink-0">
+        <button onClick={onBack} className="sm:hidden text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-200 mr-1">
           <IconBack />
         </button>
         <Avatar src={avatar} name={name} size={10} />
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-gray-800 text-sm truncate">{name}</p>
-          <p className="text-[11px] text-green-500 font-medium">Active</p>
+          <p className="font-semibold text-gray-800 dark:text-gray-100 text-sm truncate">{name}</p>
+          <p className="text-[11px] text-green-500 dark:text-green-400 font-medium">Active</p>
         </div>
       </div>
 
@@ -173,7 +173,7 @@ function ChatWindow({ conv, myId, myUser, onBack }) {
             <span className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full gap-2 text-gray-400 py-16">
+          <div className="flex flex-col items-center justify-center h-full gap-2 text-gray-400 dark:text-gray-500 py-16">
             <IconChat />
             <p className="text-xs">No messages yet. Say hello! 👋</p>
           </div>
@@ -186,7 +186,7 @@ function ChatWindow({ conv, myId, myUser, onBack }) {
       </div>
 
       {/* Input */}
-      <div className="px-4 py-4 border-t border-gray-100 flex-shrink-0">
+      <div className="px-4 py-4 border-t border-gray-100 dark:border-gray-700/60 flex-shrink-0">
         <div className="flex items-center gap-2">
           <input
             ref={inputRef}
@@ -199,13 +199,17 @@ function ChatWindow({ conv, myId, myUser, onBack }) {
             className="flex-1 bg-gray-50 border border-gray-200 rounded-2xl px-5 py-3
                        text-sm text-gray-700 placeholder-gray-400 outline-none
                        focus:ring-2 focus:ring-blue-200 focus:border-blue-300 transition
-                       disabled:opacity-60"
+                       disabled:opacity-60
+                       dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100
+                       dark:placeholder-gray-500 dark:focus:ring-blue-800/50
+                       dark:focus:border-blue-700"
           />
           <button
             onClick={handleSend}
             disabled={!input.trim() || sending}
             className="bg-blue-500 hover:bg-blue-600 active:scale-95 disabled:opacity-40
-                       text-white p-3 rounded-2xl transition-all flex items-center justify-center flex-shrink-0"
+                       text-white p-3 rounded-2xl transition-all flex items-center justify-center flex-shrink-0
+                       dark:bg-blue-600 dark:hover:bg-blue-500"
           >
             {sending
               ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -218,32 +222,28 @@ function ChatWindow({ conv, myId, myUser, onBack }) {
   );
 }
 
-// ─── Main ────────────────────────────────────────────────────────────────────
+
 export default function ChatComponent() {
   const navigate = useNavigate();
   const location = useLocation();
   const authUser = useSelector(selectAuthUser);
   const myId     = authUser?.id || authUser?.userId || null;
 
-  // Read state ONCE before anything clears it
-  const initConvId     = location.state?.openConvId   ?? null;
-  const initRecipient  = location.state?.recipientId  ?? null;
-  const initRecipName  = location.state?.recipientName  ?? null;
+  const initConvId      = location.state?.openConvId    ?? null;
+  const initRecipient   = location.state?.recipientId   ?? null;
+  const initRecipName   = location.state?.recipientName   ?? null;
   const initRecipAvatar = location.state?.recipientAvatar ?? null;
 
   const [activeConvId, setActiveConvId] = useState(initConvId);
   const [search,       setSearch]       = useState("");
   const [showChat,     setShowChat]     = useState(!!initConvId);
 
-  // pendingConvId holds the target conv id while we wait for conversations to load
   const pendingConvId = useRef(null);
 
   const { conversations, loading: convsLoading } = useConversations(myId);
 
-  // ── Step 1: on mount, getOrCreateConversation then store in pendingConvId ─
   useEffect(() => {
     if (!initRecipient || !myId || !authUser) return;
-    // Clear router state immediately so back-nav never re-triggers
     window.history.replaceState({}, "");
 
     async function openOrCreate() {
@@ -261,7 +261,7 @@ export default function ChatComponent() {
         }
       );
       if (convId) {
-        pendingConvId.current = convId;   // watched by Step 2
+        pendingConvId.current = convId;
         setActiveConvId(convId);
         setShowChat(true);
       }
@@ -270,10 +270,6 @@ export default function ChatComponent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [myId]);
 
-  // ── Step 2: once conversations array loads/updates, confirm the selection ─
-  // This fires every time conversations changes, so it catches both:
-  //   • conversation was already in list (fires immediately after first load)
-  //   • conversation was just created and arrives via real-time subscription
   useEffect(() => {
     if (!pendingConvId.current) return;
     const found = conversations.find((c) => c.id === pendingConvId.current);
@@ -295,19 +291,19 @@ export default function ChatComponent() {
   // Not logged in
   if (!authUser) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl shadow border border-gray-100 p-8 max-w-sm w-full text-center">
-          <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center mx-auto mb-4">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center px-4">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow border border-gray-100 dark:border-gray-800 p-8 max-w-sm w-full text-center">
+          <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center mx-auto mb-4">
             <svg className="w-6 h-6 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <rect x="3" y="11" width="18" height="11" rx="2"/>
               <path d="M7 11V7a5 5 0 0110 0v4"/>
             </svg>
           </div>
-          <p className="text-sm font-semibold text-gray-800 mb-1">Log in to use messages</p>
-          <p className="text-xs text-gray-400 mb-5">You need an account to send and receive messages.</p>
+          <p className="text-sm font-semibold text-gray-800 dark:text-gray-100 mb-1">Log in to use messages</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mb-5">You need an account to send and receive messages.</p>
           <button
             onClick={() => navigate("/login")}
-            className="px-6 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-xl transition-colors"
+            className="px-6 py-2.5 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-500 text-white text-sm font-semibold rounded-xl transition-colors"
           >
             Go to Login
           </button>
@@ -317,28 +313,28 @@ export default function ChatComponent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="bg-gray-100 rounded-3xl flex overflow-hidden w-full" style={{ maxWidth: 1200, minHeight: 640 }}>
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 flex items-center justify-center p-4">
+      <div className="bg-gray-100 dark:bg-gray-950 rounded-3xl flex overflow-hidden w-full" style={{ maxWidth: 1200, minHeight: 640 }}>
 
         {/* ── LEFT: Conversations list ── */}
-        <div className={`bg-white rounded-3xl shadow-sm flex flex-col flex-shrink-0
+        <div className={`bg-white dark:bg-gray-900 rounded-3xl shadow-sm flex flex-col flex-shrink-0
           ${showChat ? "hidden" : "flex"} sm:flex w-full sm:w-[360px] lg:w-[420px]`}
           style={{ minHeight: 640 }}
         >
           <div className="flex items-center justify-between px-6 pt-6 pb-3">
-            <h1 className="text-xl font-bold text-gray-800">Messages</h1>
+            <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">Messages</h1>
             <Avatar src={authUser?.profileImageUrl} name={authUser?.fullName || "Me"} size={8} />
           </div>
 
           <div className="px-5 mb-3">
-            <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-4 py-2.5">
-              <span className="text-gray-400"><IconSearch /></span>
+            <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-2.5">
+              <span className="text-gray-400 dark:text-gray-500"><IconSearch /></span>
               <input
                 type="text"
                 placeholder="Search conversations…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 bg-transparent text-sm text-gray-600 placeholder-gray-400 outline-none"
+                className="flex-1 bg-transparent text-sm text-gray-600 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 outline-none"
               />
             </div>
           </div>
@@ -348,16 +344,16 @@ export default function ChatComponent() {
               <div className="space-y-2 px-1 pt-2">
                 {[1,2,3].map((n) => (
                   <div key={n} className="flex items-center gap-3 p-3 animate-pulse">
-                    <div className="w-11 h-11 rounded-full bg-gray-200 shrink-0" />
+                    <div className="w-11 h-11 rounded-full bg-gray-200 dark:bg-gray-700 shrink-0" />
                     <div className="flex-1 space-y-2">
-                      <div className="h-3 bg-gray-200 rounded w-1/2" />
-                      <div className="h-2.5 bg-gray-200 rounded w-3/4" />
+                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2" />
+                      <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : filtered.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-gray-400 gap-2">
+              <div className="flex flex-col items-center justify-center py-16 text-gray-400 dark:text-gray-500 gap-2">
                 <IconChat />
                 <p className="text-sm">
                   {search ? "No conversations found" : "No conversations yet"}
@@ -386,7 +382,7 @@ export default function ChatComponent() {
         <div className="hidden sm:block w-4 flex-shrink-0" />
 
         {/* ── RIGHT: Chat window ── */}
-        <div className={`bg-white rounded-3xl shadow-sm flex flex-col
+        <div className={`bg-white dark:bg-gray-900 rounded-3xl shadow-sm flex flex-col
           ${showChat ? "flex" : "hidden"} sm:flex flex-1`}
           style={{ minHeight: 640 }}
         >

@@ -112,12 +112,12 @@ function InfoSidebar({ user }) {
 
   return (
     <div className="flex flex-col gap-4 w-full lg:w-60 lg:shrink-0">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
+      {/* <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">
         <p className="text-sm font-bold text-gray-900 dark:text-white mb-2">About Company</p>
         {user?.bio
           ? <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{user.bio}</p>
           : <p className="text-xs text-gray-400 dark:text-gray-500 italic">No bio provided.</p>}
-      </div>
+      </div> */}
 
       {workTags.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-5">

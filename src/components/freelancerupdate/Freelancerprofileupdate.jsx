@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useUploadProfileImageMutation } from "../../services/profileApi";
 import { uploadImageToCloudinary } from "../../utils/uploadToCloudinary";
+
 export default function FreelancerProfileUpdate({
   editOpen,
   setEditOpen,
@@ -19,8 +20,8 @@ export default function FreelancerProfileUpdate({
   const [imagePreview, setImagePreview] = useState(null);
   const fileRef = useRef(null);
 
-  // ✅ use your API upload endpoint
-  const [{ isLoading: uploading }] = useUploadProfileImageMutation();
+  const [uploadProfileImage, { isLoading: uploading }] =
+    useUploadProfileImageMutation();
 
   const busy = saving || uploading;
 
@@ -45,141 +46,158 @@ export default function FreelancerProfileUpdate({
 
   const handleRemoveImage = () => {
     setImageFile(null);
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
+
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
+
     setImagePreview(null);
-    if (fileRef.current) fileRef.current.value = "";
+
+    if (fileRef.current) {
+      fileRef.current.value = "";
+    }
   };
 
   useEffect(() => {
     return () => {
-      if (imagePreview) URL.revokeObjectURL(imagePreview);
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
     };
   }, [imagePreview]);
 
-  // ✅ Upload image first, then save profile
   const handleUpdate = async () => {
     try {
       let uploadedUrl = null;
 
-      // ✅ upload file to Cloudinary
       if (imageFile) {
         uploadedUrl = await uploadImageToCloudinary(imageFile);
         console.log("Profile image uploaded URL:", uploadedUrl);
         handleRemoveImage();
       }
 
-      // ✅ save profile with URL
       await onSaveProfile(uploadedUrl);
-    } catch (e) {
-      console.error("Update profile error:", e);
+    } catch (error) {
+      console.error("Update profile error:", error);
     }
   };
 
   if (!editOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 px-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-4xl max-h-[94vh] overflow-y-auto shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 py-6">
+      <div className="w-full max-w-4xl max-h-[94vh] overflow-y-auto rounded-2xl bg-white shadow-2xl dark:bg-gray-900 dark:shadow-black/40">
         {/* Header */}
-        <div className="flex items-center justify-between px-9 pt-8 pb-2">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+        <div className="flex items-center justify-between border-b border-gray-200 px-8 pt-7 pb-4 dark:border-gray-700">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
             Freelancer Profile Update
           </h2>
+
           <button
+            type="button"
             onClick={() => setEditOpen(false)}
             disabled={busy}
-            className="bg-red-500 hover:bg-red-600 disabled:opacity-60 text-white rounded-lg w-9 h-9 flex items-center justify-center text-sm font-semibold transition-colors"
+            className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500 text-lg font-semibold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
           >
             ✕
           </button>
         </div>
 
         {/* Body */}
-        <div className="px-9 py-6 flex flex-col gap-5">
+        <div className="space-y-6 px-8 py-7">
           {/* Row 1 */}
-          <div className="grid grid-cols-2 gap-6">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
                 Full Name
               </label>
               <input
                 disabled={busy}
-                className="bg-slate-100 dark:bg-gray-700 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-400 transition placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                type="text"
                 placeholder="Full name"
                 value={form.fullName}
                 onChange={(e) =>
-                  setForm((p) => ({ ...p, fullName: e.target.value }))
+                  setForm((prev) => ({ ...prev, fullName: e.target.value }))
                 }
+                className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-blue-500 dark:focus:ring-blue-900"
               />
             </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Phone</label>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                Phone
+              </label>
               <input
                 disabled={busy}
-                className="bg-slate-100 dark:bg-gray-700 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-400 transition placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                type="text"
                 placeholder="Phone"
                 value={form.phone}
                 onChange={(e) =>
-                  setForm((p) => ({ ...p, phone: e.target.value }))
+                  setForm((prev) => ({ ...prev, phone: e.target.value }))
                 }
+                className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-blue-500 dark:focus:ring-blue-900"
               />
             </div>
           </div>
 
           {/* Row 2 */}
-          <div className="grid grid-cols-2 gap-6">
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
                 Address
               </label>
               <input
                 disabled={busy}
-                className="bg-slate-100 dark:bg-gray-700 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-400 transition placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                type="text"
                 placeholder="Address"
                 value={form.address}
                 onChange={(e) =>
-                  setForm((p) => ({ ...p, address: e.target.value }))
+                  setForm((prev) => ({ ...prev, address: e.target.value }))
                 }
+                className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-blue-500 dark:focus:ring-blue-900"
               />
             </div>
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
                 Experience Years
               </label>
               <input
                 disabled={busy}
                 type="number"
-                className="bg-slate-100 dark:bg-gray-700 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-400 transition placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 placeholder="Experience years"
                 value={form.experienceYears}
                 onChange={(e) =>
-                  setForm((p) => ({
-                    ...p,
+                  setForm((prev) => ({
+                    ...prev,
                     experienceYears: Number(e.target.value || 0),
                   }))
                 }
+                className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-blue-500 dark:focus:ring-blue-900"
               />
             </div>
           </div>
 
           {/* Row 3 */}
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {/* Skills */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Skill</label>
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                Skills
+              </label>
 
-              <div className="border border-slate-200 dark:border-gray-600 rounded-xl px-3.5 py-2.5 flex flex-wrap gap-2 items-center min-h-[46px] bg-white dark:bg-gray-700">
-                {skills.map((s) => (
+              <div className="flex min-h-[52px] flex-wrap items-center gap-2 rounded-xl border border-gray-300 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+                {skills.map((skill) => (
                   <span
-                    key={s}
-                    className="flex items-center gap-1 bg-blue-50 text-blue-600 text-xs font-semibold px-3 py-1 rounded-full border border-blue-100"
+                    key={skill}
+                    className="flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 dark:border-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
                   >
-                    {s}
+                    {skill}
                     <button
                       type="button"
                       disabled={busy}
-                      onClick={() => onRemoveSkill(s)}
-                      className="text-blue-400 hover:text-blue-700 text-base leading-none transition-colors"
+                      onClick={() => onRemoveSkill(skill)}
+                      className="text-sm leading-none text-blue-500 transition hover:text-blue-700 disabled:opacity-60 dark:text-blue-300 dark:hover:text-blue-100"
                     >
                       ×
                     </button>
@@ -190,15 +208,16 @@ export default function FreelancerProfileUpdate({
                   type="button"
                   disabled={busy}
                   onClick={onAddSkill}
-                  className="flex items-center gap-1 text-blue-500 hover:text-blue-700 text-xs font-semibold transition-colors"
+                  className="flex items-center gap-1 text-xs font-semibold text-blue-500 transition hover:text-blue-700 disabled:opacity-60 dark:text-blue-300 dark:hover:text-blue-100"
                 >
-                  <span className="text-base leading-none">⊕</span> Add skill
+                  <span className="text-base leading-none">⊕</span>
+                  Add skill
                 </button>
               </div>
 
               <input
                 disabled={busy}
-                className="bg-slate-100 dark:bg-gray-700 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-400 transition placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                type="text"
                 placeholder="Type skill then press Enter"
                 value={skillText}
                 onChange={(e) => setSkillText(e.target.value)}
@@ -208,19 +227,24 @@ export default function FreelancerProfileUpdate({
                     onAddSkill();
                   }
                 }}
+                className="rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-blue-500 dark:focus:ring-blue-900"
               />
             </div>
 
             {/* Image Upload */}
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
+              <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                Profile Image
+              </label>
+
               <div
-                className="border-2 border-dashed border-slate-300 dark:border-gray-600 rounded-xl py-6 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors"
+                className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 py-8 transition hover:border-blue-400 hover:bg-blue-50/40 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-500 dark:hover:bg-blue-900/20"
                 onDrop={handleDrop}
                 onDragOver={(e) => e.preventDefault()}
                 onClick={() => fileRef.current?.click()}
               >
                 <svg
-                  className="w-10 h-10 text-blue-400"
+                  className="h-10 w-10 text-blue-400 dark:text-blue-300"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -232,8 +256,9 @@ export default function FreelancerProfileUpdate({
                     strokeLinejoin="round"
                   />
                 </svg>
-                <p className="text-sm text-slate-500 dark:text-gray-400">
-                  {imageFile ? "Image selected" : "Choose a image here"}
+
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {imageFile ? "Image selected" : "Choose an image here"}
                 </p>
 
                 <input
@@ -247,13 +272,14 @@ export default function FreelancerProfileUpdate({
               </div>
 
               {imageFile && (
-                <div className="border border-dashed border-slate-300 dark:border-gray-600 rounded-xl px-3 py-2.5 flex items-center gap-3 bg-slate-50 dark:bg-gray-700/50">
+                <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-gray-50 px-3 py-3 dark:border-gray-700 dark:bg-gray-800">
                   <img
                     src={imagePreview || "https://placehold.co/48x48?text=IMG"}
                     alt="preview"
-                    className="w-12 h-12 rounded-lg object-cover shrink-0"
+                    className="h-12 w-12 shrink-0 rounded-lg object-cover"
                   />
-                  <span className="flex-1 text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
+
+                  <span className="flex-1 truncate text-sm font-medium text-gray-700 dark:text-gray-200">
                     {imageFile.name}
                   </span>
 
@@ -261,10 +287,10 @@ export default function FreelancerProfileUpdate({
                     type="button"
                     onClick={handleRemoveImage}
                     disabled={busy}
-                    className="text-red-500 hover:text-red-700 disabled:opacity-60 transition-colors shrink-0"
+                    className="shrink-0 text-red-500 transition hover:text-red-700 disabled:opacity-60 dark:text-red-400 dark:hover:text-red-300"
                   >
                     <svg
-                      className="w-5 h-5"
+                      className="h-5 w-5"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -283,38 +309,42 @@ export default function FreelancerProfileUpdate({
           </div>
 
           {/* Bio */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              About me
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+              About Me
             </label>
             <textarea
               disabled={busy}
-              className="bg-slate-100 dark:bg-gray-700 rounded-lg px-3.5 py-2.5 text-sm text-gray-700 dark:text-gray-200 outline-none focus:ring-2 focus:ring-blue-400 transition resize-none placeholder:text-gray-400 dark:placeholder:text-gray-500"
-              placeholder="Bio / description"
-              rows={4}
+              rows={5}
+              placeholder="Write something about yourself..."
               value={form.bio}
-              onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, bio: e.target.value }))
+              }
+              className="resize-none rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-blue-500 dark:focus:ring-blue-900"
             />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-9 pb-9 flex justify-center gap-3">
+        <div className="flex items-center justify-end gap-3 border-t border-gray-200 px-8 py-5 dark:border-gray-700">
           <button
+            type="button"
             onClick={() => setEditOpen(false)}
             disabled={busy}
-            className="px-8 py-2.5 rounded-full border border-slate-300 dark:border-gray-600 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-gray-700 disabled:opacity-60 transition-colors"
+            className="rounded-xl border border-gray-300 px-5 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-800"
           >
             Cancel
           </button>
 
           <button
+            type="button"
             onClick={handleUpdate}
             disabled={busy}
-            className="px-10 py-2.5 rounded-full bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white text-sm font-semibold transition-colors flex items-center gap-2"
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {busy && (
-              <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
             )}
             {uploading ? "Uploading..." : saving ? "Saving..." : "Update"}
           </button>
