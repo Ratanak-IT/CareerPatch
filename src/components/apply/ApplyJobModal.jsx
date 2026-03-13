@@ -18,7 +18,6 @@ async function uploadToSupabase(file, folder, userId) {
   return data.publicUrl;
 }
 
-/* ── Icons ─────────────────────────────────────────────────────────────── */
 const IconClose = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
