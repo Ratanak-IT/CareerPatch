@@ -12,7 +12,10 @@ import {
   useGetServiceBookmarksQuery,
   useGetJobBookmarksQuery,
   useGetCategoriesQuery,
-  
+
+  // ✅ IMPORTANT:
+  // You need an endpoint to fetch ALL jobs for public profile filtering.
+  // If your hook name is different, replace this import.
   useGetAllJobsQuery,
 } from "../../../services/servicesApi";
 
@@ -127,6 +130,9 @@ export default function ProfileBusinessPage({ mode = "owner", publicUserId }) {
   const [editOpen, setEditOpen] = useState(false);
   const [postModalOpen, setPostModalOpen] = useState(false);
 
+  // ── Cover URL (updated instantly after save — no page reload) ─
+  const [liveCovedUrl, setLiveCoverUrl] = useState(null);
+
   // Loading gate
   const loadingUser = isOwner ? meLoading : publicUserLoading;
   if (loadingUser) {
@@ -152,6 +158,7 @@ export default function ProfileBusinessPage({ mode = "owner", publicUserId }) {
         loadingJobBookmarks={jobBookmarksLoading}
         onOpenEdit={() => setEditOpen(true)}
         onOpenPost={() => setPostModalOpen(true)}
+        liveCoverUrl={liveCovedUrl}
       />
 
       {/* OWNER ONLY modals */}
@@ -160,6 +167,7 @@ export default function ProfileBusinessPage({ mode = "owner", publicUserId }) {
           user={user}
           onClose={() => setEditOpen(false)}
           onSaved={() => refetchMe()}
+          onCoverSaved={(url) => setLiveCoverUrl(url)}
         />
       )}
 

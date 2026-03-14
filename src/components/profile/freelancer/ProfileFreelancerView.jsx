@@ -23,11 +23,6 @@ function getServiceId(service) {
   return service?.id ?? service?.serviceId ?? service?._id ?? service?.uuid ?? null;
 }
 
-/**
- * Reusable UI view for freelancer profile:
- * - isOwner=true => show edit/change/post/manage buttons
- * - isOwner=false => hide all owner-only actions, keep UI same
- */
 export default function ProfileFreelancerView({
   user,
   services = [],
