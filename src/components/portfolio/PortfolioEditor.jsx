@@ -1,471 +1,592 @@
-import { useMemo, useState } from "react";
-import PortfolioRenderer from "./PortfolioTemplates";
-import { normalizePortfolio } from "../../hooks/usePortfolio";
-import { getProjectPreview, normalizeUrl, uploadPortfolioImage } from "../../utils/portfolioMedia";
 
+import { useState, useRef } from "react";
+import PortfolioRenderer from "./PortfolioTemplates";
+import { uploadImageToCloudinary } from "../../utils/uploadToCloudinary";
+
+/* ─── Template catalog ───────────────────────────────────────────────────── */
 const TEMPLATES = [
-  { id: "minimal", label: "Minimal Frame", desc: "Clean modern portfolio", color: "#2563EB" },
-  { id: "aurora", label: "Aurora Glow", desc: "Gradient lights + glass", color: "#8B5CF6" },
-  { id: "executive", label: "Executive Grid", desc: "Corporate editorial layout", color: "#0F766E" },
-  { id: "creative", label: "Creative Burst", desc: "Bold presentation style", color: "#F97316" },
-  { id: "developer", label: "Code Deck", desc: "Dark pro dev look", color: "#10B981" },
-  { id: "magazine", label: "Magazine Layout", desc: "Storytelling portfolio", color: "#DC2626" },
-  { id: "neon", label: "Neon Pulse", desc: "Futuristic standout style", color: "#7C3AED" },
-  { id: "soft", label: "Soft Card", desc: "Rounded premium style", color: "#EC4899" },
-  { id: "bold", label: "Bold Split", desc: "High contrast layout", color: "#EA580C" },
-  { id: "mono", label: "Mono Editorial", desc: "Black white premium", color: "#111827" },
+  { id:"minimal",   label:"Minimal",   desc:"Clean Swiss typography",   color:"#1E88E5" },
+  { id:"creative",  label:"Creative",  desc:"Bold gradient hero",        color:"#8B5CF6" },
+  { id:"developer", label:"Developer", desc:"Dark terminal aesthetic",   color:"#10B981" },
+  { id:"glass",     label:"Glass",     desc:"Frosted glassmorphism",     color:"#06B6D4" },
+  { id:"sidebar",   label:"Sidebar",   desc:"Two-column with sidebar",   color:"#6366F1" },
+  { id:"neon",      label:"Neon",      desc:"Cyberpunk dark neon",       color:"#F97316" },
+  { id:"magazine",  label:"Magazine",  desc:"Editorial newspaper style", color:"#8B4513" },
+  { id:"card",      label:"Card",      desc:"Bento grid layout",         color:"#EC4899" },
+  { id:"gradient",  label:"Gradient",  desc:"Full immersive gradient",   color:"#7C3AED" },
+  { id:"resume",    label:"Resume",    desc:"Traditional clean resume",  color:"#0F766E" },
+  { id:"bold",      label:"Bold",      desc:"Large typography statement",color:"#DC2626" },
+  { id:"pastel",    label:"Pastel",    desc:"Soft pastel aesthetic",     color:"#D946EF" },
+  { id:"spotlight", label:"Spotlight", desc:"Dark spotlight hero",       color:"#FBBF24" },
 ];
 
 const ACCENT_COLORS = [
-  { name: "Ocean Blue", value: "#2563EB" },
-  { name: "Royal Violet", value: "#7C3AED" },
-  { name: "Mint Pro", value: "#10B981" },
-  { name: "Sunset Orange", value: "#F97316" },
-  { name: "Ruby Red", value: "#DC2626" },
-  { name: "Rose Pink", value: "#EC4899" },
-  { name: "Teal Glass", value: "#0F766E" },
-  { name: "Midnight Navy", value: "#111827" },
-  { name: "Amber Gold", value: "#D97706" },
-  { name: "Sky Cyan", value: "#0891B2" },
+  "#1E88E5","#8B5CF6","#10B981","#F59E0B","#EF4444",
+  "#EC4899","#06B6D4","#6366F1","#F97316","#84CC16",
+  "#14B8A6","#A855F7","#FBBF24","#DC2626","#7C3AED",
 ];
 
-const ANIMATIONS = [
-  { id: "float", label: "Float" },
-  { id: "slide", label: "Slide" },
-  { id: "pulse", label: "Pulse" },
-  { id: "fade", label: "Fade" },
-  { id: "none", label: "None" },
+const FONT_OPTIONS = [
+  { id:"modern",  label:"Modern (Inter)"         },
+  { id:"classic", label:"Classic (Georgia)"       },
+  { id:"mono",    label:"Mono (JetBrains)"        },
+  { id:"rounded", label:"Rounded (Nunito)"        },
 ];
 
-const THEMES = [
-  { id: "auto", label: "Auto" },
-  { id: "light", label: "Light" },
-  { id: "dark", label: "Dark" },
-];
+const ANIM_OPTIONS = ["fade","slide","zoom","left","right","none"];
 
-function InputField({ label, value, onChange, placeholder, type = "text" }) {
+/* ─── Reusable input ─────────────────────────────────────────────────────── */
+function Field({ label, value, onChange, placeholder, type="text", disabled }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{label}</label>
-      <input
-        type={type}
-        value={value ?? ""}
-        onChange={onChange}
-        placeholder={placeholder}
-        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-400 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
-      />
+      {label && <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</label>}
+      <input type={type} value={value??""} onChange={onChange} placeholder={placeholder} disabled={disabled}
+        className="w-full rounded-xl px-3 py-2.5 text-sm outline-none transition
+                   border border-slate-200 dark:border-slate-700
+                   bg-white dark:bg-[#0f172a] text-slate-800 dark:text-white
+                   placeholder:text-slate-400 focus:border-blue-400 dark:focus:border-blue-500
+                   disabled:opacity-50" />
     </div>
   );
 }
 
-function TextAreaField({ label, value, onChange, placeholder, rows = 4 }) {
+function Textarea({ label, value, onChange, placeholder, rows=3 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{label}</label>
-      <textarea
-        value={value ?? ""}
-        onChange={onChange}
-        placeholder={placeholder}
-        rows={rows}
-        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-blue-400 dark:border-slate-700 dark:bg-[#0f172a] dark:text-white"
-      />
+      {label && <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</label>}
+      <textarea value={value??""} onChange={onChange} placeholder={placeholder} rows={rows}
+        className="w-full rounded-xl px-3 py-2.5 text-sm resize-none outline-none transition
+                   border border-slate-200 dark:border-slate-700
+                   bg-white dark:bg-[#0f172a] text-slate-800 dark:text-white
+                   placeholder:text-slate-400 focus:border-blue-400" />
     </div>
   );
 }
 
-function UploadButton({ label, onChange, loading }) {
-  return (
-    <label className="flex cursor-pointer flex-col gap-2 rounded-2xl border border-dashed border-slate-300 bg-white px-4 py-4 text-sm dark:border-slate-700 dark:bg-[#0f172a]">
-      <span className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">{label}</span>
-      <span className="font-medium text-slate-700 dark:text-slate-200">{loading ? "Uploading…" : "Select image from device / drive"}</span>
-      <input type="file" accept="image/*" className="hidden" onChange={onChange} disabled={loading} />
-    </label>
-  );
-}
+/* ─── Image upload (Cloudinary) ──────────────────────────────────────────── */
+function ImageUpload({ label, value, onChange }) {
+  const fileRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
 
-export default function PortfolioEditor({
-  portfolio,
-  setPortfolio,
-  template,
-  setTemplate,
-  saving,
-  onSave,
-  onClose,
-}) {
-  const safePortfolio = useMemo(() => normalizePortfolio(portfolio), [portfolio]);
-  const [tab, setTab] = useState("info");
-  const [preview, setPreview] = useState(true);
-  const [skillForm, setSkillForm] = useState({ name: "", level: 80, color: safePortfolio.accentColor || "#2563EB" });
-  const [projectForm, setProjectForm] = useState({ title: "", desc: "", url: "", stack: "", role: "", year: "", image: "" });
-  const [certForm, setCertForm] = useState({ title: "", issuer: "", year: "", image: "" });
-  const [uploading, setUploading] = useState({ avatar: false, project: false, cert: false });
-
-  const setField = (key, value) => setPortfolio((prev) => ({ ...normalizePortfolio(prev), [key]: value }));
-  const setSocial = (key, value) => setPortfolio((prev) => ({ ...normalizePortfolio(prev), socials: { ...normalizePortfolio(prev).socials, [key]: value } }));
-
-  const addSkill = () => {
-    if (!skillForm.name.trim()) return;
-    setPortfolio((prev) => {
-      const current = normalizePortfolio(prev);
-      return {
-        ...current,
-        skills: [
-          ...current.skills,
-          {
-            id: `skill-${Date.now()}`,
-            name: skillForm.name.trim(),
-            level: Number(skillForm.level) || 0,
-            color: skillForm.color || current.accentColor,
-          },
-        ],
-      };
-    });
-    setSkillForm({ name: "", level: 80, color: safePortfolio.accentColor || "#2563EB" });
-  };
-
-  const removeSkill = (id) => {
-    setPortfolio((prev) => {
-      const current = normalizePortfolio(prev);
-      return { ...current, skills: current.skills.filter((skill) => skill.id !== id) };
-    });
-  };
-
-  const addProject = () => {
-    if (!projectForm.title.trim()) return;
-    const normalizedUrl = normalizeUrl(projectForm.url);
-    setPortfolio((prev) => {
-      const current = normalizePortfolio(prev);
-      return {
-        ...current,
-        projects: [
-          ...current.projects,
-          {
-            id: `project-${Date.now()}`,
-            ...projectForm,
-            title: projectForm.title.trim(),
-            url: normalizedUrl,
-            image: projectForm.image || getProjectPreview(normalizedUrl),
-          },
-        ],
-      };
-    });
-    setProjectForm({ title: "", desc: "", url: "", stack: "", role: "", year: "", image: "" });
-  };
-
-  const removeProject = (id) => {
-    setPortfolio((prev) => {
-      const current = normalizePortfolio(prev);
-      return { ...current, projects: current.projects.filter((item) => item.id !== id) };
-    });
-  };
-
-  const addCertification = () => {
-    if (!certForm.title.trim()) return;
-    setPortfolio((prev) => {
-      const current = normalizePortfolio(prev);
-      return {
-        ...current,
-        certifications: [
-          ...current.certifications,
-          { id: `cert-${Date.now()}`, ...certForm, title: certForm.title.trim() },
-        ],
-      };
-    });
-    setCertForm({ title: "", issuer: "", year: "", image: "" });
-  };
-
-  const removeCertification = (id) => {
-    setPortfolio((prev) => {
-      const current = normalizePortfolio(prev);
-      return { ...current, certifications: current.certifications.filter((item) => item.id !== id) };
-    });
-  };
-
-  const uploadImage = async (file, target) => {
+  const handleFile = async (e) => {
+    const file = e.target.files?.[0];
     if (!file) return;
-    setUploading((prev) => ({ ...prev, [target]: true }));
+    setUploading(true);
     try {
-      const url = await uploadPortfolioImage(file, `portfolio/${target}`);
-      if (target === "avatar") {
-        setField("avatar", url);
-      }
-      if (target === "project") {
-        setProjectForm((prev) => ({ ...prev, image: url }));
-      }
-      if (target === "cert") {
-        setCertForm((prev) => ({ ...prev, image: url }));
-      }
-    } catch (error) {
-      console.error(error);
-      alert(error.message || "Upload failed");
-    } finally {
-      setUploading((prev) => ({ ...prev, [target]: false }));
+      const url = await uploadImageToCloudinary(file);
+      onChange(url);
+    } catch(err) {
+      console.error("upload error", err);
     }
+    setUploading(false);
+    e.target.value = "";
   };
 
-  const tabs = [
-    { id: "info", label: "Info" },
-    { id: "skills", label: "Skills" },
-    { id: "projects", label: "Projects" },
-    { id: "certs", label: "Certificates" },
-    { id: "design", label: "Design" },
+  return (
+    <div className="flex flex-col gap-1.5">
+      {label && <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</label>}
+      <div className="flex gap-2">
+        <input value={value??""} onChange={e => onChange(e.target.value)} placeholder="https://... or upload below"
+          className="flex-1 rounded-xl px-3 py-2.5 text-sm outline-none border border-slate-200 dark:border-slate-700
+                     bg-white dark:bg-[#0f172a] text-slate-800 dark:text-white placeholder:text-slate-400 focus:border-blue-400" />
+        <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+          className="px-3 py-2 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-xs font-semibold transition disabled:opacity-60 shrink-0">
+          {uploading ? "…" : "Upload"}
+        </button>
+      </div>
+      {value && <img src={value} alt="" className="mt-1 h-16 w-full object-cover rounded-xl" />}
+      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+    </div>
+  );
+}
+
+/* ─── Section wrapper ────────────────────────────────────────────────────── */
+function Section({ title, children, collapsible=true }) {
+  const [open, setOpen] = useState(true);
+  return (
+    <div className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <button onClick={() => collapsible && setOpen(o=>!o)}
+        className="w-full flex items-center justify-between px-4 py-3
+                   bg-slate-50 dark:bg-slate-800/50 text-left">
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">{title}</span>
+        {collapsible && <span className="text-slate-400 text-sm">{open ? "▲" : "▼"}</span>}
+      </button>
+      {open && <div className="p-4 space-y-4 bg-white dark:bg-[#1e293b]">{children}</div>}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   EDITOR MAIN
+══════════════════════════════════════════════════════════ */
+export default function PortfolioEditor({ portfolio, setPortfolio, template, setTemplate, saving, onSave, onClose }) {
+  const [tab,       setTab]       = useState("info");
+  const [preview,   setPreview]   = useState(false);
+
+  // Helpers
+  const set = (key, val) => setPortfolio(p => ({ ...p, [key]: val }));
+  const setSocial = (key, val) => setPortfolio(p => ({ ...p, socials: { ...p.socials, [key]: val } }));
+  const setAnim   = (key, val) => setPortfolio(p => ({ ...p, animations: { ...(p.animations||{}), [key]: val } }));
+
+  /* ── Skills ── */
+  const [skillInput, setSkillInput] = useState({ name:"", percent:80, color:"#1E88E5" });
+  const addSkill = () => {
+    if (!skillInput.name.trim()) return;
+    set("skills", [...(portfolio.skills||[]), { ...skillInput }]);
+    setSkillInput({ name:"", percent:80, color:"#1E88E5" });
+  };
+  const updateSkill = (i, key, val) => {
+    const arr = [...(portfolio.skills||[])];
+    arr[i] = { ...arr[i], [key]: val };
+    set("skills", arr);
+  };
+  const removeSkill = (i) => set("skills", (portfolio.skills||[]).filter((_,idx)=>idx!==i));
+
+  /* ── Projects ── */
+  const emptyProj = { title:"", desc:"", url:"", image:"", tags:"", featured:false };
+  const [newProj, setNewProj] = useState(emptyProj);
+  const addProject = () => {
+    if (!newProj.title.trim()) return;
+    const tags = newProj.tags ? newProj.tags.split(",").map(t=>t.trim()).filter(Boolean) : [];
+    set("projects", [...(portfolio.projects||[]), { ...newProj, tags }]);
+    setNewProj(emptyProj);
+  };
+  const removeProj = (i) => set("projects", (portfolio.projects||[]).filter((_,idx)=>idx!==i));
+  const updateProj = (i, key, val) => {
+    const arr = [...(portfolio.projects||[])];
+    arr[i] = { ...arr[i], [key]: val };
+    set("projects", arr);
+  };
+
+  /* ── Certificates ── */
+  const emptyCert = { title:"", issuer:"", date:"", url:"", image:"" };
+  const [newCert, setNewCert] = useState(emptyCert);
+  const addCert = () => {
+    if (!newCert.title.trim()) return;
+    set("certificates", [...(portfolio.certificates||[]), { ...newCert }]);
+    setNewCert(emptyCert);
+  };
+  const removeCert = (i) => set("certificates", (portfolio.certificates||[]).filter((_,idx)=>idx!==i));
+
+  /* ── Experience ── */
+  const emptyExp = { role:"", company:"", from:"", to:"", desc:"" };
+  const [newExp, setNewExp] = useState(emptyExp);
+  const addExp = () => {
+    if (!newExp.role.trim()) return;
+    set("experience", [...(portfolio.experience||[]), { ...newExp }]);
+    setNewExp(emptyExp);
+  };
+  const removeExp = (i) => set("experience", (portfolio.experience||[]).filter((_,idx)=>idx!==i));
+
+  /* ── Education ── */
+  const emptyEdu = { degree:"", school:"", from:"", to:"" };
+  const [newEdu, setNewEdu] = useState(emptyEdu);
+  const addEdu = () => {
+    if (!newEdu.degree.trim()) return;
+    set("education", [...(portfolio.education||[]), { ...newEdu }]);
+    setNewEdu(emptyEdu);
+  };
+  const removeEdu = (i) => set("education", (portfolio.education||[]).filter((_,idx)=>idx!==i));
+
+  const TABS = [
+    { id:"info",    label:"Info"    },
+    { id:"skills",  label:"Skills"  },
+    { id:"projs",   label:"Projects"},
+    { id:"certs",   label:"Certs"   },
+    { id:"exp",     label:"Exp"     },
+    { id:"edu",     label:"Edu"     },
+    { id:"style",   label:"Style"   },
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex bg-black/60">
-      <div className={`flex h-full flex-col overflow-hidden bg-slate-50 shadow-2xl transition-all dark:bg-[#111827] ${preview ? "w-full max-w-2xl" : "w-full max-w-4xl"}`}>
-        <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-700">
-          <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white">Portfolio Builder</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">10 unique professional templates • Cloudinary upload • responsive preview</p>
-          </div>
+    <div className="fixed inset-0 z-50 flex bg-black/60 backdrop-blur-sm">
+
+      {/* ── Left panel ── */}
+      <div className={`flex flex-col bg-gray-50 dark:bg-[#1e293b] shadow-2xl transition-all duration-300
+                       ${preview ? "w-[400px] shrink-0" : "w-full max-w-2xl"} overflow-hidden`}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-700 shrink-0">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">Portfolio Editor</h2>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setPreview((prev) => !prev)}
-              className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-semibold text-white dark:bg-slate-200 dark:text-slate-900"
-            >
-              {preview ? "Hide Preview" : "Show Preview"}
+            <button onClick={() => setPreview(p=>!p)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors
+                ${preview ? "bg-blue-500 text-white" : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200"}`}>
+              {preview ? "Hide Preview" : "👁 Preview"}
             </button>
-            <button onClick={onClose} className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500 text-white">✕</button>
+            <button onClick={onClose}
+              className="w-8 h-8 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold flex items-center justify-center transition-colors">✕</button>
           </div>
         </div>
 
-        <div className="flex border-b border-slate-200 bg-white dark:border-slate-700 dark:bg-[#111827]">
-          {tabs.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setTab(item.id)}
-              className={`flex-1 px-3 py-3 text-xs font-bold uppercase tracking-[0.2em] ${tab === item.id ? "border-b-2 border-blue-500 text-blue-500" : "text-slate-500 dark:text-slate-400"}`}
-            >
-              {item.label}
+        {/* Tabs */}
+        <div className="flex border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1e293b] shrink-0 overflow-x-auto">
+          {TABS.map(t => (
+            <button key={t.id} onClick={() => setTab(t.id)}
+              className={`px-4 py-2.5 text-[11px] font-bold whitespace-nowrap transition-colors shrink-0
+                ${tab===t.id ? "border-b-2 border-blue-500 text-blue-500" : "text-slate-500 dark:text-slate-400 hover:text-slate-700"}`}>
+              {t.label}
             </button>
           ))}
         </div>
 
-        <div className="flex-1 overflow-y-auto p-5">
-          {tab === "info" && (
-            <div className="space-y-4">
-              <InputField label="Full name" value={safePortfolio.name} onChange={(e) => setField("name", e.target.value)} placeholder="Your name" />
-              <InputField label="Professional title" value={safePortfolio.title} onChange={(e) => setField("title", e.target.value)} placeholder="Frontend Developer" />
-              <InputField label="Tagline" value={safePortfolio.tagline} onChange={(e) => setField("tagline", e.target.value)} placeholder="Building polished, user-focused digital products" />
-              <TextAreaField label="Bio" value={safePortfolio.bio} onChange={(e) => setField("bio", e.target.value)} placeholder="Tell your story, experience, strengths, and impact." rows={5} />
-              <div className="grid gap-4 md:grid-cols-2">
-                <InputField label="Email" value={safePortfolio.email} onChange={(e) => setField("email", e.target.value)} placeholder="you@example.com" />
-                <InputField label="Phone" value={safePortfolio.phone} onChange={(e) => setField("phone", e.target.value)} placeholder="+855 ..." />
-                <InputField label="Location" value={safePortfolio.location} onChange={(e) => setField("location", e.target.value)} placeholder="Phnom Penh, Cambodia" />
-                <InputField label="Website" value={safePortfolio.socials.website} onChange={(e) => setSocial("website", e.target.value)} placeholder="your-site.com" />
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <InputField label="GitHub" value={safePortfolio.socials.github} onChange={(e) => setSocial("github", e.target.value)} placeholder="github.com/username" />
-                <InputField label="LinkedIn" value={safePortfolio.socials.linkedin} onChange={(e) => setSocial("linkedin", e.target.value)} placeholder="linkedin.com/in/username" />
-                <InputField label="Facebook" value={safePortfolio.socials.facebook} onChange={(e) => setSocial("facebook", e.target.value)} placeholder="facebook.com/username" />
-                <InputField label="Telegram" value={safePortfolio.socials.telegram} onChange={(e) => setSocial("telegram", e.target.value)} placeholder="t.me/username" />
-              </div>
-              <UploadButton label="Profile image" loading={uploading.avatar} onChange={(e) => uploadImage(e.target.files?.[0], "avatar")} />
-              {safePortfolio.avatar && <img src={safePortfolio.avatar} alt="avatar" className="h-32 w-32 rounded-[28px] object-cover" />}
-            </div>
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+
+          {/* ── INFO ── */}
+          {tab==="info" && (
+            <>
+              <Section title="Basic Info">
+                <Field label="Full Name"    value={portfolio.name}     onChange={e=>set("name",e.target.value)}     placeholder="Your full name" />
+                <Field label="Title / Role" value={portfolio.title}    onChange={e=>set("title",e.target.value)}    placeholder="e.g. Full Stack Developer" />
+                <Field label="Location"     value={portfolio.location} onChange={e=>set("location",e.target.value)} placeholder="e.g. Phnom Penh, Cambodia" />
+                <Field label="Email"        value={portfolio.email}    onChange={e=>set("email",e.target.value)}    placeholder="your@email.com" type="email" />
+                <Field label="Website"      value={portfolio.website}  onChange={e=>set("website",e.target.value)}  placeholder="https://..." />
+                <Textarea label="Bio" value={portfolio.bio} onChange={e=>set("bio",e.target.value)} placeholder="Write something about yourself..." rows={4} />
+                <ImageUpload label="Avatar / Profile Photo" value={portfolio.avatar} onChange={v=>set("avatar",v)} />
+              </Section>
+              <Section title="Social Links">
+                {["github","linkedin","facebook","telegram","twitter","youtube"].map(k => (
+                  <Field key={k} label={k} value={portfolio.socials?.[k]||""} onChange={e=>setSocial(k,e.target.value)}
+                    placeholder={k==="telegram" ? "https://t.me/username" : `https://${k}.com/username`} />
+                ))}
+              </Section>
+            </>
           )}
 
-          {tab === "skills" && (
-            <div className="space-y-5">
-              <div className="rounded-[28px] border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-[#0f172a]">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <InputField label="Skill name" value={skillForm.name} onChange={(e) => setSkillForm((prev) => ({ ...prev, name: e.target.value }))} placeholder="React" />
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Skill %</label>
-                    <input type="range" min="0" max="100" value={skillForm.level} onChange={(e) => setSkillForm((prev) => ({ ...prev, level: Number(e.target.value) }))} />
-                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{skillForm.level}%</span>
+          {/* ── SKILLS ── */}
+          {tab==="skills" && (
+            <>
+              <Section title="Add Skill">
+                <Field label="Skill Name" value={skillInput.name} onChange={e=>setSkillInput(p=>({...p,name:e.target.value}))} placeholder="e.g. React" />
+                <div className="flex gap-3 items-end">
+                  <div className="flex-1 flex flex-col gap-1.5">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Level: {skillInput.percent}%</label>
+                    <input type="range" min={0} max={100} value={skillInput.percent} onChange={e=>setSkillInput(p=>({...p,percent:Number(e.target.value)}))}
+                      className="w-full accent-blue-500" />
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Track color</label>
-                    <input type="color" value={skillForm.color} onChange={(e) => setSkillForm((prev) => ({ ...prev, color: e.target.value }))} className="h-12 w-full rounded-xl border border-slate-200 dark:border-slate-700" />
+                  <div className="flex flex-col gap-1.5 shrink-0">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Color</label>
+                    <input type="color" value={skillInput.color} onChange={e=>setSkillInput(p=>({...p,color:e.target.value}))}
+                      className="w-10 h-10 rounded-lg border-0 cursor-pointer" />
                   </div>
                 </div>
-                <button onClick={addSkill} className="mt-4 rounded-2xl bg-blue-500 px-5 py-3 text-sm font-semibold text-white">Add Skill</button>
-              </div>
+                <button onClick={addSkill}
+                  className="w-full py-2 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors">
+                  + Add Skill
+                </button>
+              </Section>
 
-              <div className="grid gap-3">
-                {safePortfolio.skills.map((skill) => (
-                  <div key={skill.id} className="flex items-center gap-4 rounded-[24px] border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-[#0f172a]">
-                    <div className="h-10 w-10 rounded-full" style={{ backgroundColor: skill.color }} />
-                    <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-slate-900 dark:text-white">{skill.name}</p>
-                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
-                        <div className="h-full rounded-full" style={{ width: `${skill.level}%`, backgroundColor: skill.color }} />
+              {/* Existing skills */}
+              {(portfolio.skills||[]).map((s,i) => (
+                <div key={i} className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0f172a]">
+                  <div className="w-4 h-4 rounded-full shrink-0" style={{ background: s.color }} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between text-xs font-semibold mb-1">
+                      <span className="text-slate-800 dark:text-white truncate">{s.name}</span>
+                      <span style={{ color: s.color }}>{s.percent}%</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-700">
+                      <div className="h-full rounded-full" style={{ width:`${s.percent}%`, background: s.color }} />
+                    </div>
+                    {/* Inline edit */}
+                    <div className="mt-2 flex gap-2 items-center">
+                      <input type="range" min={0} max={100} value={s.percent}
+                        onChange={e=>updateSkill(i,"percent",Number(e.target.value))}
+                        className="flex-1 accent-blue-500 h-1" />
+                      <input type="color" value={s.color}
+                        onChange={e=>updateSkill(i,"color",e.target.value)}
+                        className="w-7 h-7 rounded border-0 cursor-pointer shrink-0" />
+                    </div>
+                  </div>
+                  <button onClick={()=>removeSkill(i)} className="text-red-400 hover:text-red-600 shrink-0 transition-colors">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </>
+          )}
+
+          {/* ── PROJECTS ── */}
+          {tab==="projs" && (
+            <>
+              <Section title="Add Project">
+                <Field label="Title"       value={newProj.title} onChange={e=>setNewProj(p=>({...p,title:e.target.value}))} placeholder="Project name" />
+                <Textarea label="Description" value={newProj.desc} onChange={e=>setNewProj(p=>({...p,desc:e.target.value}))} placeholder="What does this project do?" rows={2} />
+                <Field label="Live URL"    value={newProj.url}   onChange={e=>setNewProj(p=>({...p,url:e.target.value}))}   placeholder="https://..." />
+                <Field label="Tags (comma-separated)" value={newProj.tags} onChange={e=>setNewProj(p=>({...p,tags:e.target.value}))} placeholder="React, Node.js, MongoDB" />
+                <ImageUpload label="Project Image" value={newProj.image} onChange={v=>setNewProj(p=>({...p,image:v}))} />
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input type="checkbox" checked={newProj.featured} onChange={e=>setNewProj(p=>({...p,featured:e.target.checked}))} className="accent-blue-500 w-4 h-4" />
+                  <span className="text-slate-700 dark:text-slate-300 font-medium">Mark as Featured ★</span>
+                </label>
+                <button onClick={addProject}
+                  className="w-full py-2 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors">
+                  + Add Project
+                </button>
+              </Section>
+
+              {(portfolio.projects||[]).map((p,i) => (
+                <div key={i} className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  {p.image && <img src={p.image} alt="" className="w-full h-24 object-cover" />}
+                  <div className="p-3 bg-white dark:bg-[#0f172a]">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-sm text-slate-800 dark:text-white truncate">
+                          {p.featured && <span className="text-yellow-500 mr-1">★</span>}{p.title}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">{p.desc}</p>
+                        {p.tags?.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {p.tags.map((t,j) => <span key={j} className="text-[10px] bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 px-1.5 rounded">{t}</span>)}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-1 shrink-0">
+                        <button onClick={()=>updateProj(i,"featured",!p.featured)}
+                          className={`text-xs px-2 py-1 rounded-lg transition-colors ${p.featured ? "bg-yellow-100 text-yellow-600" : "bg-slate-100 dark:bg-slate-700 text-slate-500"}`}>
+                          ★
+                        </button>
+                        <button onClick={()=>removeProj(i)} className="text-red-400 hover:text-red-600 p-1 transition-colors">
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
                       </div>
                     </div>
-                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{skill.level}%</span>
-                    <button onClick={() => removeSkill(skill.id)} className="text-red-500">Remove</button>
-                  </div>
-                ))}
-                {!safePortfolio.skills.length && <p className="text-sm text-slate-500 dark:text-slate-400">No skills added yet.</p>}
-              </div>
-            </div>
-          )}
-
-          {tab === "projects" && (
-            <div className="space-y-5">
-              <div className="rounded-[28px] border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-[#0f172a]">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <InputField label="Project title" value={projectForm.title} onChange={(e) => setProjectForm((prev) => ({ ...prev, title: e.target.value }))} placeholder="Portfolio Website" />
-                  <InputField label="Live URL" value={projectForm.url} onChange={(e) => setProjectForm((prev) => ({ ...prev, url: e.target.value }))} placeholder="plovrean.vercel.app" />
-                  <InputField label="Role" value={projectForm.role} onChange={(e) => setProjectForm((prev) => ({ ...prev, role: e.target.value }))} placeholder="Frontend Developer" />
-                  <InputField label="Year" value={projectForm.year} onChange={(e) => setProjectForm((prev) => ({ ...prev, year: e.target.value }))} placeholder="2026" />
-                  <InputField label="Stack" value={projectForm.stack} onChange={(e) => setProjectForm((prev) => ({ ...prev, stack: e.target.value }))} placeholder="React, Tailwind, Supabase" />
-                </div>
-                <TextAreaField label="Project description" value={projectForm.desc} onChange={(e) => setProjectForm((prev) => ({ ...prev, desc: e.target.value }))} placeholder="Describe the project, features, your contribution, and results." rows={4} />
-                <div className="grid gap-4 md:grid-cols-2">
-                  <UploadButton label="Project image (optional). If empty, homepage screenshot auto-generates from URL" loading={uploading.project} onChange={(e) => uploadImage(e.target.files?.[0], "project")} />
-                  <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm dark:border-slate-700 dark:bg-slate-900/70">
-                    <p className="font-semibold">Live preview source</p>
-                    <p className="mt-2 break-all text-slate-600 dark:text-slate-300">{projectForm.image || getProjectPreview(projectForm.url) || "Add URL or upload image"}</p>
                   </div>
                 </div>
-                {(projectForm.image || projectForm.url) && (
-                  <img src={projectForm.image || getProjectPreview(projectForm.url)} alt="project preview" className="mt-4 h-40 w-full rounded-2xl object-cover" />
-                )}
-                <button onClick={addProject} className="mt-4 rounded-2xl bg-blue-500 px-5 py-3 text-sm font-semibold text-white">Add Project</button>
-              </div>
-
-              <div className="grid gap-4">
-                {safePortfolio.projects.map((project) => (
-                  <div key={project.id} className="grid gap-4 rounded-[28px] border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-[#0f172a] md:grid-cols-[180px_1fr_auto]">
-                    <img src={project.image || getProjectPreview(project.url)} alt={project.title} className="h-36 w-full rounded-2xl object-cover" />
-                    <div className="min-w-0 space-y-2">
-                      <p className="text-lg font-bold text-slate-900 dark:text-white">{project.title}</p>
-                      <p className="text-sm text-slate-600 dark:text-slate-300">{project.desc}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{project.role} {project.role && project.year ? "•" : ""} {project.year}</p>
-                      <p className="text-xs font-semibold text-blue-600 break-all">{normalizeUrl(project.url)}</p>
-                    </div>
-                    <button onClick={() => removeProject(project.id)} className="text-red-500">Remove</button>
-                  </div>
-                ))}
-                {!safePortfolio.projects.length && <p className="text-sm text-slate-500 dark:text-slate-400">No projects added yet.</p>}
-              </div>
-            </div>
+              ))}
+            </>
           )}
 
-          {tab === "certs" && (
-            <div className="space-y-5">
-              <div className="rounded-[28px] border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-[#0f172a]">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <InputField label="Certificate title" value={certForm.title} onChange={(e) => setCertForm((prev) => ({ ...prev, title: e.target.value }))} placeholder="Frontend Developer Certificate" />
-                  <InputField label="Issuer" value={certForm.issuer} onChange={(e) => setCertForm((prev) => ({ ...prev, issuer: e.target.value }))} placeholder="Udemy / Coursera / University" />
-                  <InputField label="Year" value={certForm.year} onChange={(e) => setCertForm((prev) => ({ ...prev, year: e.target.value }))} placeholder="2025" />
+          {/* ── CERTIFICATES ── */}
+          {tab==="certs" && (
+            <>
+              <Section title="Add Certificate">
+                <Field label="Certificate Title" value={newCert.title}  onChange={e=>setNewCert(p=>({...p,title:e.target.value}))}  placeholder="e.g. AWS Certified Developer" />
+                <Field label="Issuer"            value={newCert.issuer} onChange={e=>setNewCert(p=>({...p,issuer:e.target.value}))} placeholder="e.g. Amazon Web Services" />
+                <Field label="Date"              value={newCert.date}   onChange={e=>setNewCert(p=>({...p,date:e.target.value}))}   placeholder="e.g. Jan 2024" />
+                <Field label="Credential URL"    value={newCert.url}    onChange={e=>setNewCert(p=>({...p,url:e.target.value}))}    placeholder="https://..." />
+                <ImageUpload label="Certificate Image" value={newCert.image} onChange={v=>setNewCert(p=>({...p,image:v}))} />
+                <button onClick={addCert}
+                  className="w-full py-2 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors">
+                  + Add Certificate
+                </button>
+              </Section>
+              {(portfolio.certificates||[]).map((c,i) => (
+                <div key={i} className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0f172a]">
+                  {c.image && <img src={c.image} alt="" className="w-12 h-10 rounded-lg object-cover shrink-0" />}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-sm text-slate-800 dark:text-white truncate">{c.title}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{c.issuer} · {c.date}</p>
+                  </div>
+                  <button onClick={()=>removeCert(i)} className="text-red-400 hover:text-red-600 shrink-0 transition-colors">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
-                <UploadButton label="Certificate image" loading={uploading.cert} onChange={(e) => uploadImage(e.target.files?.[0], "cert")} />
-                {certForm.image && <img src={certForm.image} alt="certificate preview" className="mt-4 h-48 w-full rounded-2xl object-cover" />}
-                <button onClick={addCertification} className="mt-4 rounded-2xl bg-blue-500 px-5 py-3 text-sm font-semibold text-white">Add Certificate</button>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                {safePortfolio.certifications.map((item) => (
-                  <div key={item.id} className="overflow-hidden rounded-[28px] border border-slate-200 bg-white dark:border-slate-700 dark:bg-[#0f172a]">
-                    {item.image && <img src={item.image} alt={item.title} className="h-48 w-full object-cover" />}
-                    <div className="space-y-1 p-4">
-                      <p className="font-bold text-slate-900 dark:text-white">{item.title}</p>
-                      <p className="text-sm text-slate-600 dark:text-slate-300">{item.issuer}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{item.year}</p>
-                      <button onClick={() => removeCertification(item.id)} className="pt-2 text-sm text-red-500">Remove</button>
-                    </div>
-                  </div>
-                ))}
-                {!safePortfolio.certifications.length && <p className="text-sm text-slate-500 dark:text-slate-400">No certificates added yet.</p>}
-              </div>
-            </div>
+              ))}
+            </>
           )}
 
-          {tab === "design" && (
-            <div className="space-y-6">
-              <div>
-                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">10 templates</p>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {TEMPLATES.map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => setTemplate(item.id)}
-                      className={`rounded-[24px] border p-4 text-left transition ${template === item.id ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20" : "border-slate-200 bg-white dark:border-slate-700 dark:bg-[#0f172a]"}`}
-                    >
-                      <div className="mb-3 h-10 w-10 rounded-2xl" style={{ backgroundColor: item.color }} />
-                      <p className="font-bold text-slate-900 dark:text-white">{item.label}</p>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">{item.desc}</p>
+          {/* ── EXPERIENCE ── */}
+          {tab==="exp" && (
+            <>
+              <Section title="Add Experience">
+                <Field label="Job Title"  value={newExp.role}    onChange={e=>setNewExp(p=>({...p,role:e.target.value}))}    placeholder="e.g. Senior Developer" />
+                <Field label="Company"    value={newExp.company} onChange={e=>setNewExp(p=>({...p,company:e.target.value}))} placeholder="Company name" />
+                <div className="grid grid-cols-2 gap-2">
+                  <Field label="From" value={newExp.from} onChange={e=>setNewExp(p=>({...p,from:e.target.value}))} placeholder="Jan 2022" />
+                  <Field label="To"   value={newExp.to}   onChange={e=>setNewExp(p=>({...p,to:e.target.value}))}   placeholder="Present" />
+                </div>
+                <Textarea label="Description" value={newExp.desc} onChange={e=>setNewExp(p=>({...p,desc:e.target.value}))} placeholder="What did you do there?" rows={2} />
+                <button onClick={addExp}
+                  className="w-full py-2 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors">
+                  + Add Experience
+                </button>
+              </Section>
+              {(portfolio.experience||[]).map((e,i) => (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0f172a]">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-slate-800 dark:text-white">{e.role}</p>
+                    <p className="text-xs text-blue-500">{e.company}</p>
+                    <p className="text-xs text-slate-400">{e.from}–{e.to||"Present"}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">{e.desc}</p>
+                  </div>
+                  <button onClick={()=>removeExp(i)} className="text-red-400 hover:text-red-600 shrink-0 transition-colors">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </>
+          )}
+
+          {/* ── EDUCATION ── */}
+          {tab==="edu" && (
+            <>
+              <Section title="Add Education">
+                <Field label="Degree / Major" value={newEdu.degree} onChange={e=>setNewEdu(p=>({...p,degree:e.target.value}))} placeholder="e.g. B.Sc. Computer Science" />
+                <Field label="School"         value={newEdu.school} onChange={e=>setNewEdu(p=>({...p,school:e.target.value}))} placeholder="University name" />
+                <div className="grid grid-cols-2 gap-2">
+                  <Field label="From" value={newEdu.from} onChange={e=>setNewEdu(p=>({...p,from:e.target.value}))} placeholder="2019" />
+                  <Field label="To"   value={newEdu.to}   onChange={e=>setNewEdu(p=>({...p,to:e.target.value}))}   placeholder="2023" />
+                </div>
+                <button onClick={addEdu}
+                  className="w-full py-2 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors">
+                  + Add Education
+                </button>
+              </Section>
+              {(portfolio.education||[]).map((e,i) => (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#0f172a]">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-slate-800 dark:text-white">{e.degree}</p>
+                    <p className="text-xs text-blue-500">{e.school}</p>
+                    <p className="text-xs text-slate-400">{e.from}–{e.to||"Present"}</p>
+                  </div>
+                  <button onClick={()=>removeEdu(i)} className="text-red-400 hover:text-red-600 shrink-0 transition-colors">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </>
+          )}
+
+          {/* ── STYLE ── */}
+          {tab==="style" && (
+            <>
+              {/* Template picker */}
+              <Section title="Choose Template">
+                <div className="grid grid-cols-2 gap-2">
+                  {TEMPLATES.map(t => (
+                    <button key={t.id} onClick={()=>setTemplate(t.id)}
+                      className={`flex items-center gap-3 p-3 rounded-xl border-2 text-left transition-all
+                        ${template===t.id ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20" : "border-slate-200 dark:border-slate-700 hover:border-slate-300"}`}>
+                      <div className="w-8 h-8 rounded-lg shrink-0" style={{ background: t.color }} />
+                      <div className="min-w-0">
+                        <p className="font-bold text-xs text-slate-900 dark:text-white truncate">{t.label}</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">{t.desc}</p>
+                      </div>
+                      {template===t.id && <svg className="w-4 h-4 text-blue-500 ml-auto shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>}
                     </button>
                   ))}
                 </div>
-              </div>
+              </Section>
 
-              <div>
-                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Accent color + custom color name</p>
-                <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
-                  <InputField label="Color name" value={safePortfolio.accentName} onChange={(e) => setField("accentName", e.target.value)} placeholder="Ocean Blue" />
-                  <input type="color" value={safePortfolio.accentColor} onChange={(e) => setField("accentColor", e.target.value)} className="h-12 w-full rounded-2xl border border-slate-200 dark:border-slate-700 md:w-28" />
+              {/* Colors */}
+              <Section title="Accent Color">
+                <div className="flex flex-wrap gap-2">
+                  {ACCENT_COLORS.map(c => (
+                    <button key={c} onClick={()=>set("accentColor",c)}
+                      className="w-8 h-8 rounded-full border-2 transition-all hover:scale-110"
+                      style={{ background:c, borderColor: portfolio.accentColor===c?"white":"transparent", boxShadow: portfolio.accentColor===c?`0 0 0 3px ${c}`:""}} />
+                  ))}
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] text-slate-500">Custom</label>
+                    <input type="color" value={portfolio.accentColor||"#1E88E5"} onChange={e=>set("accentColor",e.target.value)}
+                      className="w-8 h-8 rounded-lg border-0 cursor-pointer" />
+                  </div>
                 </div>
-                <div className="mt-4 flex flex-wrap gap-3">
-                  {ACCENT_COLORS.map((item) => (
-                    <button
-                      key={item.value}
-                      onClick={() => {
-                        setField("accentColor", item.value);
-                        setField("accentName", item.name);
-                        setSkillForm((prev) => ({ ...prev, color: item.value }));
-                      }}
-                      className="rounded-full border px-3 py-2 text-sm"
-                      style={{ borderColor: `${item.value}55`, color: item.value, backgroundColor: `${item.value}12` }}
-                    >
-                      {item.name}
+              </Section>
+
+              {/* Background color (light mode only) */}
+              <Section title="Background Color">
+                <div className="flex items-center gap-3">
+                  <input type="color" value={portfolio.bgColor||"#ffffff"} onChange={e=>set("bgColor",e.target.value)}
+                    className="w-10 h-10 rounded-lg border-0 cursor-pointer" />
+                  <div className="flex gap-2">
+                    {["#ffffff","#f8faff","#f1f5f9","#fafaf9","#fefce8","#fff1f2"].map(c => (
+                      <button key={c} onClick={()=>set("bgColor",c)}
+                        className="w-7 h-7 rounded-lg border border-slate-200 hover:scale-110 transition-all"
+                        style={{ background: c }} />
+                    ))}
+                  </div>
+                </div>
+              </Section>
+
+              {/* Dark mode toggle */}
+              <Section title="Mode">
+                <div className="flex gap-3">
+                  <button onClick={()=>set("darkMode",false)}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all
+                      ${!portfolio.darkMode ? "border-blue-500 bg-blue-50 text-blue-600" : "border-slate-200 dark:border-slate-700 text-slate-500"}`}>
+                    ☀️ Light
+                  </button>
+                  <button onClick={()=>set("darkMode",true)}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border-2 transition-all
+                      ${portfolio.darkMode ? "border-blue-500 bg-blue-900/20 text-blue-400" : "border-slate-200 dark:border-slate-700 text-slate-500"}`}>
+                    🌙 Dark
+                  </button>
+                </div>
+              </Section>
+
+              {/* Font */}
+              <Section title="Font Style">
+                <div className="grid grid-cols-2 gap-2">
+                  {FONT_OPTIONS.map(f => (
+                    <button key={f.id} onClick={()=>set("fontStyle",f.id)}
+                      className={`py-2 px-3 rounded-xl text-xs font-semibold border-2 text-left transition-all
+                        ${portfolio.fontStyle===f.id ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600" : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"}`}>
+                      {f.label}
                     </button>
                   ))}
                 </div>
-              </div>
+              </Section>
 
-              <div className="grid gap-5 md:grid-cols-2">
-                <div>
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Animation</p>
-                  <div className="flex flex-wrap gap-2">
-                    {ANIMATIONS.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => setField("animationStyle", item.id)}
-                        className={`rounded-full px-4 py-2 text-sm ${safePortfolio.animationStyle === item.id ? "bg-blue-500 text-white" : "bg-white text-slate-700 dark:bg-[#0f172a] dark:text-slate-200"}`}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
+              {/* Animations */}
+              <Section title="Animations">
+                {[
+                  { key:"hero",   label:"Hero entrance" },
+                  { key:"cards",  label:"Card entrance"  },
+                  { key:"skills", label:"Skill bars"     },
+                ].map(({ key, label }) => (
+                  <div key={key} className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{label}</label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {ANIM_OPTIONS.map(a => (
+                        <button key={a} onClick={()=>setAnim(key,a)}
+                          className={`px-3 py-1 rounded-full text-xs font-semibold transition-all capitalize
+                            ${(portfolio.animations||{})[key]===a ? "bg-blue-500 text-white" : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200"}`}>
+                          {a}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-
-                <div>
-                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Theme mode</p>
-                  <div className="flex flex-wrap gap-2">
-                    {THEMES.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => setField("themeMode", item.id)}
-                        className={`rounded-full px-4 py-2 text-sm ${safePortfolio.themeMode === item.id ? "bg-slate-900 text-white dark:bg-white dark:text-slate-900" : "bg-white text-slate-700 dark:bg-[#0f172a] dark:text-slate-200"}`}
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
+                ))}
+              </Section>
+            </>
           )}
         </div>
 
-        <div className="border-t border-slate-200 p-4 dark:border-slate-700">
-          <button onClick={() => onSave(normalizePortfolio(safePortfolio), template)} disabled={saving} className="flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-500 px-5 py-3 text-sm font-semibold text-white disabled:opacity-60">
-            {saving ? "Saving…" : "Save Portfolio"}
+        {/* Save */}
+        <div className="p-4 border-t border-slate-200 dark:border-slate-700 shrink-0">
+          <button onClick={()=>onSave(portfolio, template)} disabled={saving}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500
+                       hover:from-purple-600 hover:to-blue-600 disabled:opacity-60
+                       text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all">
+            {saving && <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+            {saving ? "Saving…" : "💾 Save Portfolio"}
           </button>
         </div>
       </div>
 
+      {/* ── Right: live preview ── */}
       {preview && (
-        <div className="hidden flex-1 overflow-y-auto border-l border-slate-300 bg-slate-200 dark:border-slate-700 dark:bg-slate-950 xl:block">
-          <div className="sticky top-0 z-10 border-b border-slate-300 bg-white/80 px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-slate-600 backdrop-blur dark:border-slate-700 dark:bg-slate-950/80 dark:text-slate-300">
-            Live Preview • {TEMPLATES.find((item) => item.id === template)?.label}
+        <div className="flex-1 overflow-y-auto border-l border-slate-300 dark:border-slate-700">
+          <div className="sticky top-0 z-10 px-4 py-2 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+            <span className="text-xs text-slate-500 font-semibold">Live Preview</span>
+            <span className="text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full font-bold">
+              {TEMPLATES.find(t=>t.id===template)?.label}
+            </span>
           </div>
-          <PortfolioRenderer data={safePortfolio} template={template} />
+          <PortfolioRenderer data={portfolio} template={template} />
         </div>
       )}
     </div>

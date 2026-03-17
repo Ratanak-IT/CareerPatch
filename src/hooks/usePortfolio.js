@@ -1,102 +1,36 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabaseClient";
 
-const DEFAULT_SOCIALS = { github: "", facebook: "", telegram: "", linkedin: "", website: "" };
-
-function slug(value = "") {
-  return String(value || "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "accent";
-}
-
-function normalizeSkills(skills = []) {
-  return (Array.isArray(skills) ? skills : [])
-    .map((skill, index) => {
-      if (typeof skill === "string") {
-        return {
-          id: `skill-${index}-${slug(skill)}`,
-          name: skill,
-          level: 80,
-          color: "#2563EB",
-        };
-      }
-
-      return {
-        id: skill?.id || `skill-${index}-${slug(skill?.name)}`,
-        name: skill?.name || "",
-        level: Number.isFinite(Number(skill?.level)) ? Math.max(0, Math.min(100, Number(skill.level))) : 80,
-        color: skill?.color || "#2563EB",
-      };
-    })
-    .filter((skill) => skill.name);
-}
-
-function normalizeProjects(projects = []) {
-  return (Array.isArray(projects) ? projects : []).map((project, index) => ({
-    id: project?.id || `project-${index}-${slug(project?.title)}`,
-    title: project?.title || "",
-    desc: project?.desc || "",
-    url: project?.url || "",
-    image: project?.image || "",
-    stack: project?.stack || "",
-    role: project?.role || "",
-    year: project?.year || "",
-  }));
-}
-
-function normalizeCertifications(certifications = []) {
-  return (Array.isArray(certifications) ? certifications : []).map((item, index) => ({
-    id: item?.id || `cert-${index}-${slug(item?.title)}`,
-    title: item?.title || "",
-    issuer: item?.issuer || "",
-    year: item?.year || "",
-    image: item?.image || "",
-  }));
-}
-
 export const DEFAULT_PORTFOLIO = {
-  name: "",
-  title: "",
-  tagline: "",
-  bio: "",
-  email: "",
-  phone: "",
-  location: "",
-  avatar: "",
-  accentColor: "#2563EB",
-  accentName: "Ocean Blue",
-  themeMode: "auto",
-  animationStyle: "float",
-  skills: [],
-  projects: [],
-  certifications: [],
-  socials: DEFAULT_SOCIALS,
+  name:         "",
+  title:        "",
+  bio:          "",
+  avatar:       "",
+  location:     "",
+  email:        "",
+  website:      "",
+  accentColor:  "#1E88E5",
+  bgColor:      "#ffffff",
+  fontStyle:    "modern",       // modern | classic | mono | rounded
+  darkMode:     false,
+  skills:       [],             // [{ name, percent, color }]
+  projects:     [],             // [{ title, desc, url, image, tags, featured }]
+  certificates: [],             // [{ title, issuer, date, url, image }]
+  experience:   [],             // [{ role, company, from, to, desc }]
+  education:    [],             // [{ degree, school, from, to }]
+  socials:      { github: "", linkedin: "", facebook: "", telegram: "", twitter: "", youtube: "" },
+  animations:   { hero: "fade", cards: "slide", skills: "grow" },
 };
-
-export function normalizePortfolio(data = {}) {
-  return {
-    ...DEFAULT_PORTFOLIO,
-    ...data,
-    socials: { ...DEFAULT_SOCIALS, ...(data?.socials || {}) },
-    skills: normalizeSkills(data?.skills),
-    projects: normalizeProjects(data?.projects),
-    certifications: normalizeCertifications(data?.certifications),
-  };
-}
 
 export function usePortfolio(userId) {
   const [portfolio, setPortfolio] = useState(null);
-  const [template, setTemplate] = useState("minimal");
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [template,  setTemplate]  = useState("minimal");
+  const [loading,   setLoading]   = useState(true);
+  const [saving,    setSaving]    = useState(false);
 
   useEffect(() => {
-    if (!userId) {
-      setLoading(false);
-      return;
-    }
-
+    if (!userId) { setLoading(false); return; }
     supabase
       .from("portfolios")
       .select("*")
@@ -105,9 +39,9 @@ export function usePortfolio(userId) {
       .then(({ data }) => {
         if (data) {
           setTemplate(data.template || "minimal");
-          setPortfolio(normalizePortfolio(data.data));
+          setPortfolio({ ...DEFAULT_PORTFOLIO, ...data.data });
         } else {
-          setPortfolio(normalizePortfolio());
+          setPortfolio({ ...DEFAULT_PORTFOLIO });
         }
         setLoading(false);
       });
@@ -116,33 +50,20 @@ export function usePortfolio(userId) {
   const save = useCallback(async (newPortfolio, newTemplate) => {
     if (!userId) return false;
     setSaving(true);
-
-    const payload = normalizePortfolio(newPortfolio || portfolio);
-    const selectedTemplate = newTemplate || template;
-
     const { error } = await supabase
       .from("portfolios")
-      .upsert(
-        {
-          user_id: userId,
-          template: selectedTemplate,
-          data: payload,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "user_id" }
-      );
-
+      .upsert({
+        user_id:    userId,
+        template:   newTemplate || template,
+        data:       newPortfolio || portfolio,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id" });
     setSaving(false);
-
-    if (error) {
-      console.error("portfolio save error:", error.message);
-      return false;
-    }
-
-    setPortfolio(payload);
-    setTemplate(selectedTemplate);
+    if (error) { console.error("portfolio save:", error.message); return false; }
+    if (newPortfolio) setPortfolio(newPortfolio);
+    if (newTemplate)  setTemplate(newTemplate);
     return true;
-  }, [portfolio, template, userId]);
+  }, [userId, template, portfolio]);
 
   return { portfolio, setPortfolio, template, setTemplate, loading, saving, save };
 }

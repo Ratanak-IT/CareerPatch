@@ -1,517 +1,1149 @@
-import { useMemo } from "react";
-import { getProjectPreview, normalizeUrl } from "../../utils/portfolioMedia";
-import { normalizePortfolio } from "../../hooks/usePortfolio";
 
-const TEMPLATES = [
-  { id: "minimal", label: "Minimal Frame", badge: "01" },
-  { id: "aurora", label: "Aurora Glow", badge: "02" },
-  { id: "executive", label: "Executive Grid", badge: "03" },
-  { id: "creative", label: "Creative Burst", badge: "04" },
-  { id: "developer", label: "Code Deck", badge: "05" },
-  { id: "magazine", label: "Magazine Layout", badge: "06" },
-  { id: "neon", label: "Neon Pulse", badge: "07" },
-  { id: "soft", label: "Soft Card", badge: "08" },
-  { id: "bold", label: "Bold Split", badge: "09" },
-  { id: "mono", label: "Mono Editorial", badge: "10" },
-];
 
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
+import { useScrollReveal, SkillBar, SocialLink, CertCard, SectionTitle, ProjectCard, FONTS } from "./PortfolioShared";
 
-function getThemeClasses(themeMode) {
-  if (themeMode === "light") {
-    return "bg-slate-50 text-slate-900";
-  }
-  if (themeMode === "dark") {
-    return "bg-[#050816] text-slate-100";
-  }
-  return "bg-slate-50 text-slate-900 dark:bg-[#050816] dark:text-slate-100";
-}
+const initial = (name) => (name || "?")[0]?.toUpperCase() || "?";
 
-function icon(name) {
-  const shared = "w-5 h-5";
-  const icons = {
-    mail: (
-      <svg className={shared} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 7.5v9a2.25 2.25 0 01-2.25 2.25h-15A2.25 2.25 0 012.25 16.5v-9m19.5 0A2.25 2.25 0 0019.5 5.25h-15A2.25 2.25 0 002.25 7.5m19.5 0l-8.69 5.215a2.25 2.25 0 01-2.12 0L2.25 7.5" />
-      </svg>
-    ),
-    phone: (
-      <svg className={shared} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25A2.25 2.25 0 0021.75 19.5v-1.372c0-.516-.351-.965-.852-1.089l-4.423-1.106a1.125 1.125 0 00-1.173.417l-.97 1.293a1.125 1.125 0 01-1.21.38 12.035 12.035 0 01-7.145-7.145 1.125 1.125 0 01.38-1.21l1.293-.97a1.125 1.125 0 00.417-1.173L6.96 3.102A1.125 1.125 0 005.872 2.25H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-      </svg>
-    ),
-    location: (
-      <svg className={shared} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 21s-6.75-5.625-6.75-11.25a6.75 6.75 0 1113.5 0C18.75 15.375 12 21 12 21z" />
-        <circle cx="12" cy="9.75" r="2.25" />
-      </svg>
-    ),
-    github: (
-      <svg className={shared} viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.75a10.25 10.25 0 00-3.24 20c.52.096.708-.224.708-.5v-1.77c-2.88.625-3.487-1.22-3.487-1.22-.472-1.2-1.152-1.52-1.152-1.52-.94-.643.07-.631.07-.631 1.04.073 1.588 1.065 1.588 1.065.924 1.583 2.423 1.125 3.013.86.094-.67.36-1.125.654-1.384-2.3-.263-4.72-1.15-4.72-5.118 0-1.13.404-2.054 1.066-2.778-.107-.26-.462-1.314.102-2.74 0 0 .87-.28 2.85 1.06a9.86 9.86 0 015.188 0c1.98-1.34 2.85-1.06 2.85-1.06.564 1.426.21 2.48.102 2.74.662.724 1.066 1.648 1.066 2.778 0 3.978-2.424 4.852-4.73 5.11.37.32.7.944.7 1.902v2.82c0 .279.187.602.713.5A10.25 10.25 0 0012 1.75z"/></svg>
-    ),
-    linkedin: (
-      <svg className={shared} viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5A1.48 1.48 0 103.5 4.98 1.48 1.48 0 004.98 3.5zM3.75 8.25h2.5v12h-2.5zM9 8.25h2.4v1.64h.03c.33-.63 1.14-1.3 2.35-1.3 2.52 0 2.99 1.66 2.99 3.82v7.84h-2.5v-6.95c0-1.66-.03-3.79-2.31-3.79-2.31 0-2.67 1.8-2.67 3.67v7.07H9z"/></svg>
-    ),
-    facebook: (
-      <svg className={shared} viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7h2.33l.35-2.73H13.5V9.53c0-.79.22-1.33 1.36-1.33h1.45V5.77A19.7 19.7 0 0014.2 5.6c-2.1 0-3.54 1.28-3.54 3.64v2.03H8.25V14h2.41v7z"/></svg>
-    ),
-    telegram: (
-      <svg className={shared} viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.75A10.25 10.25 0 1022.25 12 10.262 10.262 0 0012 1.75zm4.6 7.01l-1.56 7.37c-.118.522-.426.65-.862.405l-2.39-1.76-1.153 1.11a.603.603 0 01-.484.236l.172-2.443 4.447-4.018c.193-.171-.042-.266-.299-.095l-5.498 3.46-2.366-.738c-.514-.16-.524-.514.107-.76l9.25-3.566c.428-.16.801.102.622.802z"/></svg>
-    ),
-    website: (
-      <svg className={shared} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.8"><path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9 9 0 100-18 9 9 0 000 18zm0 0c2.485 0 4.5-4.03 4.5-9s-2.015-9-4.5-9m0 18c-2.485 0-4.5-4.03-4.5-9s2.015-9 4.5-9m-9 9h18"/></svg>
-    ),
-  };
-  return icons[name] || null;
-}
-
-function SocialLinks({ socials, accent }) {
-  const entries = Object.entries(socials || {}).filter(([, value]) => value);
-  if (!entries.length) return null;
-
-  return (
-    <div className="flex flex-wrap gap-3">
-      {entries.map(([key, value]) => (
-        <a
-          key={key}
-          href={normalizeUrl(value)}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5"
-          style={{ borderColor: `${accent}33`, color: accent, backgroundColor: `${accent}12` }}
-        >
-          {icon(key)}
-          <span className="capitalize">{key}</span>
-        </a>
-      ))}
-    </div>
-  );
-}
-
-function ContactList({ data, accent }) {
-  const items = [
-    data.email && { iconName: "mail", label: data.email },
-    data.phone && { iconName: "phone", label: data.phone },
-    data.location && { iconName: "location", label: data.location },
-  ].filter(Boolean);
-
-  if (!items.length) return null;
-
-  return (
-    <div className="flex flex-wrap gap-4 text-sm">
-      {items.map((item) => (
-        <div key={item.label} className="inline-flex items-center gap-2 rounded-full px-4 py-2" style={{ backgroundColor: `${accent}12`, color: accent }}>
-          {icon(item.iconName)}
-          <span>{item.label}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function Avatar({ data, accent, className = "w-24 h-24" }) {
+function Avatar({ data, size = 28, ring = true }) {
   if (data.avatar) {
-    return <img src={data.avatar} alt={data.name} className={`${className} rounded-[28px] object-cover shadow-2xl`} />;
+    return (
+      <img src={data.avatar} alt={data.name}
+        className={`rounded-full object-cover ${ring ? "ring-4" : ""}`}
+        style={{ width: size, height: size, ringColor: data.accentColor }}
+      />
+    );
   }
-
   return (
-    <div className={`${className} rounded-[28px] flex items-center justify-center text-white text-4xl font-black shadow-2xl`} style={{ background: `linear-gradient(135deg, ${accent}, ${accent}aa)` }}>
-      {(data.name || "?").slice(0, 1).toUpperCase()}
+    <div className="rounded-full flex items-center justify-center font-black text-white"
+         style={{ width: size, height: size, background: data.accentColor, fontSize: size * 0.35 }}>
+      {initial(data.name)}
     </div>
   );
 }
 
-function SkillTrack({ skill, accent, variant = 0, animationStyle = "float" }) {
-  const level = clamp(Number(skill.level || 0), 0, 100);
-  const color = skill.color || accent;
-  const outerClass = {
-    0: "rounded-2xl border p-4",
-    1: "rounded-[28px] p-4 border",
-    2: "rounded-3xl p-4 border-l-4",
-    3: "rounded-2xl p-4 border shadow-sm",
-    4: "rounded-3xl p-4 border bg-black/20",
-    5: "rounded-none border-b pb-4",
-    6: "rounded-[20px] p-4 border",
-    7: "rounded-[30px] p-4 border bg-white/70 dark:bg-white/5 backdrop-blur",
-    8: "rounded-3xl p-4 border-2",
-    9: "rounded-2xl p-4 border-dashed border-2",
-  }[variant] || "rounded-2xl border p-4";
-
-  const trackClass = {
-    0: "h-3 rounded-full",
-    1: "h-2 rounded-full",
-    2: "h-4 rounded-full",
-    3: "h-2.5 rounded-full",
-    4: "h-3 rounded-full",
-    5: "h-1.5 rounded-full",
-    6: "h-4 rounded-[999px]",
-    7: "h-2 rounded-full",
-    8: "h-5 rounded-2xl",
-    9: "h-2 rounded-full",
-  }[variant] || "h-3 rounded-full";
-
-  const progressClass = {
-    none: "",
-    float: "transition-all duration-500 hover:-translate-y-1",
-    pulse: "animate-pulse",
-    slide: "transition-all duration-500 hover:translate-x-1",
-    fade: "transition-opacity duration-500 hover:opacity-80",
-  }[animationStyle] || "transition-all duration-500 hover:-translate-y-1";
-
-  return (
-    <div className={`${outerClass} ${progressClass}`} style={{ borderColor: `${color}2a` }}>
-      <div className="mb-3 flex items-center justify-between gap-3">
-        <h4 className="font-semibold">{skill.name}</h4>
-        <span className="text-xs font-bold" style={{ color }}>{level}%</span>
-      </div>
-      <div className={`${trackClass} overflow-hidden`} style={{ backgroundColor: `${color}18` }}>
-        <div
-          className={`${trackClass} transition-all duration-700`}
-          style={{ width: `${level}%`, background: variant % 2 === 0 ? `linear-gradient(90deg, ${color}, ${accent})` : color }}
-        />
-      </div>
-    </div>
-  );
+function wrap(data) {
+  return {
+    d:    data,
+    dark: data.darkMode,
+    acc:  data.accentColor || "#1E88E5",
+    bg:   data.darkMode ? "#0f172a" : (data.bgColor || "#ffffff"),
+    font: FONTS[data.fontStyle] || FONTS.modern,
+    anim: data.animations || { hero: "fade", cards: "slide", skills: "grow" },
+    skills:  Array.isArray(data.skills)       ? data.skills       : [],
+    projs:   Array.isArray(data.projects)     ? data.projects     : [],
+    certs:   Array.isArray(data.certificates) ? data.certificates : [],
+    exp:     Array.isArray(data.experience)   ? data.experience   : [],
+    edu:     Array.isArray(data.education)    ? data.education    : [],
+    socials: data.socials || {},
+  };
 }
 
-function ProjectCard({ project, accent, variant = 0, animationStyle = "float" }) {
-  const href = normalizeUrl(project.url);
-  const image = project.image || getProjectPreview(project.url);
-  const motion = {
-    none: "",
-    float: "transition duration-300 hover:-translate-y-2 hover:shadow-2xl",
-    pulse: "transition duration-300 hover:scale-[1.01]",
-    slide: "transition duration-300 hover:translate-x-1",
-    fade: "transition duration-300 hover:opacity-95",
-  }[animationStyle] || "transition duration-300 hover:-translate-y-2 hover:shadow-2xl";
 
-  const frameClass = {
-    0: "rounded-[30px] overflow-hidden border bg-white/90 dark:bg-slate-900/60",
-    1: "rounded-[36px] overflow-hidden border bg-white/70 dark:bg-white/5 backdrop-blur",
-    2: "rounded-none overflow-hidden border bg-transparent",
-    3: "rounded-[28px] overflow-hidden shadow-lg border bg-white dark:bg-slate-900",
-    4: "rounded-3xl overflow-hidden border bg-[#07111f] text-white",
-    5: "rounded-[14px] overflow-hidden border bg-white dark:bg-slate-950",
-    6: "rounded-[26px] overflow-hidden border bg-black/30 text-white backdrop-blur",
-    7: "rounded-[34px] overflow-hidden border bg-white/85 dark:bg-slate-950/70",
-    8: "rounded-[24px] overflow-hidden border-2 bg-white dark:bg-slate-900",
-    9: "rounded-none overflow-hidden border-2 border-dashed bg-white dark:bg-slate-950",
-  }[variant] || "rounded-[30px] overflow-hidden border bg-white/90 dark:bg-slate-900/60";
+  //  1. MINIMAL — Clean white/dark, Swiss typography
 
-  const content = (
-    <div className={`${frameClass} ${motion}`} style={{ borderColor: `${accent}26` }}>
-      <div className="relative h-52 overflow-hidden bg-slate-100 dark:bg-slate-900">
-        {image ? (
-          <img src={image} alt={project.title} className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full items-center justify-center text-sm" style={{ color: accent }}>Project Preview</div>
-        )}
-        <div className="absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-semibold text-white" style={{ backgroundColor: accent }}>
-          {project.year || "Project"}
-        </div>
-      </div>
-      <div className="space-y-3 p-5">
-        <div className="flex items-start justify-between gap-3">
+export function MinimalTemplate({ data }) {
+  const { d, dark, acc, bg, font, anim, skills, projs, certs, exp, socials } = wrap(data);
+  const hero = useScrollReveal(anim.hero);
+
+  return (
+    <div style={{ background: bg, fontFamily: font, color: dark ? "#e2e8f0" : "#1e293b", minHeight: "100vh" }}>
+      <div className="max-w-3xl mx-auto px-6 py-16">
+
+        {/* Hero */}
+        <div ref={hero.ref} style={hero.style} className="flex flex-col sm:flex-row items-center sm:items-start gap-8 mb-16">
+          <Avatar data={d} size={100} />
           <div>
-            <h3 className="text-xl font-bold">{project.title || "Untitled project"}</h3>
-            {project.role && <p className="text-sm opacity-70">{project.role}</p>}
-          </div>
-          {href && (
-            <span className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold" style={{ backgroundColor: `${accent}14`, color: accent }}>
-              Visit ↗
-            </span>
-          )}
-        </div>
-        <p className="text-sm leading-6 opacity-80">{project.desc || "No project description yet."}</p>
-        {project.stack && (
-          <div className="rounded-2xl px-4 py-3 text-sm" style={{ backgroundColor: `${accent}10` }}>
-            <span className="font-semibold">Stack:</span> {project.stack}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
-  if (!href) return content;
-
-  return (
-    <a href={href} target="_blank" rel="noreferrer" className="block">
-      {content}
-    </a>
-  );
-}
-
-function CertificationCard({ item, accent, variant = 0 }) {
-  return (
-    <div
-      className={[
-        "overflow-hidden border",
-        variant === 5 || variant === 9 ? "rounded-none" : "rounded-[28px]",
-        variant === 6 ? "bg-black/25 text-white" : "bg-white/80 dark:bg-white/5",
-      ].join(" ")}
-      style={{ borderColor: `${accent}24` }}
-    >
-      <div className="aspect-[4/3] bg-slate-100 dark:bg-slate-900">
-        {item.image ? (
-          <img src={item.image} alt={item.title} className="h-full w-full object-cover" />
-        ) : (
-          <div className="flex h-full items-center justify-center text-sm" style={{ color: accent }}>Certificate Image</div>
-        )}
-      </div>
-      <div className="space-y-1 p-4">
-        <h4 className="font-bold">{item.title || "Certificate"}</h4>
-        <p className="text-sm opacity-75">{item.issuer || "Issuer"}</p>
-        {item.year && <p className="text-xs font-semibold" style={{ color: accent }}>{item.year}</p>}
-      </div>
-    </div>
-  );
-}
-
-function TemplateFrame({ template, data }) {
-  const accent = data.accentColor || "#2563EB";
-  const themeClass = getThemeClasses(data.themeMode);
-  const templateIndex = TEMPLATES.findIndex((item) => item.id === template);
-  const templateData = TEMPLATES[templateIndex] || TEMPLATES[0];
-
-  const wrappers = {
-    minimal: "mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8",
-    aurora: "mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-10",
-    executive: "mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-12",
-    creative: "mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8",
-    developer: "mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-10",
-    magazine: "mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-12",
-    neon: "mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-10",
-    soft: "mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8",
-    bold: "mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8",
-    mono: "mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-10",
-  };
-
-  const heroClasses = {
-    minimal: "grid gap-6 rounded-[36px] border p-8 md:grid-cols-[1.3fr_0.7fr] md:p-12",
-    aurora: "relative overflow-hidden rounded-[40px] border p-8 md:p-12",
-    executive: "grid gap-8 rounded-none border p-8 md:grid-cols-[0.8fr_1.2fr] md:p-12",
-    creative: "grid gap-8 rounded-[40px] border p-8 md:grid-cols-[0.95fr_1.05fr] md:p-12",
-    developer: "grid gap-8 rounded-[32px] border p-6 md:grid-cols-[0.85fr_1.15fr] md:p-10",
-    magazine: "grid gap-8 rounded-none border p-8 md:grid-cols-[1.15fr_0.85fr] md:p-12",
-    neon: "relative overflow-hidden rounded-[36px] border p-8 md:p-12",
-    soft: "grid gap-8 rounded-[44px] border p-8 md:grid-cols-[1.2fr_0.8fr] md:p-12",
-    bold: "grid gap-8 rounded-[30px] border p-6 md:grid-cols-[0.8fr_1.2fr] md:p-10",
-    mono: "grid gap-8 rounded-none border-2 p-8 md:grid-cols-[0.8fr_1.2fr] md:p-12",
-  };
-
-  const sectionTitleClass = {
-    minimal: "text-2xl font-bold",
-    aurora: "text-3xl font-black",
-    executive: "text-2xl font-semibold uppercase tracking-[0.18em]",
-    creative: "text-3xl font-black",
-    developer: "text-2xl font-semibold",
-    magazine: "text-3xl font-serif font-bold",
-    neon: "text-3xl font-black uppercase tracking-[0.2em]",
-    soft: "text-2xl font-bold",
-    bold: "text-3xl font-black",
-    mono: "text-2xl font-black uppercase tracking-[0.25em]",
-  };
-
-  const projectGridClass = {
-    minimal: "grid gap-6 md:grid-cols-2",
-    aurora: "grid gap-6 lg:grid-cols-2",
-    executive: "grid gap-4 lg:grid-cols-3",
-    creative: "grid gap-6 md:grid-cols-2",
-    developer: "grid gap-6 lg:grid-cols-2",
-    magazine: "grid gap-4 md:grid-cols-2",
-    neon: "grid gap-6 lg:grid-cols-3",
-    soft: "grid gap-6 md:grid-cols-2",
-    bold: "grid gap-6 xl:grid-cols-3",
-    mono: "grid gap-5 md:grid-cols-2",
-  };
-
-  return (
-    <div className={`${themeClass} min-h-screen`}>
-      <div className={wrappers[template] || wrappers.minimal}>
-        <div className={heroClasses[template]} style={{ borderColor: `${accent}26`, background: heroBackground(template, accent, data.themeMode) }}>
-          {(template === "aurora" || template === "neon") && (
-            <>
-              <div className="pointer-events-none absolute inset-0 opacity-80" style={{ background: glowBackground(template, accent) }} />
-              <div className="pointer-events-none absolute -right-20 top-0 h-64 w-64 rounded-full blur-3xl" style={{ backgroundColor: `${accent}45` }} />
-            </>
-          )}
-
-          <div className="relative z-10 flex flex-col gap-5">
-            <div className="inline-flex w-fit items-center gap-3 rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.22em]" style={{ borderColor: `${accent}33`, color: accent, backgroundColor: `${accent}12` }}>
-              <span>{templateData.badge}</span>
-              <span>{templateData.label}</span>
-              {data.accentName && <span>• {data.accentName}</span>}
+            <h1 className="text-4xl font-bold">{d.name || "Your Name"}</h1>
+            <p className="text-lg mt-1 font-medium" style={{ color: acc }}>{d.title || "Your Title"}</p>
+            <p className="mt-3 text-sm leading-relaxed opacity-70 max-w-md">{d.bio}</p>
+            <div className="mt-4 flex gap-2 flex-wrap">
+              {d.location && <span className="text-xs opacity-60">📍 {d.location}</span>}
+              {d.email    && <span className="text-xs opacity-60">✉ {d.email}</span>}
+              {d.website  && <a href={d.website} target="_blank" rel="noopener noreferrer" className="text-xs" style={{ color: acc }}>🌐 {d.website}</a>}
             </div>
+            <div className="mt-4 flex gap-2">
+              {Object.entries(socials).filter(([,v])=>v).map(([k,v]) => <SocialLink key={k} type={k} url={v} accent={acc} />)}
+            </div>
+          </div>
+        </div>
+
+        {/* Skills */}
+        {skills.length > 0 && (
+          <section className="mb-14">
+            <SectionTitle accent={acc} dark={dark}>Skills</SectionTitle>
+            {skills.map((s,i) => <SkillBar key={i} skill={s} animType={anim.skills} dark={dark} />)}
+          </section>
+        )}
+
+        {/* Projects */}
+        {projs.length > 0 && (
+          <section className="mb-14">
+            <SectionTitle accent={acc} dark={dark}>Projects</SectionTitle>
+            <div className="grid gap-5 sm:grid-cols-2">
+              {projs.map((p,i) => <ProjectCard key={i} project={p} accent={acc} dark={dark} animType={anim.cards} />)}
+            </div>
+          </section>
+        )}
+
+        {/* Experience */}
+        {exp.length > 0 && (
+          <section className="mb-14">
+            <SectionTitle accent={acc} dark={dark}>Experience</SectionTitle>
+            <div className="border-l-2 pl-5 space-y-6" style={{ borderColor: acc }}>
+              {exp.map((e,i) => (
+                <div key={i}>
+                  <p className="font-bold">{e.role}</p>
+                  <p className="text-sm" style={{ color: acc }}>{e.company}</p>
+                  <p className="text-xs opacity-60">{e.from} – {e.to || "Present"}</p>
+                  <p className="text-sm mt-1 opacity-75">{e.desc}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Certificates */}
+        {certs.length > 0 && (
+          <section className="mb-14">
+            <SectionTitle accent={acc} dark={dark}>Certificates</SectionTitle>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {certs.map((c,i) => <CertCard key={i} cert={c} accent={acc} dark={dark} />)}
+            </div>
+          </section>
+        )}
+
+        <p className="text-center text-xs opacity-30">Made with CareerPatch</p>
+      </div>
+    </div>
+  );
+}
+
+
+  //  2. CREATIVE — Bold gradient hero, vibrant
+
+export function CreativeTemplate({ data }) {
+  const { d, dark, acc, bg, font, anim, skills, projs, certs, exp, socials } = wrap(data);
+  return (
+    <div style={{ background: bg, fontFamily: font, minHeight: "100vh" }}>
+      {/* Hero */}
+      <div className="relative py-24 px-6 text-white text-center overflow-hidden"
+           style={{ background: `linear-gradient(135deg, ${acc} 0%, ${acc}99 60%, #1e1b4b 100%)` }}>
+        {[0,1,2,3].map(i => (
+          <div key={i} className="absolute rounded-full opacity-10 animate-pulse pointer-events-none"
+               style={{ width: 80+i*70, height: 80+i*70, background:"white", top:`${-10+i*20}%`, left:`${i%2===0?-5+i*5:55+i*4}%`, animationDelay:`${i*0.5}s`, animationDuration:`${3+i}s` }} />
+        ))}
+        <div className="relative z-10 flex flex-col items-center">
+          <Avatar data={d} size={110} />
+          <h1 className="text-5xl font-black mt-5">{d.name || "Your Name"}</h1>
+          <div className="mt-3 px-5 py-1.5 rounded-full text-sm font-semibold" style={{ background:"rgba(255,255,255,0.2)" }}>{d.title}</div>
+          <p className="mt-4 max-w-lg text-white/80 text-sm leading-relaxed">{d.bio}</p>
+          <div className="mt-5 flex gap-3 justify-center">
+            {Object.entries(socials).filter(([,v])=>v).map(([k,v]) => (
+              <a key={k} href={v} target="_blank" rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-white hover:text-purple-600 transition-all"
+                style={{ background:"rgba(255,255,255,0.2)" }}>
+                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white"><path d={({"github":"M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57v-2.235c-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22v3.3c0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z","linkedin":"M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z","telegram":"M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z","facebook":"M24 12.073C24 5.373 18.627 0 12 0S0 5.373 0 12.073c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"})[k] || ""} /></svg>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-6 py-14 space-y-14">
+        {skills.length > 0 && (
+          <section>
+            <SectionTitle accent={acc} dark={dark}>What I Do</SectionTitle>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {skills.map((s,i) => <SkillBar key={i} skill={s} animType={anim.skills} dark={dark} />)}
+            </div>
+          </section>
+        )}
+        {projs.length > 0 && (
+          <section>
+            <SectionTitle accent={acc} dark={dark}>My Work</SectionTitle>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {projs.map((p,i) => <ProjectCard key={i} project={p} accent={acc} dark={dark} animType={anim.cards} />)}
+            </div>
+          </section>
+        )}
+        {exp.length > 0 && (
+          <section>
+            <SectionTitle accent={acc} dark={dark}>Experience</SectionTitle>
+            <div className="space-y-5">
+              {exp.map((e,i) => (
+                <div key={i} className="flex gap-4">
+                  <div className="w-2 h-2 rounded-full mt-2 shrink-0" style={{ background: acc }} />
+                  <div>
+                    <p className="font-bold" style={{ color: dark?"#f1f5f9":"#0f172a" }}>{e.role} @ {e.company}</p>
+                    <p className="text-xs opacity-60">{e.from} – {e.to||"Present"}</p>
+                    <p className="text-sm mt-1 opacity-75">{e.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+        {certs.length > 0 && (
+          <section>
+            <SectionTitle accent={acc} dark={dark}>Certificates</SectionTitle>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {certs.map((c,i) => <CertCard key={i} cert={c} accent={acc} dark={dark} />)}
+            </div>
+          </section>
+        )}
+      </div>
+      <p className="text-center pb-8 text-xs opacity-30" style={{ color: dark?"#e2e8f0":"#1e293b" }}>Made with CareerPatch</p>
+    </div>
+  );
+}
+
+
+  //  3. DEVELOPER — Dark terminal aesthetic
+
+export function DeveloperTemplate({ data }) {
+  const { d, acc, font, anim, skills, projs, certs, exp, socials } = wrap(data);
+  const dark = true; // always dark
+  const bg = "#0d1117";
+
+  return (
+    <div style={{ background: bg, fontFamily: FONTS.mono, color: "#e6edf3", minHeight: "100vh" }}>
+      {/* Terminal titlebar */}
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-800">
+        {["#ef4444","#f59e0b","#22c55e"].map((c,i) => <span key={i} className="w-3 h-3 rounded-full" style={{ background: c }} />)}
+        <span className="ml-4 text-xs text-gray-500">~/portfolio/{d.name?.toLowerCase().replace(/\s+/g,"-") || "user"}</span>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-6 py-14">
+        <p className="text-gray-500 text-sm mb-3">$ whoami</p>
+        <div className="flex flex-col sm:flex-row gap-6 items-start mb-12">
+          <Avatar data={{ ...d, darkMode: true }} size={90} />
+          <div>
+            <h1 className="text-4xl font-bold" style={{ color: acc }}>{d.name || "Your Name"}</h1>
+            <p className="text-gray-400 text-xl mt-1">// {d.title}</p>
+            <div className="mt-3 border-l-2 pl-3 text-gray-300 text-sm leading-relaxed max-w-lg" style={{ borderColor: acc }}>{d.bio}</div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {Object.entries(socials).filter(([,v])=>v).map(([k,v]) => (
+                <a key={k} href={v} target="_blank" rel="noopener noreferrer"
+                  className="px-3 py-1 rounded-lg text-xs font-bold border transition-all hover:scale-105"
+                  style={{ borderColor: acc, color: acc }}
+                  onMouseEnter={e => e.currentTarget.style.background=`${acc}22`}
+                  onMouseLeave={e => e.currentTarget.style.background="transparent"}>
+                  {k}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {skills.length > 0 && (
+          <div className="mb-12">
+            <p className="text-gray-500 text-sm mb-4">$ ls skills/</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {skills.map((s,i) => <SkillBar key={i} skill={s} animType={anim.skills} dark={true} />)}
+            </div>
+          </div>
+        )}
+
+        {projs.length > 0 && (
+          <div className="mb-12">
+            <p className="text-gray-500 text-sm mb-4">$ git log --oneline</p>
+            <div className="space-y-3">
+              {projs.map((p,i) => (
+                <a key={i} href={p.url||"#"} target={p.url?"_blank":"_self"} rel="noopener noreferrer"
+                  className="block rounded-xl p-4 border transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                  style={{ background:"#161b22", borderColor:"#21262d" }}
+                  onMouseEnter={e=>e.currentTarget.style.borderColor=acc}
+                  onMouseLeave={e=>e.currentTarget.style.borderColor="#21262d"}>
+                  <div className="flex items-start gap-3">
+                    <span style={{ color: acc }} className="text-lg mt-0.5">◆</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-white">{p.title}</p>
+                      <p className="text-sm text-gray-400 mt-0.5 line-clamp-2">{p.desc}</p>
+                      {p.tags?.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {p.tags.map((t,j) => (
+                            <span key={j} className="text-[10px] px-1.5 py-0.5 rounded" style={{ background:`${acc}20`, color:acc }}>{t}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {p.image && <img src={p.image} alt="" className="w-16 h-12 rounded-lg object-cover shrink-0 border border-gray-700" />}
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {exp.length > 0 && (
+          <div className="mb-12">
+            <p className="text-gray-500 text-sm mb-4">$ cat experience.log</p>
             <div className="space-y-4">
-              <h1 className={heroTitleClass(template)}>{data.name || "Your Name"}</h1>
-              <div className="space-y-2">
-                <p className="text-xl font-semibold" style={{ color: accent }}>{data.title || "Professional title"}</p>
-                {data.tagline && <p className="max-w-2xl text-base opacity-80 md:text-lg">{data.tagline}</p>}
-              </div>
-              <p className="max-w-3xl text-sm leading-7 opacity-80 md:text-base">{data.bio || "Write a short, high-impact introduction about your work, specialty, and value."}</p>
+              {exp.map((e,i) => (
+                <div key={i} className="p-4 rounded-xl" style={{ background:"#161b22", border:"1px solid #21262d" }}>
+                  <p className="font-bold" style={{ color: acc }}>{e.role}</p>
+                  <p className="text-gray-400 text-sm">{e.company} · {e.from}–{e.to||"Now"}</p>
+                  <p className="text-gray-300 text-sm mt-1">{e.desc}</p>
+                </div>
+              ))}
             </div>
-            <ContactList data={data} accent={accent} />
-            <SocialLinks socials={data.socials} accent={accent} />
           </div>
+        )}
 
-          <div className="relative z-10 flex items-center justify-center md:justify-end">
-            <div className={avatarShellClass(template)} style={{ borderColor: `${accent}2a`, backgroundColor: `${accent}0f` }}>
-              <Avatar data={data} accent={accent} className={avatarSizeClass(template)} />
+        {certs.length > 0 && (
+          <div className="mb-12">
+            <p className="text-gray-500 text-sm mb-4">$ ls certificates/</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {certs.map((c,i) => <CertCard key={i} cert={c} accent={acc} dark={true} />)}
+            </div>
+          </div>
+        )}
+
+        <p className="text-gray-600 text-sm">$ echo "Made with CareerPatch" <span style={{ color: acc }}>✓</span></p>
+      </div>
+    </div>
+  );
+}
+
+
+  //  4. GLASS — Glassmorphism, frosted panels
+
+export function GlassTemplate({ data }) {
+  const { d, dark, acc, font, anim, skills, projs, certs, exp, socials } = wrap(data);
+  const bg = dark ? "#0a0f1e" : "#dbeafe";
+
+  return (
+    <div style={{ background: `linear-gradient(135deg, ${bg}, ${acc}22)`, fontFamily: font, minHeight: "100vh" }}>
+      {/* Decorative blobs */}
+      {[0,1,2].map(i => (
+        <div key={i} className="fixed rounded-full pointer-events-none blur-3xl opacity-20 animate-pulse"
+             style={{ width:300+i*100, height:300+i*100, background: acc, top:`${10+i*30}%`, left:`${i%2===0?-5:60}%`, animationDuration:`${5+i*2}s` }} />
+      ))}
+
+      <div className="relative z-10 max-w-4xl mx-auto px-6 py-16 space-y-10">
+        {/* Hero card */}
+        <div className="rounded-3xl p-8 flex flex-col sm:flex-row items-center gap-8 backdrop-blur-xl border"
+             style={{ background: dark?"rgba(255,255,255,0.05)":"rgba(255,255,255,0.6)", borderColor: dark?"rgba(255,255,255,0.1)":"rgba(255,255,255,0.8)" }}>
+          <Avatar data={d} size={110} />
+          <div>
+            <h1 className="text-4xl font-bold" style={{ color: dark?"#f1f5f9":"#0f172a" }}>{d.name}</h1>
+            <p className="text-lg mt-1 font-semibold" style={{ color: acc }}>{d.title}</p>
+            <p className="mt-3 text-sm leading-relaxed opacity-75" style={{ color: dark?"#e2e8f0":"#334155" }}>{d.bio}</p>
+            <div className="mt-4 flex gap-2 flex-wrap">
+              {Object.entries(socials).filter(([,v])=>v).map(([k,v]) => <SocialLink key={k} type={k} url={v} accent={acc} />)}
             </div>
           </div>
         </div>
 
-        <div className="mt-8 grid gap-8 xl:grid-cols-[0.9fr_1.1fr]">
-          <section className="space-y-8">
-            <div className="rounded-[32px] border p-6 md:p-8" style={{ borderColor: `${accent}20`, backgroundColor: `${accent}08` }}>
-              <div className="mb-5 flex items-end justify-between gap-4">
-                <h2 className={sectionTitleClass[template]} style={{ color: accent }}>Skills</h2>
-                <span className="text-xs font-bold uppercase tracking-[0.2em] opacity-60">Custom % tracks</span>
-              </div>
-              <div className="grid gap-4">
-                {(data.skills || []).length ? (
-                  data.skills.map((skill) => (
-                    <SkillTrack
-                      key={skill.id || skill.name}
-                      skill={skill}
-                      accent={accent}
-                      variant={templateIndex < 0 ? 0 : templateIndex}
-                      animationStyle={data.animationStyle}
-                    />
-                  ))
-                ) : (
-                  <p className="text-sm opacity-70">No skills added yet.</p>
-                )}
+        {/* Skills */}
+        {skills.length > 0 && (
+          <div className="rounded-3xl p-8 backdrop-blur-xl border"
+               style={{ background: dark?"rgba(255,255,255,0.05)":"rgba(255,255,255,0.6)", borderColor: dark?"rgba(255,255,255,0.1)":"rgba(255,255,255,0.8)" }}>
+            <SectionTitle accent={acc} dark={dark}>Skills</SectionTitle>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {skills.map((s,i) => <SkillBar key={i} skill={s} animType={anim.skills} dark={dark} />)}
+            </div>
+          </div>
+        )}
+
+        {/* Projects */}
+        {projs.length > 0 && (
+          <div>
+            <SectionTitle accent={acc} dark={dark}>Projects</SectionTitle>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {projs.map((p,i) => <ProjectCard key={i} project={p} accent={acc} dark={dark} animType={anim.cards} />)}
+            </div>
+          </div>
+        )}
+
+        {/* Experience */}
+        {exp.length > 0 && (
+          <div className="rounded-3xl p-8 backdrop-blur-xl border"
+               style={{ background: dark?"rgba(255,255,255,0.05)":"rgba(255,255,255,0.6)", borderColor: dark?"rgba(255,255,255,0.1)":"rgba(255,255,255,0.8)" }}>
+            <SectionTitle accent={acc} dark={dark}>Experience</SectionTitle>
+            <div className="space-y-5">
+              {exp.map((e,i) => (
+                <div key={i} className="border-l-2 pl-4" style={{ borderColor: acc }}>
+                  <p className="font-bold" style={{ color: dark?"#f1f5f9":"#0f172a" }}>{e.role}</p>
+                  <p className="text-sm" style={{ color: acc }}>{e.company}</p>
+                  <p className="text-xs opacity-60" style={{ color: dark?"#e2e8f0":"#334155" }}>{e.from} – {e.to||"Present"}</p>
+                  <p className="text-sm mt-1 opacity-75" style={{ color: dark?"#e2e8f0":"#334155" }}>{e.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {certs.length > 0 && (
+          <div>
+            <SectionTitle accent={acc} dark={dark}>Certificates</SectionTitle>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {certs.map((c,i) => <CertCard key={i} cert={c} accent={acc} dark={dark} />)}
+            </div>
+          </div>
+        )}
+
+        <p className="text-center text-xs opacity-30" style={{ color: dark?"#e2e8f0":"#334155" }}>Made with CareerPatch</p>
+      </div>
+    </div>
+  );
+}
+
+  //  5. SIDEBAR — Two-column with fixed sidebar
+
+export function SidebarTemplate({ data }) {
+  const { d, dark, acc, bg, font, anim, skills, projs, certs, exp, edu, socials } = wrap(data);
+  const sidebarBg = dark ? "#1e293b" : acc;
+  const mainBg    = dark ? "#0f172a" : "#f8faff";
+
+  return (
+    <div style={{ background: mainBg, fontFamily: font, minHeight: "100vh" }}>
+      <div className="flex flex-col lg:flex-row">
+
+        {/* Sidebar */}
+        <div className="lg:w-72 lg:min-h-screen p-8 text-white flex flex-col gap-6" style={{ background: sidebarBg }}>
+          <div className="flex flex-col items-center text-center">
+            <Avatar data={d} size={100} />
+            <h1 className="text-2xl font-bold mt-4">{d.name}</h1>
+            <p className="text-sm mt-1 opacity-80">{d.title}</p>
+            {d.location && <p className="text-xs mt-2 opacity-60">📍 {d.location}</p>}
+            {d.email    && <p className="text-xs mt-1 opacity-60">✉ {d.email}</p>}
+          </div>
+
+          {/* Socials */}
+          {Object.entries(socials).some(([,v])=>v) && (
+            <div className="flex flex-wrap justify-center gap-2">
+              {Object.entries(socials).filter(([,v])=>v).map(([k,v]) => (
+                <a key={k} href={v} target="_blank" rel="noopener noreferrer"
+                  className="w-8 h-8 rounded-full flex items-center justify-center bg-white/20 hover:bg-white hover:text-purple-600 transition-all">
+                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current"><path d={({"github":"M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57v-2.235c-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22v3.3c0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z","linkedin":"M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z","telegram":"M11.944 0A12 12 0 000 12a12 12 0 0012 12 12 12 0 0012-12A12 12 0 0012 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 01.171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z","facebook":"M24 12.073C24 5.373 18.627 0 12 0S0 5.373 0 12.073c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"})[k]||""} /></svg>
+                </a>
+              ))}
+            </div>
+          )}
+
+          {/* Skills in sidebar */}
+          {skills.length > 0 && (
+            <div>
+              <p className="text-sm font-bold mb-3 opacity-80 uppercase tracking-wide">Skills</p>
+              {skills.map((s,i) => <SkillBar key={i} skill={s} animType={anim.skills} dark={true} />)}
+            </div>
+          )}
+
+          {/* Education */}
+          {edu.length > 0 && (
+            <div>
+              <p className="text-sm font-bold mb-3 opacity-80 uppercase tracking-wide">Education</p>
+              {edu.map((e,i) => (
+                <div key={i} className="mb-3">
+                  <p className="text-sm font-semibold">{e.degree}</p>
+                  <p className="text-xs opacity-70">{e.school}</p>
+                  <p className="text-xs opacity-50">{e.from}–{e.to||"Present"}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Main */}
+        <div className="flex-1 p-8 space-y-12" style={{ color: dark?"#e2e8f0":"#1e293b" }}>
+          <div>
+            <SectionTitle accent={acc} dark={dark}>About Me</SectionTitle>
+            <p className="leading-relaxed opacity-80">{d.bio}</p>
+          </div>
+
+          {exp.length > 0 && (
+            <div>
+              <SectionTitle accent={acc} dark={dark}>Experience</SectionTitle>
+              <div className="space-y-6">
+                {exp.map((e,i) => (
+                  <div key={i} className="flex gap-4">
+                    <div className="w-3 h-3 rounded-full mt-1.5 shrink-0" style={{ background: acc }} />
+                    <div>
+                      <p className="font-bold">{e.role}</p>
+                      <p className="text-sm" style={{ color: acc }}>{e.company} · {e.from}–{e.to||"Now"}</p>
+                      <p className="text-sm mt-1 opacity-75">{e.desc}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
+          )}
 
-            <div className="rounded-[32px] border p-6 md:p-8" style={{ borderColor: `${accent}20` }}>
-              <div className="mb-5 flex items-end justify-between gap-4">
-                <h2 className={sectionTitleClass[template]} style={{ color: accent }}>Certificates</h2>
-                <span className="text-xs font-bold uppercase tracking-[0.2em] opacity-60">Image gallery</span>
+          {projs.length > 0 && (
+            <div>
+              <SectionTitle accent={acc} dark={dark}>Projects</SectionTitle>
+              <div className="grid gap-5 sm:grid-cols-2">
+                {projs.map((p,i) => <ProjectCard key={i} project={p} accent={acc} dark={dark} animType={anim.cards} />)}
               </div>
-              {(data.certifications || []).length ? (
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {data.certifications.map((item) => (
-                    <CertificationCard key={item.id || item.title} item={item} accent={accent} variant={templateIndex < 0 ? 0 : templateIndex} />
+            </div>
+          )}
+
+          {certs.length > 0 && (
+            <div>
+              <SectionTitle accent={acc} dark={dark}>Certificates</SectionTitle>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {certs.map((c,i) => <CertCard key={i} cert={c} accent={acc} dark={dark} />)}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+  //  6. NEON — Cyberpunk dark neon
+
+export function NeonTemplate({ data }) {
+  const { d, acc, font, anim, skills, projs, certs, exp, socials } = wrap(data);
+  const neon = acc;
+
+  return (
+    <div style={{ background: "#050811", fontFamily: font, minHeight: "100vh", color: "#e2e8f0" }}>
+      {/* Grid bg */}
+      <div className="fixed inset-0 pointer-events-none opacity-5"
+           style={{ backgroundImage: `linear-gradient(${neon}33 1px, transparent 1px), linear-gradient(90deg, ${neon}33 1px, transparent 1px)`, backgroundSize: "40px 40px" }} />
+
+      <div className="relative z-10 max-w-4xl mx-auto px-6 py-16">
+        {/* Hero */}
+        <div className="text-center mb-14">
+          <div className="inline-block mb-6 p-1 rounded-full" style={{ background: `linear-gradient(135deg, ${neon}, ${neon}44)` }}>
+            <Avatar data={{ ...d, darkMode: true }} size={100} />
+          </div>
+          <h1 className="text-5xl font-black" style={{ color: neon, textShadow: `0 0 20px ${neon}66` }}>{d.name}</h1>
+          <p className="mt-3 text-lg opacity-70">{d.title}</p>
+          <p className="mt-4 max-w-lg mx-auto text-sm opacity-60 leading-relaxed">{d.bio}</p>
+          <div className="mt-5 flex justify-center gap-3">
+            {Object.entries(socials).filter(([,v])=>v).map(([k,v]) => (
+              <a key={k} href={v} target="_blank" rel="noopener noreferrer"
+                className="px-3 py-1.5 rounded-lg text-xs font-bold border transition-all hover:scale-105"
+                style={{ borderColor: neon, color: neon, boxShadow: `0 0 8px ${neon}44` }}>
+                {k}
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {skills.length > 0 && (
+          <div className="mb-14">
+            <h2 className="text-xl font-bold mb-6" style={{ color: neon }}>// SKILLS</h2>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {skills.map((s,i) => <SkillBar key={i} skill={s} animType={anim.skills} dark={true} />)}
+            </div>
+          </div>
+        )}
+
+        {projs.length > 0 && (
+          <div className="mb-14">
+            <h2 className="text-xl font-bold mb-6" style={{ color: neon }}>// PROJECTS</h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {projs.map((p,i) => (
+                <a key={i} href={p.url||"#"} target={p.url?"_blank":"_self"} rel="noopener noreferrer"
+                  className="group block rounded-xl p-5 border transition-all hover:-translate-y-1"
+                  style={{ background:"#0d1117", borderColor:`${neon}44`, boxShadow:`0 0 0 1px ${neon}11` }}
+                  onMouseEnter={e=>e.currentTarget.style.boxShadow=`0 0 20px ${neon}44`}
+                  onMouseLeave={e=>e.currentTarget.style.boxShadow=`0 0 0 1px ${neon}11`}>
+                  {p.image && <img src={p.image} alt="" className="w-full h-36 object-cover rounded-lg mb-3" />}
+                  <p className="font-bold" style={{ color: neon }}>{p.title}</p>
+                  <p className="text-sm text-gray-400 mt-1 line-clamp-2">{p.desc}</p>
+                  {p.tags?.length>0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {p.tags.map((t,j) => <span key={j} className="text-[10px] px-2 py-0.5 rounded-full" style={{ background:`${neon}15`, color: neon }}>{t}</span>)}
+                    </div>
+                  )}
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {exp.length > 0 && (
+          <div className="mb-14">
+            <h2 className="text-xl font-bold mb-6" style={{ color: neon }}>// EXPERIENCE</h2>
+            <div className="space-y-4">
+              {exp.map((e,i) => (
+                <div key={i} className="p-4 rounded-xl border" style={{ background:"#0d1117", borderColor:`${neon}33` }}>
+                  <p className="font-bold" style={{ color: neon }}>{e.role} @ {e.company}</p>
+                  <p className="text-xs text-gray-500">{e.from}–{e.to||"Present"}</p>
+                  <p className="text-sm text-gray-400 mt-1">{e.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {certs.length > 0 && (
+          <div className="mb-14">
+            <h2 className="text-xl font-bold mb-6" style={{ color: neon }}>// CERTIFICATES</h2>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {certs.map((c,i) => <CertCard key={i} cert={c} accent={neon} dark={true} />)}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+  //  7. MAGAZINE — Editorial newspaper style
+
+export function MagazineTemplate({ data }) {
+  const { d, dark, acc, bg, font, anim, skills, projs, certs, exp, socials } = wrap(data);
+  return (
+    <div style={{ background: dark?"#0f172a":"#fafaf9", fontFamily: FONTS.classic, color: dark?"#e2e8f0":"#1c1917", minHeight:"100vh" }}>
+      {/* Masthead */}
+      <div className="border-b-4 px-8 py-6 flex items-end justify-between" style={{ borderColor: acc }}>
+        <div>
+          <p className="text-xs uppercase tracking-widest opacity-50 mb-1">Portfolio</p>
+          <h1 className="text-5xl font-black leading-none">{d.name || "Your Name"}</h1>
+          <p className="text-xl mt-1 font-semibold" style={{ color: acc }}>{d.title}</p>
+        </div>
+        <Avatar data={d} size={90} />
+      </div>
+
+      <div className="max-w-5xl mx-auto px-8 py-10">
+        {/* Intro */}
+        <div className="grid md:grid-cols-3 gap-8 mb-12 pb-12" style={{ borderBottom:`2px solid ${dark?"#334155":"#e7e5e4"}` }}>
+          <div className="md:col-span-2">
+            <p className="text-lg leading-relaxed opacity-80 italic">{d.bio}</p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {d.location && <span className="text-sm opacity-60">📍 {d.location}</span>}
+              {d.email    && <span className="text-sm opacity-60">✉ {d.email}</span>}
+              {d.website  && <a href={d.website} target="_blank" rel="noopener noreferrer" className="text-sm" style={{ color: acc }}>🌐 Website</a>}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-widest opacity-50 mb-3">Connect</p>
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(socials).filter(([,v])=>v).map(([k,v]) => <SocialLink key={k} type={k} url={v} accent={acc} />)}
+            </div>
+          </div>
+        </div>
+
+        {/* Two col layout */}
+        <div className="grid md:grid-cols-2 gap-12">
+          <div className="space-y-12">
+            {skills.length > 0 && (
+              <div>
+                <SectionTitle accent={acc} dark={dark}>Skills</SectionTitle>
+                {skills.map((s,i) => <SkillBar key={i} skill={s} animType={anim.skills} dark={dark} />)}
+              </div>
+            )}
+            {exp.length > 0 && (
+              <div>
+                <SectionTitle accent={acc} dark={dark}>Experience</SectionTitle>
+                <div className="space-y-5">
+                  {exp.map((e,i) => (
+                    <div key={i} className="border-l-2 pl-4" style={{ borderColor: acc }}>
+                      <p className="font-bold">{e.role}</p>
+                      <p className="text-sm italic" style={{ color: acc }}>{e.company}</p>
+                      <p className="text-xs opacity-60">{e.from}–{e.to||"Present"}</p>
+                      <p className="text-sm mt-1 opacity-75">{e.desc}</p>
+                    </div>
                   ))}
                 </div>
-              ) : (
-                <p className="text-sm opacity-70">No certificates added yet.</p>
-              )}
-            </div>
-          </section>
-
-          <section className="space-y-6">
-            <div className="flex items-end justify-between gap-4">
-              <h2 className={sectionTitleClass[template]} style={{ color: accent }}>Projects</h2>
-              <span className="text-xs font-bold uppercase tracking-[0.2em] opacity-60">Click card to open live URL</span>
-            </div>
-            <div className={projectGridClass[template]}>
-              {(data.projects || []).length ? (
-                data.projects.map((project) => (
-                  <ProjectCard
-                    key={project.id || project.title}
-                    project={project}
-                    accent={accent}
-                    variant={templateIndex < 0 ? 0 : templateIndex}
-                    animationStyle={data.animationStyle}
-                  />
-                ))
-              ) : (
-                <div className="rounded-[30px] border p-8 text-sm opacity-70" style={{ borderColor: `${accent}20` }}>
-                  No projects added yet.
+              </div>
+            )}
+          </div>
+          <div className="space-y-12">
+            {projs.length > 0 && (
+              <div>
+                <SectionTitle accent={acc} dark={dark}>Projects</SectionTitle>
+                <div className="space-y-5">
+                  {projs.map((p,i) => <ProjectCard key={i} project={p} accent={acc} dark={dark} animType={anim.cards} />)}
                 </div>
-              )}
+              </div>
+            )}
+            {certs.length > 0 && (
+              <div>
+                <SectionTitle accent={acc} dark={dark}>Certificates</SectionTitle>
+                <div className="space-y-3">
+                  {certs.map((c,i) => <CertCard key={i} cert={c} accent={acc} dark={dark} />)}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      <p className="text-center pb-8 text-xs opacity-30">Made with CareerPatch</p>
+    </div>
+  );
+}
+
+  //  8. CARD — Card-based bento grid
+
+export function CardTemplate({ data }) {
+  const { d, dark, acc, bg, font, anim, skills, projs, certs, exp, socials } = wrap(data);
+  const cardBg    = dark ? "#1e293b" : "#fff";
+  const cardBorder = dark ? "#334155" : "#e2e8f0";
+
+  return (
+    <div style={{ background: dark?"#0f172a":"#f1f5f9", fontFamily: font, minHeight:"100vh", color: dark?"#e2e8f0":"#1e293b" }}>
+      <div className="max-w-5xl mx-auto px-6 py-14">
+
+        {/* Bento hero */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="col-span-2 rounded-3xl p-8 flex flex-col justify-between"
+               style={{ background: acc, color:"#fff", minHeight:200 }}>
+            <Avatar data={d} size={70} />
+            <div>
+              <h1 className="text-3xl font-black mt-4">{d.name}</h1>
+              <p className="text-sm opacity-80">{d.title}</p>
             </div>
-          </section>
+          </div>
+          <div className="rounded-3xl p-6 flex flex-col justify-between border"
+               style={{ background: cardBg, borderColor: cardBorder }}>
+            <p className="text-xs uppercase tracking-wider opacity-50">About</p>
+            <p className="text-sm mt-2 leading-relaxed opacity-75 line-clamp-6">{d.bio}</p>
+          </div>
+          <div className="rounded-3xl p-6 border flex flex-col gap-3" style={{ background: cardBg, borderColor: cardBorder }}>
+            <p className="text-xs uppercase tracking-wider opacity-50">Connect</p>
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(socials).filter(([,v])=>v).map(([k,v]) => <SocialLink key={k} type={k} url={v} accent={acc} />)}
+            </div>
+            {d.location && <p className="text-xs opacity-60 mt-auto">📍 {d.location}</p>}
+          </div>
+        </div>
+
+        {/* Skills card */}
+        {skills.length > 0 && (
+          <div className="rounded-3xl p-8 border mb-6" style={{ background: cardBg, borderColor: cardBorder }}>
+            <SectionTitle accent={acc} dark={dark}>Skills</SectionTitle>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {skills.map((s,i) => <SkillBar key={i} skill={s} animType={anim.skills} dark={dark} />)}
+            </div>
+          </div>
+        )}
+
+        {/* Projects grid */}
+        {projs.length > 0 && (
+          <div className="mb-6">
+            <SectionTitle accent={acc} dark={dark}>Projects</SectionTitle>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {projs.map((p,i) => <ProjectCard key={i} project={p} accent={acc} dark={dark} animType={anim.cards} />)}
+            </div>
+          </div>
+        )}
+
+        {/* Experience + Certs */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {exp.length > 0 && (
+            <div className="rounded-3xl p-8 border" style={{ background: cardBg, borderColor: cardBorder }}>
+              <SectionTitle accent={acc} dark={dark}>Experience</SectionTitle>
+              <div className="space-y-4">
+                {exp.map((e,i) => (
+                  <div key={i} className="border-l-2 pl-3" style={{ borderColor: acc }}>
+                    <p className="font-bold text-sm">{e.role}</p>
+                    <p className="text-xs" style={{ color: acc }}>{e.company}</p>
+                    <p className="text-xs opacity-50">{e.from}–{e.to||"Now"}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {certs.length > 0 && (
+            <div className="rounded-3xl p-8 border" style={{ background: cardBg, borderColor: cardBorder }}>
+              <SectionTitle accent={acc} dark={dark}>Certificates</SectionTitle>
+              <div className="space-y-3">
+                {certs.map((c,i) => <CertCard key={i} cert={c} accent={acc} dark={dark} />)}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-function heroBackground(template, accent, themeMode) {
-  const isDark = themeMode === "dark";
-  const darkGlass = "linear-gradient(135deg, rgba(10,15,28,0.92), rgba(17,24,39,0.84))";
-  const lightGlass = "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(248,250,252,0.92))";
 
-  const map = {
-    minimal: isDark ? darkGlass : lightGlass,
-    aurora: `linear-gradient(135deg, ${accent}12, rgba(255,255,255,0.08), ${accent}08)`,
-    executive: isDark ? "linear-gradient(180deg, rgba(2,6,23,0.95), rgba(15,23,42,0.9))" : "linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,0.92))",
-    creative: `linear-gradient(145deg, ${accent}10, rgba(255,255,255,0.6))`,
-    developer: "linear-gradient(135deg, rgba(3,7,18,0.96), rgba(15,23,42,0.95))",
-    magazine: isDark ? darkGlass : "linear-gradient(180deg, rgba(255,255,255,1), rgba(255,255,255,0.96))",
-    neon: "linear-gradient(135deg, rgba(1,5,18,1), rgba(15,23,42,0.98))",
-    soft: `linear-gradient(135deg, ${accent}0f, rgba(255,255,255,0.95))`,
-    bold: `linear-gradient(135deg, ${accent}12, rgba(15,23,42,0.06))`,
-    mono: isDark ? "linear-gradient(180deg, rgba(2,6,23,1), rgba(10,10,10,1))" : "linear-gradient(180deg, rgba(255,255,255,1), rgba(250,250,250,1))",
-  };
+  //  9. GRADIENT — Full gradient immersive
 
-  return map[template] || lightGlass;
+export function GradientTemplate({ data }) {
+  const { d, acc, font, anim, skills, projs, certs, exp, socials } = wrap(data);
+  return (
+    <div style={{ fontFamily: font, minHeight:"100vh", background:`linear-gradient(160deg, #0d1b2e 0%, ${acc}44 50%, #0d1520 100%)`, color:"#e2e8f0" }}>
+      <div className="max-w-4xl mx-auto px-6 py-16 space-y-14">
+        <div className="text-center">
+          <div className="inline-block p-1 rounded-full mb-5" style={{ background:`linear-gradient(135deg,${acc},${acc}55)` }}>
+            <Avatar data={{ ...d, darkMode: true }} size={100} />
+          </div>
+          <h1 className="text-5xl font-black">{d.name}</h1>
+          <p className="mt-2 text-xl opacity-70">{d.title}</p>
+          <p className="mt-4 max-w-lg mx-auto text-sm opacity-60 leading-relaxed">{d.bio}</p>
+          <div className="mt-5 flex justify-center gap-3">
+            {Object.entries(socials).filter(([,v])=>v).map(([k,v]) => <SocialLink key={k} type={k} url={v} accent={acc} />)}
+          </div>
+        </div>
+
+        {skills.length > 0 && (
+          <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10">
+            <SectionTitle accent={acc} dark={true}>Skills</SectionTitle>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {skills.map((s,i) => <SkillBar key={i} skill={s} animType={anim.skills} dark={true} />)}
+            </div>
+          </div>
+        )}
+
+        {projs.length > 0 && (
+          <div>
+            <SectionTitle accent={acc} dark={true}>Projects</SectionTitle>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {projs.map((p,i) => <ProjectCard key={i} project={p} accent={acc} dark={true} animType={anim.cards} />)}
+            </div>
+          </div>
+        )}
+
+        {exp.length > 0 && (
+          <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10">
+            <SectionTitle accent={acc} dark={true}>Experience</SectionTitle>
+            <div className="space-y-5">
+              {exp.map((e,i) => (
+                <div key={i} className="border-l-2 pl-4" style={{ borderColor: acc }}>
+                  <p className="font-bold">{e.role} @ {e.company}</p>
+                  <p className="text-xs opacity-50">{e.from}–{e.to||"Now"}</p>
+                  <p className="text-sm opacity-70 mt-1">{e.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {certs.length > 0 && (
+          <div>
+            <SectionTitle accent={acc} dark={true}>Certificates</SectionTitle>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {certs.map((c,i) => <CertCard key={i} cert={c} accent={acc} dark={true} />)}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
-function glowBackground(template, accent) {
-  if (template === "aurora") {
-    return `radial-gradient(circle at 10% 20%, ${accent}55 0%, transparent 35%), radial-gradient(circle at 85% 10%, rgba(236,72,153,0.3) 0%, transparent 30%), radial-gradient(circle at 50% 80%, rgba(16,185,129,0.22) 0%, transparent 35%)`;
-  }
-  return `radial-gradient(circle at 15% 15%, ${accent}65 0%, transparent 28%), radial-gradient(circle at 80% 25%, rgba(217,70,239,0.3) 0%, transparent 26%), radial-gradient(circle at 45% 80%, rgba(34,211,238,0.25) 0%, transparent 30%)`;
+
+  //  10. RESUME — Traditional clean resume
+
+export function ResumeTemplate({ data }) {
+  const { d, dark, acc, font, anim, skills, projs, certs, exp, edu, socials } = wrap(data);
+  return (
+    <div style={{ background: dark?"#1e293b":"#fff", fontFamily: font, color: dark?"#e2e8f0":"#1e293b", minHeight:"100vh" }}>
+      <div className="max-w-3xl mx-auto px-8 py-12">
+        {/* Header */}
+        <div className="flex items-start gap-6 pb-8 mb-8" style={{ borderBottom: `3px solid ${acc}` }}>
+          <Avatar data={d} size={80} />
+          <div className="flex-1">
+            <h1 className="text-4xl font-black">{d.name}</h1>
+            <p className="text-lg mt-1 font-medium" style={{ color: acc }}>{d.title}</p>
+            <div className="mt-2 flex flex-wrap gap-4 text-xs opacity-60">
+              {d.email    && <span>✉ {d.email}</span>}
+              {d.location && <span>📍 {d.location}</span>}
+              {d.website  && <a href={d.website} target="_blank" rel="noopener noreferrer" style={{ color: acc }}>🌐 {d.website}</a>}
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            {Object.entries(socials).filter(([,v])=>v).map(([k,v]) => <SocialLink key={k} type={k} url={v} accent={acc} />)}
+          </div>
+        </div>
+
+        {d.bio && (
+          <div className="mb-8">
+            <h2 className="text-sm font-black uppercase tracking-widest mb-2" style={{ color: acc }}>Summary</h2>
+            <p className="text-sm leading-relaxed opacity-80">{d.bio}</p>
+          </div>
+        )}
+
+        {exp.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-sm font-black uppercase tracking-widest mb-4" style={{ color: acc }}>Experience</h2>
+            <div className="space-y-5">
+              {exp.map((e,i) => (
+                <div key={i}>
+                  <div className="flex justify-between items-baseline">
+                    <p className="font-bold">{e.role}</p>
+                    <p className="text-xs opacity-50">{e.from}–{e.to||"Present"}</p>
+                  </div>
+                  <p className="text-sm" style={{ color: acc }}>{e.company}</p>
+                  <p className="text-sm mt-1 opacity-75">{e.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {edu.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-sm font-black uppercase tracking-widest mb-4" style={{ color: acc }}>Education</h2>
+            <div className="space-y-3">
+              {edu.map((e,i) => (
+                <div key={i} className="flex justify-between">
+                  <div>
+                    <p className="font-bold">{e.degree}</p>
+                    <p className="text-sm opacity-60">{e.school}</p>
+                  </div>
+                  <p className="text-xs opacity-50">{e.from}–{e.to||"Now"}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {skills.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-sm font-black uppercase tracking-widest mb-4" style={{ color: acc }}>Skills</h2>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {skills.map((s,i) => <SkillBar key={i} skill={s} animType={anim.skills} dark={dark} />)}
+            </div>
+          </div>
+        )}
+
+        {projs.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-sm font-black uppercase tracking-widest mb-4" style={{ color: acc }}>Projects</h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {projs.map((p,i) => <ProjectCard key={i} project={p} accent={acc} dark={dark} animType={anim.cards} />)}
+            </div>
+          </div>
+        )}
+
+        {certs.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-sm font-black uppercase tracking-widest mb-4" style={{ color: acc }}>Certificates</h2>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {certs.map((c,i) => <CertCard key={i} cert={c} accent={acc} dark={dark} />)}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
-function heroTitleClass(template) {
-  const classes = {
-    minimal: "text-4xl font-black tracking-tight md:text-6xl",
-    aurora: "text-4xl font-black tracking-tight md:text-7xl",
-    executive: "text-4xl font-semibold uppercase tracking-tight md:text-6xl",
-    creative: "text-4xl font-black md:text-6xl",
-    developer: "text-4xl font-semibold md:text-6xl",
-    magazine: "text-4xl font-serif font-bold md:text-6xl",
-    neon: "text-4xl font-black uppercase md:text-6xl",
-    soft: "text-4xl font-black md:text-6xl",
-    bold: "text-4xl font-black md:text-7xl",
-    mono: "text-4xl font-black uppercase md:text-6xl",
-  };
 
-  return classes[template] || classes.minimal;
+  //  11. BOLD — Large typography statement
+
+export function BoldTemplate({ data }) {
+  const { d, dark, acc, font, anim, skills, projs, certs, exp, socials } = wrap(data);
+  return (
+    <div style={{ background: dark?"#09090b":"#fafafa", fontFamily: font, color: dark?"#fafafa":"#09090b", minHeight:"100vh" }}>
+      {/* Giant hero */}
+      <div className="px-8 pt-20 pb-16 border-b-4" style={{ borderColor: acc }}>
+        <p className="text-xs uppercase tracking-[0.3em] opacity-40 mb-4">Portfolio</p>
+        <h1 className="text-6xl sm:text-8xl font-black leading-none tracking-tight">
+          {d.name?.split(" ").map((w,i) => (
+            <span key={i} style={{ color: i % 2 === 0 ? (dark?"#fafafa":"#09090b") : acc }}>{w} </span>
+          ))}
+        </h1>
+        <p className="text-2xl mt-4 opacity-60 font-medium">{d.title}</p>
+        <p className="mt-5 max-w-xl text-sm leading-relaxed opacity-60">{d.bio}</p>
+        <div className="mt-6 flex gap-3 flex-wrap">
+          {Object.entries(socials).filter(([,v])=>v).map(([k,v]) => <SocialLink key={k} type={k} url={v} accent={acc} />)}
+        </div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-8 py-14 space-y-16">
+        {skills.length > 0 && (
+          <div>
+            <SectionTitle accent={acc} dark={dark}>Skills</SectionTitle>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {skills.map((s,i) => <SkillBar key={i} skill={s} animType={anim.skills} dark={dark} />)}
+            </div>
+          </div>
+        )}
+        {projs.length > 0 && (
+          <div>
+            <SectionTitle accent={acc} dark={dark}>Projects</SectionTitle>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {projs.map((p,i) => <ProjectCard key={i} project={p} accent={acc} dark={dark} animType={anim.cards} />)}
+            </div>
+          </div>
+        )}
+        {exp.length > 0 && (
+          <div>
+            <SectionTitle accent={acc} dark={dark}>Experience</SectionTitle>
+            <div className="grid sm:grid-cols-2 gap-5">
+              {exp.map((e,i) => (
+                <div key={i} className="p-6 rounded-2xl border" style={{ borderColor: dark?"#27272a":"#e4e4e7" }}>
+                  <p className="text-2xl font-black" style={{ color: acc }}>{e.role}</p>
+                  <p className="font-bold mt-1">{e.company}</p>
+                  <p className="text-xs opacity-50 mt-1">{e.from}–{e.to||"Now"}</p>
+                  <p className="text-sm mt-3 opacity-70">{e.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {certs.length > 0 && (
+          <div>
+            <SectionTitle accent={acc} dark={dark}>Certificates</SectionTitle>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {certs.map((c,i) => <CertCard key={i} cert={c} accent={acc} dark={dark} />)}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
-function avatarShellClass(template) {
-  const classes = {
-    minimal: "rounded-[36px] border p-5",
-    aurora: "rounded-[40px] border p-6 backdrop-blur",
-    executive: "rounded-none border p-6",
-    creative: "rounded-[42px] border p-5 shadow-2xl",
-    developer: "rounded-[26px] border p-4 bg-black/20",
-    magazine: "rounded-none border p-6",
-    neon: "rounded-[36px] border p-5 bg-black/20 shadow-[0_0_60px_rgba(59,130,246,0.2)]",
-    soft: "rounded-[48px] border p-5 bg-white/80 backdrop-blur",
-    bold: "rounded-[28px] border p-4",
-    mono: "rounded-none border-2 p-5",
-  };
-  return classes[template] || classes.minimal;
+
+  //  12. PASTEL — Soft pastel aesthetic
+
+export function PastelTemplate({ data }) {
+  const { d, dark, acc, font, anim, skills, projs, certs, exp, socials } = wrap(data);
+  return (
+    <div style={{ background: dark?"#1e1e2e":acc+"11", fontFamily: FONTS.rounded, color: dark?"#e2e8f0":"#1e293b", minHeight:"100vh" }}>
+      <div className="max-w-3xl mx-auto px-6 py-16">
+        <div className="text-center mb-14">
+          <div className="w-32 h-32 rounded-3xl mx-auto mb-6 overflow-hidden shadow-lg" style={{ border:`4px solid ${acc}` }}>
+            {d.avatar ? <img src={d.avatar} alt="" className="w-full h-full object-cover" /> : (
+              <div className="w-full h-full flex items-center justify-center text-4xl font-black" style={{ background:`${acc}22`, color: acc }}>{initial(d.name)}</div>
+            )}
+          </div>
+          <h1 className="text-4xl font-black">{d.name}</h1>
+          <div className="inline-block mt-2 px-4 py-1 rounded-full text-sm font-bold" style={{ background:`${acc}22`, color: acc }}>{d.title}</div>
+          <p className="mt-4 text-sm leading-relaxed opacity-70 max-w-md mx-auto">{d.bio}</p>
+          <div className="mt-5 flex justify-center gap-2">
+            {Object.entries(socials).filter(([,v])=>v).map(([k,v]) => <SocialLink key={k} type={k} url={v} accent={acc} />)}
+          </div>
+        </div>
+
+        {skills.length > 0 && (
+          <div className="rounded-3xl p-8 mb-8" style={{ background: dark?"#2a2a3e":`${acc}0d` }}>
+            <SectionTitle accent={acc} dark={dark} align="center">Skills</SectionTitle>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {skills.map((s,i) => <SkillBar key={i} skill={s} animType={anim.skills} dark={dark} />)}
+            </div>
+          </div>
+        )}
+
+        {projs.length > 0 && (
+          <div className="mb-8">
+            <SectionTitle accent={acc} dark={dark} align="center">Projects</SectionTitle>
+            <div className="grid gap-5 sm:grid-cols-2">
+              {projs.map((p,i) => <ProjectCard key={i} project={p} accent={acc} dark={dark} animType={anim.cards} />)}
+            </div>
+          </div>
+        )}
+
+        {exp.length > 0 && (
+          <div className="rounded-3xl p-8 mb-8" style={{ background: dark?"#2a2a3e":`${acc}0d` }}>
+            <SectionTitle accent={acc} dark={dark}>Experience</SectionTitle>
+            {exp.map((e,i) => (
+              <div key={i} className="mb-4 last:mb-0">
+                <p className="font-bold">{e.role} <span style={{ color: acc }}>@ {e.company}</span></p>
+                <p className="text-xs opacity-50">{e.from}–{e.to||"Present"}</p>
+                <p className="text-sm mt-1 opacity-75">{e.desc}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {certs.length > 0 && (
+          <div className="mb-8">
+            <SectionTitle accent={acc} dark={dark} align="center">Certificates</SectionTitle>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {certs.map((c,i) => <CertCard key={i} cert={c} accent={acc} dark={dark} />)}
+            </div>
+          </div>
+        )}
+        <p className="text-center text-xs opacity-30">Made with CareerPatch</p>
+      </div>
+    </div>
+  );
 }
 
-function avatarSizeClass(template) {
-  const classes = {
-    minimal: "h-40 w-40 md:h-52 md:w-52",
-    aurora: "h-44 w-44 md:h-56 md:w-56",
-    executive: "h-40 w-40 md:h-56 md:w-56",
-    creative: "h-44 w-44 md:h-56 md:w-56",
-    developer: "h-40 w-40 md:h-52 md:w-52",
-    magazine: "h-44 w-44 md:h-56 md:w-56",
-    neon: "h-44 w-44 md:h-56 md:w-56",
-    soft: "h-42 w-42 md:h-54 md:w-54",
-    bold: "h-40 w-40 md:h-52 md:w-52",
-    mono: "h-44 w-44 md:h-56 md:w-56",
-  };
-  return classes[template] || classes.minimal;
+
+  //  13. SPOTLIGHT — Dark with spotlight hero
+
+export function SpotlightTemplate({ data }) {
+  const { d, acc, font, anim, skills, projs, certs, exp, socials } = wrap(data);
+  return (
+    <div style={{ background:"#030712", fontFamily: font, color:"#f9fafb", minHeight:"100vh" }}>
+      {/* Spotlight effect */}
+      <div className="relative overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full blur-[120px] opacity-30 pointer-events-none"
+             style={{ background: acc }} />
+        <div className="relative z-10 text-center px-6 py-24">
+          <Avatar data={{ ...d, darkMode: true }} size={110} />
+          <h1 className="text-6xl font-black mt-6 tracking-tight">{d.name}</h1>
+          <p className="text-xl mt-2 font-medium" style={{ color: acc }}>{d.title}</p>
+          <p className="mt-5 max-w-lg mx-auto text-sm text-gray-400 leading-relaxed">{d.bio}</p>
+          <div className="mt-6 flex justify-center gap-2 flex-wrap">
+            {d.location && <span className="px-3 py-1 rounded-full text-xs bg-gray-800 text-gray-400">📍 {d.location}</span>}
+            {d.email    && <span className="px-3 py-1 rounded-full text-xs bg-gray-800 text-gray-400">✉ {d.email}</span>}
+          </div>
+          <div className="mt-4 flex justify-center gap-3">
+            {Object.entries(socials).filter(([,v])=>v).map(([k,v]) => <SocialLink key={k} type={k} url={v} accent={acc} />)}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-6 pb-16 space-y-14">
+        {skills.length > 0 && (
+          <div className="rounded-3xl p-8 bg-gray-900/60 border border-gray-800">
+            <SectionTitle accent={acc} dark={true}>Skills</SectionTitle>
+            <div className="grid sm:grid-cols-2 gap-3">
+              {skills.map((s,i) => <SkillBar key={i} skill={s} animType={anim.skills} dark={true} />)}
+            </div>
+          </div>
+        )}
+        {projs.length > 0 && (
+          <div>
+            <SectionTitle accent={acc} dark={true}>Projects</SectionTitle>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {projs.map((p,i) => <ProjectCard key={i} project={p} accent={acc} dark={true} animType={anim.cards} />)}
+            </div>
+          </div>
+        )}
+        {exp.length > 0 && (
+          <div className="rounded-3xl p-8 bg-gray-900/60 border border-gray-800">
+            <SectionTitle accent={acc} dark={true}>Experience</SectionTitle>
+            <div className="space-y-5">
+              {exp.map((e,i) => (
+                <div key={i} className="border-l-2 pl-4" style={{ borderColor: acc }}>
+                  <p className="font-bold text-white">{e.role} <span style={{ color: acc }}>@ {e.company}</span></p>
+                  <p className="text-xs text-gray-500">{e.from}–{e.to||"Now"}</p>
+                  <p className="text-sm text-gray-400 mt-1">{e.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {certs.length > 0 && (
+          <div>
+            <SectionTitle accent={acc} dark={true}>Certificates</SectionTitle>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {certs.map((c,i) => <CertCard key={i} cert={c} accent={acc} dark={true} />)}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
 
-export default function PortfolioRenderer({ data, template = "minimal" }) {
-  const portfolio = useMemo(() => normalizePortfolio(data), [data]);
-  const validTemplate = TEMPLATES.some((item) => item.id === template) ? template : "minimal";
-  return <TemplateFrame template={validTemplate} data={portfolio} />;
+export const TEMPLATE_MAP = {
+  minimal:   MinimalTemplate,
+  creative:  CreativeTemplate,
+  developer: DeveloperTemplate,
+  glass:     GlassTemplate,
+  sidebar:   SidebarTemplate,
+  neon:      NeonTemplate,
+  magazine:  MagazineTemplate,
+  card:      CardTemplate,
+  gradient:  GradientTemplate,
+  resume:    ResumeTemplate,
+  bold:      BoldTemplate,
+  pastel:    PastelTemplate,
+  spotlight: SpotlightTemplate,
+};
+
+export default function PortfolioRenderer({ data, template }) {
+  if (!data) return null;
+  const Component = TEMPLATE_MAP[template] || MinimalTemplate;
+  return <Component data={data} />;
 }
