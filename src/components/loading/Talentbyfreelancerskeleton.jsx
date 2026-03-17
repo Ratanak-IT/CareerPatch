@@ -1,4 +1,4 @@
-// src/components/freelancer/TalentByFreelancerSkeleton.jsx
+
 
 export default function TalentByFreelancerSkeleton() {
   return (

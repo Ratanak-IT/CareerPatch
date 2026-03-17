@@ -1,4 +1,10 @@
-// src/pages/AboutPage.jsx
+// src/components/about/AboutPage.jsx
+// npm install aos
+
+import { useEffect } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
+
 import AboutImg   from "../../assets/about.avif";
 import MentorImg1 from "../../assets/mentor1.png";
 import MentorImg2 from "../../assets/mentor2.jpg";
@@ -8,6 +14,7 @@ import Briefcase  from "../../assets/briefcase.png";
 import OurTeam    from "./OurTeam";
 import MentorCard, { MentorCardSkeleton } from "./Mentor";
 
+/* ─── Bullet ─────────────────────────────────────────────────────────────── */
 function Bullet({ children }) {
   return (
     <li className="flex gap-2 text-sm sm:text-base">
@@ -17,188 +24,292 @@ function Bullet({ children }) {
   );
 }
 
-export default function AboutPage({ isLoading = false }) {
+/* ─── Stat ───────────────────────────────────────────────────────────────── */
+function Stat({ value, label, color = "text-[#1A73E8]" }) {
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0f172a] transition-colors duration-300">
-      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10 lg:py-12">
+    <div className="py-3 text-center">
+      <div className={`text-xl font-bold ${color}`}>{value}</div>
+      <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">{label}</div>
+    </div>
+  );
+}
 
-        {/* ── Hero ── */}
-        <div className="mt-4 grid items-center gap-8 md:mt-6 md:grid-cols-2 md:gap-10 lg:gap-14">
-          <div className="max-w-2xl">
-            <h1 className="text-left text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl
-                           text-[#1E293B] dark:text-white">
-              About <span className="text-[#1A73E8]">CareerPatch</span>
-            </h1>
-            <p className="mt-4 text-left text-sm leading-7 sm:text-base sm:leading-8 lg:text-lg
-                          text-slate-500 dark:text-slate-400">
-              CareerPatch is a modern freelance marketplace designed to connect businesses with skilled
-              freelancers. Our platform helps companies find the right talent while giving freelancers
-              opportunities to grow and work on real projects.
-            </p>
-          </div>
+/* ─── GlassCard — forwards ALL props including data-aos ─────────────────── */
+function GlassCard({ children, className = "", ...rest }) {
+  return (
+    <div
+      {...rest}
+      className={`
+        rounded-2xl border shadow-sm transition-colors
+        bg-white/80 dark:bg-[#1e293b]/80
+        backdrop-blur-md
+        border-slate-200 dark:border-slate-700/60
+        ${className}
+      `}
+    >
+      {children}
+    </div>
+  );
+}
 
-          <div className="w-full">
-            <div className="overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
-              <img
-                src={AboutImg}
-                alt="Team discussion"
-                className="h-[220px] w-full object-cover sm:h-[260px] md:h-[300px] lg:h-[340px]"
-              />
-            </div>
-          </div>
-        </div>
+export default function AboutPage({ isLoading = false }) {
 
-        {/* ── Mission / Vision ── */}
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
-          {[
-            {
-              img: TargetImg, alt: "Mission", label: "Our Mission",
-              text: "To create a trusted digital platform where freelancers and businesses can connect, collaborate, and succeed together.",
-            },
-            {
-              img: Vision, alt: "Vision", label: "Our Vision",
-              text: "To become a leading freelance platform that supports remote work, innovation, and professional growth for people everywhere.",
-            },
-          ].map(({ img, alt, label, text }) => (
-            <div key={label}
-              className="rounded-2xl border bg-white border-slate-200
-                         dark:bg-[#1e293b] dark:border-slate-700
-                         px-5 py-6 shadow-sm transition-colors sm:px-8 sm:py-8 lg:px-10 lg:py-9">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center sm:h-11 sm:w-11">
-                  <img src={img} alt={alt} className="h-8 w-8 object-contain sm:h-9 sm:w-9" />
-                </div>
-                <h3 className="text-lg font-semibold text-[#1E88E5] sm:text-xl lg:text-2xl">{label}</h3>
-              </div>
-              <p className="mt-4 text-sm leading-7 sm:mt-5 sm:text-base sm:leading-8
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      AOS.init({
+        once:     true,
+        duration: 750,
+        easing:   "ease-out-quart",
+        offset:   80,
+        delay:    0,
+      });
+      AOS.refresh();
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Re-refresh AOS if isLoading changes (mentor/team cards load)
+  useEffect(() => {
+    if (!isLoading) {
+      setTimeout(() => AOS.refresh(), 200);
+    }
+  }, [isLoading]);
+
+  return (
+    <div className="relative bg-transparent transition-colors duration-300">
+
+      {/* Content */}
+      <div className="relative z-10">
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14 lg:py-16">
+
+          {/* ══ HERO ══════════════════════════════════════════════════ */}
+          <div className="grid items-center gap-8 md:grid-cols-2 md:gap-12 lg:gap-16">
+
+            {/* Left */}
+            <div className="max-w-2xl"
+              data-aos="fade-right"
+              data-aos-duration="800"
+            >
+              <span className="inline-flex items-center gap-2 rounded-full
+                               bg-blue-50 dark:bg-blue-900/30
+                               border border-blue-200 dark:border-blue-700
+                               px-4 py-1.5 text-xs font-semibold
+                               text-[#1A73E8] dark:text-blue-400 mb-5">
+                <span className="w-2 h-2 rounded-full bg-[#1A73E8] animate-pulse" />
+                Freelance Marketplace
+              </span>
+
+              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl
+                             text-[#1E293B] dark:text-white leading-tight">
+                About <span className="text-[#1A73E8]">CareerPatch</span>
+              </h1>
+
+              <p className="mt-5 text-sm leading-7 sm:text-base sm:leading-8 lg:text-lg
                             text-slate-500 dark:text-slate-400">
-                {text}
+                CareerPatch is a modern freelance marketplace designed to connect
+                businesses with skilled freelancers. Our platform helps companies
+                find the right talent while giving freelancers opportunities to
+                grow and work on real projects.
               </p>
+
+              {/* Stats */}
+              <div className="mt-8 flex flex-wrap gap-6">
+                {[
+                  { val: "200+", lbl: "Users",       delay: 200 },
+                  { val: "120+", lbl: "Freelancers", delay: 300 },
+                  { val: "60+",  lbl: "Projects",    delay: 400 },
+                ].map(({ val, lbl, delay }) => (
+                  <div key={lbl}
+                    data-aos="zoom-in"
+                    data-aos-delay={String(delay)}
+                    data-aos-duration="600"
+                    className="flex flex-col"
+                  >
+                    <span className="text-2xl font-extrabold text-[#1A73E8]">{val}</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">{lbl}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
+
+            {/* Right image */}
+            <div className="w-full"
+              data-aos="fade-left"
+              data-aos-duration="800"
+              data-aos-delay="150"
+            >
+              <GlassCard className="overflow-hidden p-0">
+                <img
+                  src={AboutImg}
+                  alt="Team discussion"
+                  className="h-[220px] w-full object-cover sm:h-[260px] md:h-[300px] lg:h-[360px]"
+                />
+              </GlassCard>
+            </div>
+          </div>
+
+          {/* ══ MISSION / VISION ══════════════════════════════════════ */}
+          <div className="mt-14 grid gap-6 md:grid-cols-2">
+            <GlassCard
+              className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-900/30 dark:to-blue-800/10 px-6 py-7 sm:px-8 sm:py-8"
+              data-aos="fade-right"
+              data-aos-duration="750"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center
+                                rounded-xl bg-white/80 dark:bg-slate-800/80 shadow-sm">
+                  <img src={TargetImg} alt="Mission" className="h-7 w-7 object-contain" />
+                </div>
+                <h3 className="text-lg font-bold text-[#1E88E5] sm:text-xl lg:text-2xl">Our Mission</h3>
+              </div>
+              <p className="text-sm leading-7 sm:text-base sm:leading-8 text-slate-600 dark:text-slate-400">
+                To create a trusted digital platform where freelancers and businesses can connect,
+                collaborate, and succeed together.
+              </p>
+            </GlassCard>
+
+            <GlassCard
+              className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 dark:from-purple-900/30 dark:to-purple-800/10 px-6 py-7 sm:px-8 sm:py-8"
+              data-aos="fade-left"
+              data-aos-duration="750"
+              data-aos-delay="100"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center
+                                rounded-xl bg-white/80 dark:bg-slate-800/80 shadow-sm">
+                  <img src={Vision} alt="Vision" className="h-7 w-7 object-contain" />
+                </div>
+                <h3 className="text-lg font-bold text-[#1E88E5] sm:text-xl lg:text-2xl">Our Vision</h3>
+              </div>
+              <p className="text-sm leading-7 sm:text-base sm:leading-8 text-slate-600 dark:text-slate-400">
+                To become a leading freelance platform that supports remote work, innovation,
+                and professional growth for people everywhere.
+              </p>
+            </GlassCard>
+          </div>
+
+          {/* ══ WHAT WE OFFER ═════════════════════════════════════════ */}
+          <div className="mt-14 grid gap-6 lg:grid-cols-2">
+
+            <GlassCard
+              className="p-5 sm:p-6"
+              data-aos="fade-up"
+              data-aos-duration="750"
+            >
+              <h3 className="text-base font-bold sm:text-lg text-slate-900 dark:text-slate-100 mb-4">
+                What We Offer
+              </h3>
+              <div className="rounded-xl bg-blue-50/80 dark:bg-[#1e3a5f]/80 backdrop-blur-sm p-4 sm:p-5
+                              border border-blue-100 dark:border-blue-900/40">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="grid h-10 w-10 place-items-center rounded-xl
+                                   bg-white/90 dark:bg-slate-700/90 shadow-sm">
+                    <img src={Briefcase} alt="Business" className="h-6 w-6 object-contain" />
+                  </span>
+                  <h3 className="text-base font-bold sm:text-lg text-slate-900 dark:text-slate-200">
+                    For Businesses
+                  </h3>
+                </div>
+                <ul className="space-y-3">
+                  <Bullet>Find and hire skilled freelancers</Bullet>
+                  <Bullet>Post and manage projects</Bullet>
+                  <Bullet>Communicate directly with talent</Bullet>
+                </ul>
+              </div>
+              <div className="mt-6 border-t border-slate-200 dark:border-slate-700 pt-5">
+                <div className="grid grid-cols-3 divide-x divide-slate-200 dark:divide-slate-700">
+                  <Stat value="200+" label="Users" />
+                  <Stat value="60+"  label="Projects" />
+                  <Stat value="120+" label="Freelancers" />
+                </div>
+              </div>
+            </GlassCard>
+
+            <GlassCard
+              className="p-5 sm:p-6"
+              data-aos="fade-up"
+              data-aos-duration="750"
+              data-aos-delay="150"
+            >
+              <h3 className="text-base font-bold sm:text-lg text-slate-900 dark:text-slate-100 mb-4">
+                For Freelancers
+              </h3>
+              <div className="rounded-xl bg-blue-50/80 dark:bg-[#1e3a5f]/80 backdrop-blur-sm p-4 sm:p-5
+                              border border-blue-100 dark:border-blue-900/40">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="grid h-10 w-10 place-items-center rounded-xl
+                                   bg-white/90 dark:bg-slate-700/90 shadow-sm">
+                    <img src={Briefcase} alt="Freelancer" className="h-6 w-6 object-contain" />
+                  </span>
+                  <h3 className="text-base font-bold sm:text-lg text-slate-900 dark:text-slate-200">
+                    For Freelancers
+                  </h3>
+                </div>
+                <ul className="space-y-3">
+                  <Bullet>Discover job opportunities</Bullet>
+                  <Bullet>Showcase skills and portfolios</Bullet>
+                  <Bullet>Build professional experience</Bullet>
+                </ul>
+              </div>
+              <div className="mt-6 border-t border-slate-200 dark:border-slate-700 pt-5">
+                <div className="grid grid-cols-3 divide-x divide-slate-200 dark:divide-slate-700">
+                  <Stat value="120+" label="Freelancers" />
+                  <Stat value="4.8/5" label="Rating" color="text-[#F59E0B]" />
+                  <Stat value="4.8%" label="Guarantee" />
+                </div>
+              </div>
+            </GlassCard>
+          </div>
+
+          {/* ══ MENTORS ═══════════════════════════════════════════════ */}
+          <div className="mt-16">
+            <h2
+              data-aos="fade-up"
+              data-aos-duration="700"
+              className="mb-8 text-center text-2xl font-bold sm:text-3xl text-[#1E293B] dark:text-white"
+            >
+              Mentor / Supervisors
+            </h2>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {isLoading ? (
+                <>
+                  <MentorCardSkeleton />
+                  <MentorCardSkeleton />
+                </>
+              ) : (
+                <>
+                  <div data-aos="fade-right" data-aos-duration="750">
+                    <MentorCard
+                      name="Chan Chhaya"
+                      role="Lecturer · Web Development"
+                      spec="Web Development"
+                      img={MentorImg1}
+                      socials={{ github: "#", facebook: "#", telegram: "#" }}
+                    />
+                  </div>
+                  <div data-aos="fade-left" data-aos-duration="750" data-aos-delay="100">
+                    <MentorCard
+                      name="Kit Tara"
+                      role="Lecturer · Web Development"
+                      spec="Web Development"
+                      img={MentorImg2}
+                      socials={{ github: "#", facebook: "#", telegram: "#" }}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
         </div>
 
-        {/* ── What We Offer ── */}
-        <div className="mt-10 grid gap-6 lg:grid-cols-2">
-
-          {/* For Businesses */}
-          <div className="rounded-2xl border bg-white border-slate-200
-                          dark:bg-[#1e293b] dark:border-slate-700
-                          p-5 shadow-sm transition-colors sm:p-6">
-            <h3 className="text-base font-semibold sm:text-lg text-slate-900 dark:text-slate-300">
-              What We Offer
-            </h3>
-            <div className="mt-4 rounded-xl bg-[#CFE3FF]/70 dark:bg-[#1e3a5f] p-4 sm:p-5">
-              <div className="flex items-center gap-3">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/80 dark:bg-slate-700">
-                  <img src={Briefcase} alt="Business" className="h-6 w-6 object-contain" />
-                </span>
-                <h3 className="text-base font-semibold sm:text-lg text-slate-900 dark:text-slate-300">
-                  For Businesses
-                </h3>
-              </div>
-              <ul className="mt-4 space-y-3">
-                <Bullet>Find and hire skilled freelancers</Bullet>
-                <Bullet>Post and manage projects</Bullet>
-                <Bullet>Communicate directly with talent</Bullet>
-              </ul>
-            </div>
-
-            <div className="mt-6 border-t border-slate-300 dark:border-slate-600 pt-6">
-              <div className="grid grid-cols-1 divide-y sm:grid-cols-3 sm:divide-y-0">
-                <div className="py-3 text-center">
-                  <div className="text-xl font-semibold text-[#1A73E8]">200+</div>
-                  <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Users</div>
-                </div>
-                <div className="py-3 text-center sm:border-x border-slate-300 dark:border-slate-600">
-                  <div className="text-xl font-semibold text-[#1A73E8]">60+</div>
-                  <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Projects Posted</div>
-                </div>
-                <div className="py-3 text-center">
-                  <div className="text-xl font-semibold text-[#1A73E8]">120+</div>
-                  <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Freelancers</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* For Freelancers */}
-          <div className="rounded-2xl border bg-white border-slate-200
-                          dark:bg-[#1e293b] dark:border-slate-700
-                          p-5 shadow-sm transition-colors sm:p-6">
-            <h3 className="text-base font-semibold sm:text-lg text-slate-900 dark:text-slate-300">
-              For Freelancers
-            </h3>
-            <div className="mt-4 rounded-xl bg-[#CFE3FF]/70 dark:bg-[#1e3a5f] p-4 sm:p-5">
-              <div className="flex items-center gap-3">
-                <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/80 dark:bg-slate-700">
-                  <img src={Briefcase} alt="Freelancer" className="h-6 w-6 object-contain" />
-                </span>
-                <div className="text-base font-semibold sm:text-lg text-slate-900 dark:text-slate-300">
-                  For Freelancers
-                </div>
-              </div>
-              <ul className="mt-4 space-y-3">
-                <Bullet>Discover job opportunities</Bullet>
-                <Bullet>Showcase skills and portfolios</Bullet>
-                <Bullet>Build professional experience</Bullet>
-              </ul>
-            </div>
-
-            <div className="mt-6 border-t border-slate-300 dark:border-slate-600 pt-6">
-              <div className="grid grid-cols-1 divide-y sm:grid-cols-3 sm:divide-y-0">
-                <div className="py-3 text-center">
-                  <div className="text-xl font-semibold text-[#1A73E8]">120+</div>
-                  <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Freelancers</div>
-                </div>
-                <div className="py-3 text-center sm:border-x border-slate-300 dark:border-slate-600">
-                  <div className="text-xl font-semibold text-[#F59E0B]">4.8/5</div>
-                  <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Rating</div>
-                </div>
-                <div className="py-3 text-center">
-                  <div className="text-xl font-semibold text-[#1A73E8]">4.8%</div>
-                  <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Guarantee</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Mentors ── */}
-        <div className="mt-12 sm:mt-14">
-          <h2 className="mb-8 text-2xl font-bold text-center text-[#1E293B] dark:text-white">
-            Mentor / Supervisors
-          </h2>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {isLoading ? (
-              <>
-                <MentorCardSkeleton />
-                <MentorCardSkeleton />
-              </>
-            ) : (
-              <>
-                <MentorCard
-                  name="Chan Chhaya"
-                  role="Lecturer · Web Development"
-                  spec="Web Development"
-                  img={MentorImg1}
-                  socials={{ github: "#", facebook: "#", telegram: "#" }}
-                />
-                <MentorCard
-                  name="Kit Tara"
-                  role="Lecturer · Web Development"
-                  spec="Web Development"
-                  img={MentorImg2}
-                  socials={{ github: "#", facebook: "#", telegram: "#" }}
-                />
-              </>
-            )}
-          </div>
+        {/* OurTeam */}
+        <div data-aos="fade-up" data-aos-duration="800" data-aos-offset="60">
+          <OurTeam isLoading={isLoading} />
         </div>
 
       </div>
-
-      <OurTeam isLoading={isLoading} />
     </div>
   );
 }

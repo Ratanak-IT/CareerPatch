@@ -1,5 +1,3 @@
-
-
 export function TeamCardSkeleton() {
   return (
     <div className="h-full rounded-2xl border bg-white border-slate-200
@@ -48,17 +46,20 @@ export default function TeamCard({ img, name, role, badge, socials }) {
 
       <div className="mt-4 flex items-center justify-center gap-2">
         {socials?.github && (
-          <a href={socials.github} className="text-slate-700 hover:text-black dark:text-slate-300 dark:hover:text-white transition-colors">
+          <a href={socials.github} target="_blank" rel="noopener noreferrer"
+             className="text-slate-700 hover:text-black dark:text-slate-300 dark:hover:text-white transition-colors">
             <GithubIcon />
           </a>
         )}
         {socials?.facebook && (
-          <a href={socials.facebook} className="text-blue-500 hover:text-blue-400 transition-colors">
+          <a href={socials.facebook} target="_blank" rel="noopener noreferrer"
+             className="text-blue-500 hover:text-blue-400 transition-colors">
             <FacebookIcon />
           </a>
         )}
         {socials?.telegram && (
-          <a href={socials.telegram} className="text-sky-500 hover:text-sky-400 transition-colors">
+          <a href={socials.telegram} target="_blank" rel="noopener noreferrer"
+             className="text-sky-500 hover:text-sky-400 transition-colors">
             <TelegramIcon />
           </a>
         )}

@@ -1,4 +1,4 @@
-// src/components/about/MentorCard.jsx
+
 
 const GithubIcon = () => (
   <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">

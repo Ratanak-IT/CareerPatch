@@ -4,14 +4,6 @@ import { useSelector } from "react-redux";
 import { selectAuthUser } from "../../features/auth/authSlice";
 import { getOrCreateConversation } from "../../hooks/useChat";
 
-/**
- * MessageButton — drop-in button for any profile or card detail page
- *
- * Usage:
- *   <MessageButton otherUser={{ id: "xxx", fullName: "John", profileImageUrl: "..." }} />
- *
- * otherUser must have at least: id (or userId), fullName (or username)
- */
 export default function MessageButton({ otherUser, className = "", label = "Message" }) {
   const navigate  = useNavigate();
   const authUser  = useSelector(selectAuthUser);

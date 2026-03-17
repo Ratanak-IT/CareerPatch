@@ -33,6 +33,7 @@ import ProfileBusinessPage from "./components/profile/business/ProfileBusiness.j
 import CardDetailFreelancer from "./components/carddetail/CardDetailFreelancer.jsx";
 import ChatComponent from "./components/message/ChatComponent.jsx";
 import NotFound from "./components/notfound/NotfoundComponent.js";
+import PortfolioPage from "./pages/PortfolioPage.jsx";
 
 setupListeners(store.dispatch);
 
@@ -52,6 +53,7 @@ createRoot(document.getElementById("root")).render(
               <Route path="/chat" element={<ChatComponent />} />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/jobs/:jobId" element={<DetailWorkPage />} />
+              
 
               <Route path="/profile" element={<ProfileRouter />} />
               <Route
@@ -77,6 +79,7 @@ createRoot(document.getElementById("root")).render(
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/portfolio/:userId" element={<PortfolioPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

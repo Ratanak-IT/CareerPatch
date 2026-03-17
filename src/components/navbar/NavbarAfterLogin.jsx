@@ -1,22 +1,16 @@
-// src/components/navbar/NavbarAfterLogin.jsx
-// ✅ FIXED: Uses shared DarkModeContext — dark mode toggle now works correctly
-import React, { useState, useRef, useEffect, useMemo } from "react";
+
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
-import logo            from "../../assets/logo.png";
+import logo from "../../assets/logo.png";
 import defaultProfile  from "../../assets/userdefault.png";
-import senghourImg     from "../../assets/seanghour.png";
-import nakkhImg        from "../../assets/ratanalkkh.png";
-import sokkhim         from "../../assets/khim.png";
-import pong            from "../../assets/chhor pong.png";
 
 import { logout as logoutAction, selectAuthUser } from "../../features/auth/authSlice";
 import { useDarkMode } from "./NavbarComponent";
 import { useMessageNotifications } from "../../hooks/useMessageNotifications";
 
-/* ─── Sub-components ────────────────────────────────────────────────────── */
 function DarkIcon({ size = 22, darkMode }) {
   return darkMode ? (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"

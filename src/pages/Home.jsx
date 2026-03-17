@@ -12,6 +12,7 @@ import { Link } from "react-router";
 import JobsGrid from "../components/findwork/JobsGrid";
 import { useGetAllJobsQuery } from "../services/servicesApi";
 import TalentByFreelancerSkeleton from "../components/loading/Talentbyfreelancerskeleton";
+import StarsBackground from "../components/startBackground/StarsBackground";
 
 // ✅ API hook (from src/services/freelancer.js)
 
@@ -35,7 +36,9 @@ export default function Home() {
 
   return (
     <div>
+      <StarsBackground starCount={200} />
       <MainSection />
+      
       <HowIsWork />
       <FindTheBest />
       <div>

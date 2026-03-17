@@ -21,6 +21,7 @@ import CardDetailBusiness from "../components/carddetail/CarddetailBusiness.jsx"
 import DetailWorkPage from "../pages/DetailWork.jsx";
 import ContactPage from "../pages/ContactPage.jsx";
 import ChatComponent from "../components/message/ChatComponent.jsx";
+import PortfolioPage from "../pages/PortfolioPage.jsx";
 
 function ProfileRouter() {
   const isAuthed = useSelector(selectIsAuthed);
@@ -53,7 +54,6 @@ function ProfileRouter() {
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Main Layout = show navbar/footer */}
       <Route element={<RootLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/findwork" element={<FindWork />} />
@@ -74,8 +74,8 @@ export default function AppRoutes() {
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/portfolio/:userId" element={<PortfolioPage />} />
       </Route>
-
       <Route
         path="*"
         element={<div style={{ padding: 24 }}>404 Not Found</div>}

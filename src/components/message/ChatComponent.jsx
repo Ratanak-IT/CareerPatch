@@ -115,7 +115,7 @@ function MessageBubble({ msg, myId }) {
 function ChatWindow({ conv, myId, myUser, onBack }) {
   const [input, setInput] = useState("");
   const bottomRef = useRef(null);
-  const inputRef  = useRef(null);
+  const prevLengthRef = useRef(0);
 
   const { messages, loading, sending, sendMessage } = useMessages(conv?.id);
 
@@ -123,13 +123,13 @@ function ChatWindow({ conv, myId, myUser, onBack }) {
   const name   = conv ? (isA ? conv.user_b_name  : conv.user_a_name)  : "";
   const avatar = conv ? (isA ? conv.user_b_avatar : conv.user_a_avatar) : null;
 
+  // Only scroll when a NEW message is added, not on initial load
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messages.length > prevLengthRef.current) {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+    prevLengthRef.current = messages.length;
   }, [messages]);
-
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, [conv?.id]);
 
   const handleSend = async () => {
     const txt = input.trim();
@@ -153,7 +153,7 @@ function ChatWindow({ conv, myId, myUser, onBack }) {
   }
 
   return (
-    <>
+    <div className="flex flex-col h-full min-h-0">
       {/* Header */}
       <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100 dark:border-gray-700/60 flex-shrink-0">
         <button onClick={onBack} className="sm:hidden text-gray-400 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-200 mr-1">
@@ -166,8 +166,8 @@ function ChatWindow({ conv, myId, myUser, onBack }) {
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4">
+      {/* Messages — flex-1 + overflow-y-auto confines scroll to this area only */}
+      <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4 min-h-0">
         {loading ? (
           <div className="flex justify-center py-10">
             <span className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
@@ -189,7 +189,6 @@ function ChatWindow({ conv, myId, myUser, onBack }) {
       <div className="px-4 py-4 border-t border-gray-100 dark:border-gray-700/60 flex-shrink-0">
         <div className="flex items-center gap-2">
           <input
-            ref={inputRef}
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -218,7 +217,7 @@ function ChatWindow({ conv, myId, myUser, onBack }) {
           </button>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -313,20 +312,21 @@ export default function ChatComponent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 flex items-center justify-center p-4">
-      <div className="bg-gray-100 dark:bg-gray-950 rounded-3xl flex overflow-hidden w-full" style={{ maxWidth: 1200, minHeight: 640 }}>
+    <div className="h-[700px] overflow-hidden bg-gray-100 dark:bg-gray-950 flex items-center justify-center p-4">
 
-        {/* ── LEFT: Conversations list ── */}
-        <div className={`bg-white dark:bg-gray-900 rounded-3xl shadow-sm flex flex-col flex-shrink-0
-          ${showChat ? "hidden" : "flex"} sm:flex w-full sm:w-[360px] lg:w-[420px]`}
-          style={{ minHeight: 640 }}
+      <div className="bg-gray-100 dark:bg-gray-950 rounded-3xl flex overflow-hidden w-full h-full max-w-[1200px]">
+
+        {/* ── LEFT: Conversations list — h-full, scrolls only its own list ── */}
+        <div
+          className={`bg-white dark:bg-gray-900 rounded-3xl md:w-70 shadow-sm flex flex-col flex-shrink-0
+            ${showChat ? "hidden" : "flex"} sm:flex w-full sm:w-[360px] lg:w-[420px] h-full`}
         >
-          <div className="flex items-center justify-between px-6 pt-6 pb-3">
+          <div className="flex items-center justify-between px-6 pt-6 pb-3 flex-shrink-0">
             <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">Messages</h1>
             <Avatar src={authUser?.profileImageUrl} name={authUser?.fullName || "Me"} size={8} />
           </div>
 
-          <div className="px-5 mb-3">
+          <div className="px-5 mb-3 flex-shrink-0">
             <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-xl px-4 py-2.5">
               <span className="text-gray-400 dark:text-gray-500"><IconSearch /></span>
               <input
@@ -339,7 +339,8 @@ export default function ChatComponent() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-1">
+          {/* 3. min-h-0 is the key — without it flex children ignore overflow:auto */}
+          <div className="flex-1 overflow-y-auto min-h-0 px-3 pb-4 space-y-1">
             {convsLoading ? (
               <div className="space-y-2 px-1 pt-2">
                 {[1,2,3].map((n) => (
@@ -381,10 +382,10 @@ export default function ChatComponent() {
         {/* Gap */}
         <div className="hidden sm:block w-4 flex-shrink-0" />
 
-        {/* ── RIGHT: Chat window ── */}
-        <div className={`bg-white dark:bg-gray-900 rounded-3xl shadow-sm flex flex-col
-          ${showChat ? "flex" : "hidden"} sm:flex flex-1`}
-          style={{ minHeight: 640 }}
+        {/* ── RIGHT: Chat window — h-full, messages scroll inside ── */}
+        <div
+          className={`bg-white dark:bg-gray-900 rounded-3xl shadow-sm flex flex-col
+            ${showChat ? "flex" : "hidden"} sm:flex flex-1 h-full`}
         >
           <ChatWindow
             conv={activeConv}
