@@ -34,6 +34,7 @@ import CardDetailFreelancer from "./components/carddetail/CardDetailFreelancer.j
 import ChatComponent from "./components/message/ChatComponent.jsx";
 import NotFound from "./components/notfound/NotfoundComponent.js";
 import PortfolioPage from "./pages/PortfolioPage.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
 
 setupListeners(store.dispatch);
 
@@ -79,6 +80,7 @@ createRoot(document.getElementById("root")).render(
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<Register />} />
+               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/portfolio/:userId" element={<PortfolioPage />} />
             </Route>
 

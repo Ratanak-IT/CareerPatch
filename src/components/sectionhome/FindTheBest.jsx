@@ -1,9 +1,21 @@
-import React from "react";
+// src/components/sectionhome/FindTheBest.jsx
+import React, { useEffect } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
 import ButtonComponent from "../button/ButtonComponent";
 import girlImg from "../../assets/girl.png";
 import { Link } from "react-router";
 
 export default function FindTheBest() {
+  useEffect(() => {
+    AOS.init({
+      duration: 700,
+      easing: "ease-out-cubic",
+      once: true,
+      offset: 80,
+    });
+  }, []);
+
   return (
     <section
       className={[
@@ -24,9 +36,16 @@ export default function FindTheBest() {
         "
       >
         {/* LEFT: Image + floating stat cards */}
-        <div className="w-full lg:w-1/2 relative flex justify-center order-1">
+        <div
+          data-aos="fade-right"
+          data-aos-delay="0"
+          data-aos-duration="800"
+          className="w-full lg:w-1/2 relative flex justify-center order-1"
+        >
           {/* 500+ freelancers */}
           <div
+            data-aos="zoom-in"
+            data-aos-delay="350"
             className="
               absolute z-10
               top-20 right-2
@@ -49,6 +68,8 @@ export default function FindTheBest() {
 
           {/* 300+ freelance work posted */}
           <div
+            data-aos="zoom-in"
+            data-aos-delay="500"
             className="
               absolute z-10
               bottom-15 left-15
@@ -94,19 +115,31 @@ export default function FindTheBest() {
             lg:pl-8
           "
         >
-          <h2 className="font-bold leading-[1.2] text-[28px] sm:text-[34px] md:text-[40px] lg:text-[48px]">
+          <h2
+            data-aos="fade-up"
+            data-aos-delay="100"
+            className="font-bold leading-[1.2] text-[28px] sm:text-[34px] md:text-[40px] lg:text-[48px]"
+          >
             <span className="text-gray-900 dark:text-white">Find The Best </span>
             <span className="text-[#1E88E5]">Freelancers</span>
             <br />
             <span className="text-gray-900 dark:text-white">Here</span>
           </h2>
 
-          <p className="text-sm sm:text-base leading-relaxed max-w-[560px] mx-auto lg:mx-0 text-gray-500 dark:text-slate-400">
+          <p
+            data-aos="fade-up"
+            data-aos-delay="220"
+            className="text-sm sm:text-base leading-relaxed max-w-[560px] mx-auto lg:mx-0 text-gray-500 dark:text-slate-400"
+          >
             Professional freelance banner with bold tagline, stats, and clean
             trust-focused design.
           </p>
 
-          <div className="pt-1 sm:pt-2 flex justify-center lg:justify-start">
+          <div
+            data-aos="fade-up"
+            data-aos-delay="340"
+            className="pt-1 sm:pt-2 flex justify-center lg:justify-start"
+          >
             <Link to="/findfreelan">
               <ButtonComponent
                 text={

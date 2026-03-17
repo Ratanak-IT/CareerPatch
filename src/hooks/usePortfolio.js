@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabaseClient";
 
@@ -12,13 +11,13 @@ export const DEFAULT_PORTFOLIO = {
   website:      "",
   accentColor:  "#1E88E5",
   bgColor:      "#ffffff",
-  fontStyle:    "modern",       // modern | classic | mono | rounded
+  fontStyle:    "modern",
   darkMode:     false,
-  skills:       [],             // [{ name, percent, color }]
-  projects:     [],             // [{ title, desc, url, image, tags, featured }]
-  certificates: [],             // [{ title, issuer, date, url, image }]
-  experience:   [],             // [{ role, company, from, to, desc }]
-  education:    [],             // [{ degree, school, from, to }]
+  skills:       [],
+  projects:     [],
+  certificates: [],
+  experience:   [],
+  education:    [],
   socials:      { github: "", linkedin: "", facebook: "", telegram: "", twitter: "", youtube: "" },
   animations:   { hero: "fade", cards: "slide", skills: "grow" },
 };
@@ -39,7 +38,20 @@ export function usePortfolio(userId) {
       .then(({ data }) => {
         if (data) {
           setTemplate(data.template || "minimal");
-          setPortfolio({ ...DEFAULT_PORTFOLIO, ...data.data });
+
+          // BUG FIX: deep-merge so nested objects (animations, socials)
+          // from saved data override defaults — not get wiped by spread order
+          const saved = data.data || {};
+          setPortfolio({
+            ...DEFAULT_PORTFOLIO,
+            ...saved,
+            // Explicitly preserve nested objects by merging them too
+            socials:    { ...DEFAULT_PORTFOLIO.socials,    ...(saved.socials    || {}) },
+            animations: { ...DEFAULT_PORTFOLIO.animations, ...(saved.animations || {}) },
+            // Preserve booleans explicitly — JSON parse can lose them
+            darkMode:   saved.darkMode  ?? DEFAULT_PORTFOLIO.darkMode,
+            fontStyle:  saved.fontStyle ?? DEFAULT_PORTFOLIO.fontStyle,
+          });
         } else {
           setPortfolio({ ...DEFAULT_PORTFOLIO });
         }
@@ -50,16 +62,28 @@ export function usePortfolio(userId) {
   const save = useCallback(async (newPortfolio, newTemplate) => {
     if (!userId) return false;
     setSaving(true);
+
+    // BUG FIX: Always use the arguments passed in — never fall back to
+    // stale closure values, which caused settings changes to be lost
+    const portfolioToSave = newPortfolio ?? portfolio;
+    const templateToSave  = newTemplate  ?? template;
+
     const { error } = await supabase
       .from("portfolios")
       .upsert({
         user_id:    userId,
-        template:   newTemplate || template,
-        data:       newPortfolio || portfolio,
+        template:   templateToSave,
+        data:       portfolioToSave,
         updated_at: new Date().toISOString(),
       }, { onConflict: "user_id" });
+
     setSaving(false);
-    if (error) { console.error("portfolio save:", error.message); return false; }
+
+    if (error) {
+      console.error("portfolio save:", error.message);
+      return false;
+    }
+
     if (newPortfolio) setPortfolio(newPortfolio);
     if (newTemplate)  setTemplate(newTemplate);
     return true;

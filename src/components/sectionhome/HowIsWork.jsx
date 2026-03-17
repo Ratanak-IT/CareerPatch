@@ -1,6 +1,18 @@
-import React from "react";
+// src/components/sectionhome/HowIsWork.jsx
+import React, { useEffect } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 export default function HowIsWork() {
+  useEffect(() => {
+    AOS.init({
+      duration: 700,
+      easing: "ease-out-cubic",
+      once: true,
+      offset: 80,
+    });
+  }, []);
+
   const steps = [
     {
       id: 1,
@@ -29,38 +41,44 @@ export default function HowIsWork() {
     <section
       className={[
         "w-full py-16 transition-colors duration-300",
-        // light bg
         "bg-white",
-        // dark bg gradient
         "dark:bg-[linear-gradient(160deg,#0d1b2e_0%,#0f2240_50%,#0d1520_100%)]",
       ].join(" ")}
       style={{ fontFamily: "'Poppins', sans-serif" }}
     >
       <div className="max-w-[1440px] mx-auto px-4 lg:px-[120px]">
+
         {/* Title */}
-        <h2 className="text-center text-[#1E88E5] text-4xl font-bold">
+        <h2
+          data-aos="fade-down"
+          data-aos-delay="0"
+          className="text-center text-[#1E88E5] text-4xl font-bold"
+        >
           How it works
         </h2>
 
         {/* Cards container */}
         <div
+          data-aos="fade-up"
+          data-aos-delay="100"
           className={[
             "mt-[30px] grid grid-cols-1 md:grid-cols-3 gap-[20px] rounded-2xl p-12 transition-all duration-300",
-            // light
             "bg-white border border-[#f1f5f9] shadow-[0_10px_40px_rgba(0,0,0,0.04)]",
-            // dark
             "dark:bg-[rgba(30,41,59,0.8)] dark:border-[#1e3a5f] dark:shadow-[0_10px_40px_rgba(0,0,0,0.3)]",
           ].join(" ")}
         >
-          {steps.map((step) => (
+          {steps.map((step, index) => (
             <div
               key={step.id}
+              data-aos="fade-up"
+              data-aos-delay={200 + index * 120}
               className="group flex flex-col items-center text-center cursor-default"
             >
               {/* Icon circle */}
               <div
                 className={[
-                  "w-20 h-20 rounded-full flex items-center justify-center mb-6 transition-all duration-300",
+                  "w-20 h-20 rounded-full flex items-center justify-center mb-6",
+                  "transition-all duration-300 group-hover:scale-110 group-hover:shadow-[0_0_0_8px_rgba(30,136,229,0.12)]",
                   "bg-[#F3F4F6]",
                   "dark:bg-[rgba(30,136,229,0.15)]",
                 ].join(" ")}

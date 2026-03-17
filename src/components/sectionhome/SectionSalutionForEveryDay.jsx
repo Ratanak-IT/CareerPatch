@@ -1,4 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
 import ButtonComponent from "../button/ButtonComponent";
 import { Link } from "react-router";
 
@@ -10,6 +12,15 @@ const FEATURES = [
 ];
 
 export default function SectionSolutionForEveryNeed() {
+  useEffect(() => {
+    AOS.init({
+      duration: 700,
+      easing: "ease-out-cubic",
+      once: true,
+      offset: 80,
+    });
+  }, []);
+
   return (
     <section
       className={[
@@ -32,11 +43,20 @@ export default function SectionSolutionForEveryNeed() {
       >
         {/* LEFT: Text */}
         <div className="w-full lg:w-1/2 space-y-5 sm:space-y-6 text-center lg:text-left">
-          <p className="text-sm font-medium text-gray-400 dark:text-slate-400">
+
+          <p
+            data-aos="fade-down"
+            data-aos-delay="0"
+            className="text-sm font-medium text-gray-400 dark:text-slate-400"
+          >
             For Clients
           </p>
 
-          <h2 className="font-bold leading-[1.15] text-[28px] sm:text-[34px] md:text-[40px] lg:text-[48px]">
+          <h2
+            data-aos="fade-up"
+            data-aos-delay="100"
+            className="font-bold leading-[1.15] text-[28px] sm:text-[34px] md:text-[40px] lg:text-[48px]"
+          >
             <span className="text-[#1E88E5]">Find Talent Your Way – </span>
             <br className="hidden sm:block" />
             <span className="text-[#1E88E5]">Freelance </span>
@@ -45,13 +65,21 @@ export default function SectionSolutionForEveryNeed() {
             </span>
           </h2>
 
-          <p className="text-sm sm:text-base leading-relaxed max-w-[560px] mx-auto lg:mx-0 text-gray-500 dark:text-slate-400">
+          <p
+            data-aos="fade-up"
+            data-aos-delay="200"
+            className="text-sm sm:text-base leading-relaxed max-w-[560px] mx-auto lg:mx-0 text-gray-500 dark:text-slate-400"
+          >
             Client-focused ad with clear benefits: affordable, fast, secure, and
             supported.
           </p>
 
-          <div className="pt-2 flex justify-center lg:justify-start">
-            <Link to="/about#contact">
+          <div
+            data-aos="fade-up"
+            data-aos-delay="300"
+            className="pt-2 flex justify-center lg:justify-start"
+          >
+            <Link to="/contact">
               <ButtonComponent
                 text={
                   <span className="flex items-center gap-2">
@@ -78,12 +106,16 @@ export default function SectionSolutionForEveryNeed() {
         </div>
 
         {/* RIGHT: Image + feature cards */}
-        <div className="w-full lg:w-1/2 relative">
+        <div
+          data-aos="fade-left"
+          data-aos-delay="150"
+          data-aos-duration="800"
+          className="w-full lg:w-1/2 relative"
+        >
           <div
             className="
               relative rounded-3xl overflow-hidden
               h-[320px] sm:h-[380px] md:h-[440px] lg:h-[500px]
-              
             "
           >
             <img
@@ -99,12 +131,13 @@ export default function SectionSolutionForEveryNeed() {
               {FEATURES.map((feature, i) => (
                 <div
                   key={i}
+                  data-aos="fade-right"
+                  data-aos-delay={300 + i * 100}
                   className="
                     flex items-center gap-3
                     px-4 py-2.5
                     rounded-full
                     bg-white/10 backdrop-blur-lg border border-white/20
-                   
                     w-fit max-w-full
                   "
                 >
@@ -122,7 +155,6 @@ export default function SectionSolutionForEveryNeed() {
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   </div>
-
                   <span className="text-white text-[12px] md:text-[13px] font-medium">
                     {feature}
                   </span>
@@ -131,16 +163,19 @@ export default function SectionSolutionForEveryNeed() {
             </div>
           </div>
 
+          {/* Mobile floating pills */}
           <div className="absolute z-20 top-30 left-3 sm:hidden grid gap-1">
             {FEATURES.map((feature, i) => (
               <div
                 key={i}
+                data-aos="fade-right"
+                data-aos-delay={300 + i * 80}
                 className="
-        flex items-center gap-1
-        px-2 py-1
-        rounded-full
-        bg-white/10 backdrop-blur-lg border border-white/20
-      "
+                  flex items-center gap-1
+                  px-2 py-1
+                  rounded-full
+                  bg-white/10 backdrop-blur-lg border border-white/20
+                "
               >
                 <div className="w-3 h-3 rounded-full bg-white flex items-center justify-center flex-shrink-0">
                   <svg
@@ -156,7 +191,6 @@ export default function SectionSolutionForEveryNeed() {
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 </div>
-
                 <span className="text-white text-[8px] font-medium leading-none truncate">
                   {feature}
                 </span>

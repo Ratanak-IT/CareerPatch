@@ -22,6 +22,7 @@ import DetailWorkPage from "../pages/DetailWork.jsx";
 import ContactPage from "../pages/ContactPage.jsx";
 import ChatComponent from "../components/message/ChatComponent.jsx";
 import PortfolioPage from "../pages/PortfolioPage.jsx";
+import ForgotPassword from "../pages/ForgotPassword.jsx";
 
 function ProfileRouter() {
   const isAuthed = useSelector(selectIsAuthed);
@@ -74,6 +75,7 @@ export default function AppRoutes() {
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<Register />} />
+         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/portfolio/:userId" element={<PortfolioPage />} />
       </Route>
       <Route

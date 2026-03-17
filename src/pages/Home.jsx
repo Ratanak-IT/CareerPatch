@@ -14,12 +14,10 @@ import { useGetAllJobsQuery } from "../services/servicesApi";
 import TalentByFreelancerSkeleton from "../components/loading/Talentbyfreelancerskeleton";
 import StarsBackground from "../components/startBackground/StarsBackground";
 
-// ✅ API hook (from src/services/freelancer.js)
 
 export default function Home() {
   const { data, isLoading, isError } = useGetFreelancersQuery();
 
-  // your API usually returns { success, message, data: [...] }
   const freelancers = data?.data?.content || [];
   const {
     data: jobData,

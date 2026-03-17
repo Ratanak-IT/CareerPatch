@@ -1,6 +1,17 @@
-import React from "react";
+import React, { useEffect } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 export default function PeopleLoveWorking() {
+  useEffect(() => {
+    AOS.init({
+      duration: 700,
+      easing: "ease-out-cubic",
+      once: true,
+      offset: 80,
+    });
+  }, []);
+
   return (
     <section
       className={[
@@ -11,22 +22,36 @@ export default function PeopleLoveWorking() {
       style={{ fontFamily: "'Poppins', sans-serif" }}
     >
       <div className="max-w-[1440px] mx-auto px-6 lg:px-[120px] grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+
         {/* ── LEFT: Text & Stats ── */}
         <div className="space-y-12">
           <div className="space-y-4">
-            <h2 className="text-[#1E88E5] text-3xl md:text-4xl font-bold leading-tight max-w-md">
+            <h2
+              data-aos="fade-up"
+              data-aos-delay="0"
+              className="text-[#1E88E5] text-3xl md:text-4xl font-bold leading-tight max-w-md"
+            >
               People Love Working With CareerPatch
             </h2>
 
-            <p className="text-xs md:text-sm font-medium uppercase tracking-wider text-gray-500 dark:text-slate-400">
+            <p
+              data-aos="fade-up"
+              data-aos-delay="100"
+              className="text-xs md:text-sm font-medium uppercase tracking-wider text-gray-500 dark:text-slate-400"
+            >
               Discover a platform built for trust, talent, and results.
             </p>
           </div>
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-12 gap-x-8">
+
             {/* Stat 1 */}
-            <div className="space-y-2">
+            <div
+              data-aos="fade-up"
+              data-aos-delay="200"
+              className="space-y-2"
+            >
               <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
                 4.9/5
               </h3>
@@ -36,7 +61,11 @@ export default function PeopleLoveWorking() {
             </div>
 
             {/* Stat 2 */}
-            <div className="space-y-2">
+            <div
+              data-aos="fade-up"
+              data-aos-delay="300"
+              className="space-y-2"
+            >
               <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
                 Award Winner
               </h3>
@@ -46,7 +75,11 @@ export default function PeopleLoveWorking() {
             </div>
 
             {/* Stat 3 */}
-            <div className="md:col-start-2 space-y-2">
+            <div
+              data-aos="fade-up"
+              data-aos-delay="400"
+              className="md:col-start-2 space-y-2"
+            >
               <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
                 90%
               </h3>
@@ -58,7 +91,12 @@ export default function PeopleLoveWorking() {
         </div>
 
         {/* ── RIGHT: Testimonial Card ── */}
-        <div className="flex justify-center lg:justify-end lg:mt-10">
+        <div
+          data-aos="fade-left"
+          data-aos-delay="200"
+          data-aos-duration="800"
+          className="flex justify-center lg:justify-end lg:mt-10"
+        >
           <div
             className={[
               "rounded-2xl p-8 max-w-sm w-full",
@@ -67,24 +105,35 @@ export default function PeopleLoveWorking() {
             ].join(" ")}
           >
             {/* Quote header */}
-            <p className="font-bold text-sm mb-4 text-[#6366F1]">
+            <p
+              data-aos="fade-up"
+              data-aos-delay="350"
+              className="font-bold text-sm mb-4 text-[#6366F1]"
+            >
               "Great job!"
             </p>
 
             {/* Testimonial body */}
-            <p className="text-xs md:text-[13px] leading-6 mb-8 italic text-gray-500 dark:text-slate-300">
+            <p
+              data-aos="fade-up"
+              data-aos-delay="450"
+              className="text-xs md:text-[13px] leading-6 mb-8 italic text-gray-500 dark:text-slate-300"
+            >
               "CareerPatch made it simple to connect with the right professional.
               The process was smooth, and the results exceeded expectations."
             </p>
 
-            {/* Divider */}
-            <div className="pt-6 border-t border-[#e8f0fe] dark:border-[#334155] flex items-center gap-4">
+            {/* Divider + Author */}
+            <div
+              data-aos="fade-up"
+              data-aos-delay="550"
+              className="pt-6 border-t border-[#e8f0fe] dark:border-[#334155] flex items-center gap-4"
+            >
               <img
                 src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100"
                 alt="Sarika"
                 className="w-12 h-12 rounded-full object-cover grayscale hover:grayscale-0 transition-all duration-300 border-2 border-[#e2e8f0] dark:border-[#334155]"
               />
-
               <div className="flex flex-col">
                 <h4 className="font-bold text-sm text-gray-900 dark:text-white">
                   Sarika
@@ -96,6 +145,7 @@ export default function PeopleLoveWorking() {
             </div>
           </div>
         </div>
+
       </div>
     </section>
   );
