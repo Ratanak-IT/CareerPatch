@@ -1,4 +1,4 @@
-// src/components/carddetail/CardDetailBusiness.jsx
+
 import { useMemo, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router";
 import { useSelector } from "react-redux";
@@ -8,6 +8,7 @@ import { selectAuthUser } from "../../features/auth/authSlice";
 import { useBookmarks } from "../../hooks/useBookmarks";
 import CommentsSection from "../comments/CommentsSection";
 import MessageButton from "../message/MessageButton";
+import { toast } from "react-toastify";
 import ApplyJobModal from "../apply/ApplyJobModal";
 
 /* ─── constants ─────────────────────────────────────────────────────────── */
@@ -250,10 +251,20 @@ export default function CardDetailBusiness() {
     String(authUser?.id ?? authUser?.userId) === String(job?.userId);
   const canApply   = !!authUser && !isOwner && viewerType === "FREELANCER";
 
-  const handleToggleFavorite = (e) => {
+  const handleToggleFavorite = async (e) => {
     e.preventDefault(); e.stopPropagation();
     if (!authUser) { navigate("/login"); return; }
-    toggleBookmark();
+    const wasLiked = liked;
+    try {
+      await toggleBookmark();
+      if (wasLiked) {
+        toast.info("Bookmark removed", { icon: "🔖", autoClose: 1500 });
+      } else {
+        toast.success("Bookmark saved!", { icon: "❤️", autoClose: 1500 });
+      }
+    } catch {
+      toast.error("Failed to update bookmark");
+    }
   };
 
   const handleOpenApply = () => {

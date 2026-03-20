@@ -1,13 +1,13 @@
 // src/components/about/OurTeam.jsx
-import Team1 from "../../assets/member.png";
+import Team1 from "../../assets/ratanak.jpg";
 import Team2 from "../../assets/khim.png";
-import Team3 from "../../assets/member.png";
+import Team3 from "../../assets/bidin.jpg";
 import Team4 from "../../assets/kormva.png";
-import Team5 from "../../assets/seanghour.png";
-import Team6 from "../../assets/member.png";
+import Team5 from "../../assets/seanghour.JPG";
+import Team6 from "../../assets/chhorpong.jpg";
 import Team7 from "../../assets/member.png";
 import TeamCard, { TeamCardSkeleton } from "./Teamcard";
-import TechCard, { TechCardSkeleton } from "./TechCard";
+import { TechCardSkeleton } from "./TechCard";
 import LogoLoop from "../looplogo/LogoLoop";
 import reactLogo from "../../assets/react.png";
 import viteLogo from "../../assets/logos/vite.png";
@@ -32,13 +32,13 @@ const technologies= [
 ];
 
 const team = [
-  { img: Team1, name: "Thai Ratanak",       role: "Web & UI/UX & Java",     badge: "Leader", socials: { github: "https://github.com/Ratanak-IT", facebook: "#", telegram: "https://t.me/Ratanak_Thai" } },
-  { img: Team2, name: "Khorn Sokhim",       role: "Developer / UI Designer", badge: "Member", socials: { github: "https://github.com/Khim123-hub", facebook: "#", telegram: "https://t.me/Sokkhimkhorn" } },
-  { img: Team3, name: "Tollah Hamadabidin", role: "Developer / UI Designer", badge: "Member", socials: { github: "https://github.com/Tollahhamadabidin", facebook: "#", telegram: "https://t.me/Ratanak_Thai" } },
-  { img: Team4, name: "Vong Kormva",        role: "Developer / UI Designer", badge: "Member", socials: { github: "https://github.com/Kormvaa", facebook: "#", telegram: "https://t.me/Ratanak_Thai" } },
-  { img: Team5, name: "Eng Seanghour",      role: "Developer / UI Designer", badge: "Member", socials: { github: "https://github.com/HOUR231441", facebook: "#", telegram: "https://t.me/HOUR9123" } },
-  { img: Team6, name: "Ourn Chhorpong",     role: "Developer / UI Designer", badge: "Member", socials: { github: "https://github.com/Pong-CH", facebook: "#", telegram: "https://t.me/sivter24" } },
-  { img: Team7, name: "Sam Karona",         role: "Developer / UI Designer", badge: "Member", socials: { github: "https://github.com/karonasam", facebook: "#", telegram: "https://t.me/Ratanak_Thai" } },
+  { img: Team1, name: "Thai Ratanak",       role: "Web & UI/UX & Java",     badge: "Leader", socials: { github: "https://github.com/Ratanak-IT", facebook: "https://www.facebook.com/ratanak0168/", telegram: "https://t.me/Ratanak_Thai" } },
+  { img: Team2, name: "Khorn Sokhim",       role: "Developer / UI Designer", badge: "Member", socials: { github: "https://github.com/Khim123-hub", facebook: "https://web.facebook.com/khornSkhim", telegram: "https://t.me/Sokkhimkhorn" } },
+  { img: Team3, name: "Tollah Hamadabidin", role: "Developer / UI Designer", badge: "Member", socials: { github: "https://github.com/Tollahhamadabidin", facebook: "https://www.facebook.com/share/1Bo8nQzLCk/?mibextid=wwXIfr", telegram: "https://t.me/nallloveyou" } },
+  { img: Team4, name: "Vong Kormva",        role: "Developer / UI Designer", badge: "Member", socials: { github: "https://github.com/Kormvaa", facebook: "https://www.facebook.com/kormvong.vaa", telegram: "https://t.me/kormva" } },
+  { img: Team5, name: "Eng Seanghour",      role: "Developer / UI Designer", badge: "Member", socials: { github: "https://github.com/HOUR231441", facebook: "https://www.facebook.com/Hour.9988716?mibextid=wwXIfr&rdid=YoLtTtUrEkSxRpl2&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1GpZsS4mwQ%2F%3Fmibextid%3DwwXIfr#", telegram: "https://t.me/HOUR9123" } },
+  { img: Team6, name: "Ourn Chhorpong",     role: "Developer / UI Designer", badge: "Member", socials: { github: "https://github.com/Pong-CH", facebook: "https://www.facebook.com/share/17oDXT8GCo/?mibextid=wwXIfr", telegram: "https://t.me/sivter24" } },
+  { img: Team7, name: "Sam Karona",         role: "Developer / UI Designer", badge: "Member", socials: { github: "https://github.com/karonasam", facebook: "https://www.facebook.com/share/188foKv69j/", telegram: "https://t.me/karona_sam1" } },
 ];
 
 export default function OurTeam({ isLoading = false }) {

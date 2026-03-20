@@ -1,7 +1,5 @@
-// src/components/about/AboutPage.jsx
-// npm install aos
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 
@@ -13,28 +11,33 @@ import Vision     from "../../assets/vision.png";
 import Briefcase  from "../../assets/briefcase.png";
 import OurTeam    from "./OurTeam";
 import MentorCard, { MentorCardSkeleton } from "./Mentor";
+import {
+  useGetFreelancersQuery,
+  useGetBusinessesQuery,
+  useGetJobsQuery,
+} from "../../services/freelancerApi";
 
-/* ─── Bullet ─────────────────────────────────────────────────────────────── */
+
 function Bullet({ children }) {
   return (
     <li className="flex gap-2 text-sm sm:text-base">
       <span className="mt-[7px] h-2 w-2 shrink-0 rounded-full bg-[#2B6DFF]" />
-      <span className="text-slate-600 dark:text-slate-400">{children}</span>
+      <span className="text-slate-600 text-lg dark:text-gray-300">{children}</span>
     </li>
   );
 }
 
-/* ─── Stat ───────────────────────────────────────────────────────────────── */
+
 function Stat({ value, label, color = "text-[#1A73E8]" }) {
   return (
     <div className="py-3 text-center">
-      <div className={`text-xl font-bold ${color}`}>{value}</div>
+      <div className={`text-xl dark:text-gray-300 font-bold ${color}`}>{value}</div>
       <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">{label}</div>
     </div>
   );
 }
 
-/* ─── GlassCard — forwards ALL props including data-aos ─────────────────── */
+
 function GlassCard({ children, className = "", ...rest }) {
   return (
     <div
@@ -52,9 +55,45 @@ function GlassCard({ children, className = "", ...rest }) {
   );
 }
 
+
 export default function AboutPage({ isLoading = false }) {
 
+
+  const { data: freelancersRaw } = useGetFreelancersQuery();
+  const { data: businessesRaw  } = useGetBusinessesQuery();
+  const { data: jobsRaw        } = useGetJobsQuery();
+
+  const freelancerCount = useMemo(() => {
+    if (!freelancersRaw) return null;
+
+    if (freelancersRaw.total != null) return freelancersRaw.total;
+    const arr = Array.isArray(freelancersRaw) ? freelancersRaw
+      : Array.isArray(freelancersRaw?.data)    ? freelancersRaw.data
+      : Array.isArray(freelancersRaw?.content) ? freelancersRaw.content : [];
+    return arr.length || null;
+  }, [freelancersRaw]);
+
+  const businessCount = useMemo(() => {
+    if (!businessesRaw) return null;
+    if (businessesRaw.total != null) return businessesRaw.total;
+    const arr = Array.isArray(businessesRaw) ? businessesRaw
+      : Array.isArray(businessesRaw?.data)    ? businessesRaw.data
+      : Array.isArray(businessesRaw?.content) ? businessesRaw.content : [];
+    return arr.length || null;
+  }, [businessesRaw]);
+
+  const jobCount = useMemo(() => {
+    if (!jobsRaw) return null;
+    if (jobsRaw.total != null) return jobsRaw.total;
+    const arr = Array.isArray(jobsRaw) ? jobsRaw
+      : Array.isArray(jobsRaw?.data)    ? jobsRaw.data
+      : Array.isArray(jobsRaw?.content) ? jobsRaw.content
+      : Array.isArray(jobsRaw?.data?.content) ? jobsRaw.data.content : [];
+    return arr.length || null;
+  }, [jobsRaw]);
+
   useEffect(() => {
+
     const timer = setTimeout(() => {
       AOS.init({
         once:     true,
@@ -69,7 +108,6 @@ export default function AboutPage({ isLoading = false }) {
     return () => clearTimeout(timer);
   }, []);
 
-  // Re-refresh AOS if isLoading changes (mentor/team cards load)
   useEffect(() => {
     if (!isLoading) {
       setTimeout(() => AOS.refresh(), 200);
@@ -83,7 +121,6 @@ export default function AboutPage({ isLoading = false }) {
       <div className="relative z-10">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14 lg:py-16">
 
-          {/* ══ HERO ══════════════════════════════════════════════════ */}
           <div className="grid items-center gap-8 md:grid-cols-2 md:gap-12 lg:gap-16">
 
             {/* Left */}
@@ -113,20 +150,22 @@ export default function AboutPage({ isLoading = false }) {
                 grow and work on real projects.
               </p>
 
-              {/* Stats */}
+              {/* Stats — real API data */}
               <div className="mt-8 flex flex-wrap gap-6">
                 {[
-                  { val: "200+", lbl: "Users",       delay: 200 },
-                  { val: "120+", lbl: "Freelancers", delay: 300 },
-                  { val: "60+",  lbl: "Projects",    delay: 400 },
-                ].map(({ val, lbl, delay }) => (
+                  { val: freelancerCount, fallback: "120+", lbl: "Freelancers", delay: 200 },
+                  { val: businessCount,   fallback: "80+",  lbl: "Businesses",  delay: 300 },
+                  { val: jobCount,        fallback: "60+",  lbl: "Jobs Posted",  delay: 400 },
+                ].map(({ val, fallback, lbl, delay }) => (
                   <div key={lbl}
                     data-aos="zoom-in"
                     data-aos-delay={String(delay)}
                     data-aos-duration="600"
                     className="flex flex-col"
                   >
-                    <span className="text-2xl font-extrabold text-[#1A73E8]">{val}</span>
+                    <span className="text-2xl font-extrabold text-[#1A73E8]">
+                      {val !== null ? `${val}+` : fallback}
+                    </span>
                     <span className="text-xs text-slate-500 dark:text-slate-400">{lbl}</span>
                   </div>
                 ))}
@@ -158,38 +197,36 @@ export default function AboutPage({ isLoading = false }) {
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center
-                                rounded-xl bg-white/80 dark:bg-slate-800/80 shadow-sm">
+                                rounded-xl bg-white/80 dark:bg-gray-300 ">
                   <img src={TargetImg} alt="Mission" className="h-7 w-7 object-contain" />
                 </div>
-                <h3 className="text-lg font-bold text-[#1E88E5] sm:text-xl lg:text-2xl">Our Mission</h3>
+                <h3 className="text-lg font-bold text-[#1E88E5] sm:text-xl dark:text-gray-300 lg:text-2xl">Our Mission</h3>
               </div>
-              <p className="text-sm leading-7 sm:text-base sm:leading-8 text-slate-600 dark:text-slate-400">
+              <p className="text-sm leading-7 sm:text-base sm:leading-8 text-slate-600 dark:text-gray-300">
                 To create a trusted digital platform where freelancers and businesses can connect,
                 collaborate, and succeed together.
               </p>
             </GlassCard>
 
             <GlassCard
-              className="bg-gradient-to-br from-purple-500/10 to-purple-600/5 dark:from-purple-900/30 dark:to-purple-800/10 px-6 py-7 sm:px-8 sm:py-8"
-              data-aos="fade-left"
+              className="bg-gradient-to-br from-blue-500/10 to-blue-600/5 dark:from-blue-900/30 dark:to-blue-800/10 px-6 py-7 sm:px-8 sm:py-8"
+              data-aos="fade-right"
               data-aos-duration="750"
-              data-aos-delay="100"
             >
               <div className="flex items-center gap-3 mb-4">
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center
-                                rounded-xl bg-white/80 dark:bg-slate-800/80 shadow-sm">
+                                rounded-xl bg-white/80 dark:bg-gray-300 ">
                   <img src={Vision} alt="Vision" className="h-7 w-7 object-contain" />
                 </div>
-                <h3 className="text-lg font-bold text-[#1E88E5] sm:text-xl lg:text-2xl">Our Vision</h3>
+                <h3 className="text-lg font-bold text-[#1E88E5] dark:text-gray-300 sm:text-xl lg:text-2xl">Our Vision</h3>
               </div>
-              <p className="text-sm leading-7 sm:text-base sm:leading-8 text-slate-600 dark:text-slate-400">
+              <p className="text-sm leading-7 sm:text-base sm:leading-8 text-slate-600 dark:text-gray-300 ">
                 To become a leading freelance platform that supports remote work, innovation,
                 and professional growth for people everywhere.
               </p>
             </GlassCard>
           </div>
 
-          {/* ══ WHAT WE OFFER ═════════════════════════════════════════ */}
           <div className="mt-14 grid gap-6 lg:grid-cols-2">
 
             <GlassCard
@@ -204,7 +241,7 @@ export default function AboutPage({ isLoading = false }) {
                               border border-blue-100 dark:border-blue-900/40">
                 <div className="flex items-center gap-3 mb-4">
                   <span className="grid h-10 w-10 place-items-center rounded-xl
-                                   bg-white/90 dark:bg-slate-700/90 shadow-sm">
+                                   bg-white/90 dark:bg-gray-300 shadow-sm">
                     <img src={Briefcase} alt="Business" className="h-6 w-6 object-contain" />
                   </span>
                   <h3 className="text-base font-bold sm:text-lg text-slate-900 dark:text-slate-200">
@@ -218,10 +255,10 @@ export default function AboutPage({ isLoading = false }) {
                 </ul>
               </div>
               <div className="mt-6 border-t border-slate-200 dark:border-slate-700 pt-5">
-                <div className="grid grid-cols-3 divide-x divide-slate-200 dark:divide-slate-700">
-                  <Stat value="200+" label="Users" />
-                  <Stat value="60+"  label="Projects" />
-                  <Stat value="120+" label="Freelancers" />
+                <div className="grid grid-cols-3 divide-x divide-slate-200 ">
+                  <Stat value={freelancerCount !== null ? `${freelancerCount}+` : "120+"} label="Freelancers" />
+                  <Stat value={jobCount        !== null ? `${jobCount}+`        : "60+"}  label="Jobs" />
+                  <Stat value={businessCount   !== null ? `${businessCount}+`   : "80+"}  label="Businesses" />
                 </div>
               </div>
             </GlassCard>
@@ -239,7 +276,7 @@ export default function AboutPage({ isLoading = false }) {
                               border border-blue-100 dark:border-blue-900/40">
                 <div className="flex items-center gap-3 mb-4">
                   <span className="grid h-10 w-10 place-items-center rounded-xl
-                                   bg-white/90 dark:bg-slate-700/90 shadow-sm">
+                                   bg-white/90 dark:bg-gray-300 shadow-sm">
                     <img src={Briefcase} alt="Freelancer" className="h-6 w-6 object-contain" />
                   </span>
                   <h3 className="text-base font-bold sm:text-lg text-slate-900 dark:text-slate-200">
@@ -254,9 +291,9 @@ export default function AboutPage({ isLoading = false }) {
               </div>
               <div className="mt-6 border-t border-slate-200 dark:border-slate-700 pt-5">
                 <div className="grid grid-cols-3 divide-x divide-slate-200 dark:divide-slate-700">
-                  <Stat value="120+" label="Freelancers" />
+                  <Stat value={freelancerCount !== null ? `${freelancerCount}+` : "120+"} label="Freelancers" />
                   <Stat value="4.8/5" label="Rating" color="text-[#F59E0B]" />
-                  <Stat value="4.8%" label="Guarantee" />
+                  <Stat value={jobCount !== null ? `${jobCount}+` : "60+"} label="Jobs" />
                 </div>
               </div>
             </GlassCard>
@@ -282,8 +319,8 @@ export default function AboutPage({ isLoading = false }) {
                   <div data-aos="fade-right" data-aos-duration="750">
                     <MentorCard
                       name="Chan Chhaya"
-                      role="Lecturer · Web Development"
-                      spec="Web Development"
+                      role="Lecturer · Backend"
+                      spec="Spring Microservice"
                       img={MentorImg1}
                       socials={{ github: "#", facebook: "#", telegram: "#" }}
                     />
@@ -291,8 +328,8 @@ export default function AboutPage({ isLoading = false }) {
                   <div data-aos="fade-left" data-aos-duration="750" data-aos-delay="100">
                     <MentorCard
                       name="Kit Tara"
-                      role="Lecturer · Web Development"
-                      spec="Web Development"
+                      role="Lecturer · Data Base"
+                      spec="Ai Agent"
                       img={MentorImg2}
                       socials={{ github: "#", facebook: "#", telegram: "#" }}
                     />

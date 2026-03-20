@@ -1,26 +1,21 @@
-import {  useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import {
   toggleFavorite,
   selectIsFavorite,
 } from "../../features/favorites/favoritesSlice";
-import {
-
-  useDeleteServiceMutation
-} from "../../services/servicesApi";
-import EditServiceModal from "../Auth/modals/EditServiceModal";
+import { useDeleteServiceMutation } from "../../services/servicesApi";
+import EditServiceModal from "../Auth/modals/EditServicePostModal";
+import { toast } from "react-toastify";
 
 const FALLBACK_IMAGE = "https://placehold.co/285x253?text=No+Image";
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatDate(value) {
   if (!value) return "—";
 
   let v = value;
 
-  // if timestamp is in seconds, convert to ms
   if (typeof v === "number" && v < 1e12) v = v * 1000;
 
   const d = new Date(v);
@@ -33,7 +28,6 @@ function formatDate(value) {
 }
 
 function getImage(s) {
-  // API uses jobImages — normalizeService copies it to imageUrls, check both
   if (Array.isArray(s?.imageUrls) && s.imageUrls.length > 0)
     return s.imageUrls[0];
   if (Array.isArray(s?.jobImages) && s.jobImages.length > 0)
@@ -54,9 +48,22 @@ function DeleteConfirmModal({ service, onClose }) {
   const handleDelete = async () => {
     try {
       await deleteService(service.id).unwrap();
+      toast.success("deleted successfully!");
       onClose();
     } catch (e) {
-      console.error("delete service error:", e);
+      const isParseError =
+        e?.status === "PARSING_ERROR" ||
+        e?.error?.includes?.("JSON") ||
+        e?.originalStatus === 200 ||
+        e?.originalStatus === 204;
+
+      if (isParseError) {
+        toast.success("Post deleted successfully!");
+        onClose();
+      } else {
+        console.error("delete service error:", e);
+        toast.error(e?.data?.message || e?.error || "Failed to delete post.");
+      }
     }
   };
 
@@ -79,7 +86,9 @@ function DeleteConfirmModal({ service, onClose }) {
               />
             </svg>
           </div>
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Delete Post?</h2>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+            Delete Post?
+          </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Are you sure you want to delete{" "}
             <span className="font-semibold text-gray-700 dark:text-gray-300">
@@ -209,11 +218,10 @@ export default function OwnServiceCard({ service, author, avatar }) {
     <>
       <Link
         to={`/services/${service?.id}`}
-        className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-md hover:shadow-xl dark:hover:shadow-slate-900/60 transition-shadow duration-300 flex flex-col flex-shrink-0"
-        style={{ width: 285, height: 487, textDecoration: "none" }}
+        className="w-full bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-md hover:shadow-xl dark:hover:shadow-slate-900/60 transition-shadow duration-300 flex flex-col"
       >
         {/* Image */}
-        <div className="relative flex-shrink-0" style={{ height: 253 }}>
+        <div className="relative flex-shrink-0 h-[200px]">
           <img
             src={image}
             alt={service?.title}
@@ -279,7 +287,9 @@ export default function OwnServiceCard({ service, author, avatar }) {
               )}
             </div>
             <span className="text-gray-400 dark:text-gray-400 text-xs">
-              {formatDate(service?.createdAt ?? service?.createAt ?? service?.created_at)}
+              {formatDate(
+                service?.createdAt ?? service?.createAt ?? service?.created_at,
+              )}
             </span>
           </div>
 

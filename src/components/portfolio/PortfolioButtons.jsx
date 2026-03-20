@@ -6,7 +6,6 @@ import { usePortfolio } from "../../hooks/usePortfolio";
 import { useSelector } from "react-redux";
 import { selectAuthUser } from "../../features/auth/authSlice";
 
-/* ─── Owner: Edit Portfolio ──────────────────────────────────────────────── */
 export function EditPortfolioButton() {
   const authUser = useSelector(selectAuthUser);
   const userId   = String(authUser?.id ?? authUser?.userId ?? "");
@@ -23,7 +22,7 @@ export function EditPortfolioButton() {
     <>
       <button onClick={() => setOpen(true)}
         className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold
-                   bg-gradient-to-r from-purple-500 to-blue-500
+                   bg-purple-500
                    hover:from-purple-600 hover:to-blue-600
                    text-white shadow-sm transition-all duration-200 hover:shadow-md">
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -48,13 +47,12 @@ export function EditPortfolioButton() {
   );
 }
 
-/* ─── Visitor: View Portfolio ────────────────────────────────────────────── */
 export function ViewPortfolioButton({ userId }) {
   if (!userId) return null;
   return (
     <Link to={`/portfolio/${userId}`} target="_blank" rel="noopener noreferrer"
       className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold
-                 bg-gradient-to-r from-purple-500 to-blue-500
+                bg-blue-500
                  hover:from-purple-600 hover:to-blue-600
                  text-white shadow-sm transition-all duration-200 hover:shadow-md">
       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>

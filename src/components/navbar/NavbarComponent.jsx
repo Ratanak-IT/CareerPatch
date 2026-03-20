@@ -1,6 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from "react";
 import { Link, useLocation } from "react-router";
 import logo from "../../assets/logo.png";
+import logoDark from "../../assets/logodark.jpg";
 
 if (!document.head.querySelector('link[href*="Poppins"]')) {
   const link = document.createElement("link");
@@ -105,11 +106,10 @@ export default function NavbarComponent() {
         {/* ── LOGO ── */}
         <Link to="/" className="no-underline leading-none flex-shrink-0">
           <img
-            src={logo}
-            alt="CareerPatch"
-            className="block object-contain flex-shrink-0 !w-[160px] !h-[49px] sm:!w-[200px] sm:!h-[61px] lg:!w-[226px] lg:!h-[69px]"
-            style={{ filter: "none" }}
-          />
+  src={darkMode ? logoDark : logo}
+  alt="CareerPatch"
+  className="block object-contain w-[130px] sm:w-[170px] lg:w-[210px]"
+/>
         </Link>
 
         {/* ── DESKTOP: nav links center ── */}

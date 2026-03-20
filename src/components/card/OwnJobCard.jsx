@@ -6,6 +6,7 @@ import {
   useDeleteJobMutation,
 } from "../../services/servicesApi";
 import EditJobModal from "../Auth/modals/EditJobModal";
+import { toast } from "react-toastify";
 
 const FALLBACK_IMAGE = "https://placehold.co/285x253?text=No+Image";
 
@@ -157,9 +158,20 @@ function DeleteJobModal({ job, onClose }) {
   const handleDelete = async () => {
     try {
       await deleteJob(job.id).unwrap();
+      toast.success("Job deleted successfully!");
       onClose();
     } catch (e) {
-      console.error("delete job error:", e);
+      const isParseError =
+        e?.status === "PARSING_ERROR" ||
+        e?.originalStatus === 200 ||
+        e?.originalStatus === 204;
+      if (isParseError) {
+        toast.success("Job deleted successfully!");
+        onClose();
+      } else {
+        console.error("delete job error:", e);
+        toast.error(e?.data?.message || e?.error || "Failed to delete job.");
+      }
     }
   };
   return (
@@ -277,7 +289,7 @@ export default function OwnJobCard({ job, author, avatar }) {
         className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-md hover:shadow-xl dark:hover:shadow-slate-900/60 transition-shadow duration-300 flex flex-col w-full border border-gray-100 dark:border-slate-700"
       >
         {/* Image */}
-        <div className="relative" style={{ height: 176 }}>
+        <div className="relative h-[200px]">
           <img
             src={image}
             alt={job?.title}

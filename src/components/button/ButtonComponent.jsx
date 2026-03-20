@@ -15,6 +15,7 @@ export default function ButtonComponent({ text = "Apply Now", onClick }) {
         shadow-sm
         hover:shadow-md
         font-poppins
+        cursor-pointer
       "
     >
       {text}

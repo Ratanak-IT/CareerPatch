@@ -6,6 +6,11 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+
+html, body {
+  overflow-x: clip;
+}
+
 @keyframes logo-loop {
   from {
     transform: translateX(0);
@@ -18,3 +23,33 @@
 .animate-logo-loop {
   animation: logo-loop 18s linear infinite;
 }
+
+@keyframes onAutoFillStart {
+  from { opacity: 1; }
+  to   { opacity: 1; }
+}
+@keyframes onAutoFillCancel {
+  from { opacity: 1; }
+  to   { opacity: 1; }
+}
+ 
+
+input:-webkit-autofill {
+  animation-name: onAutoFillStart;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #1f2937 !important;
+  caret-color: #1f2937 !important;
+}
+ 
+
+.dark input:-webkit-autofill {
+  animation-name: onAutoFillStart;
+  -webkit-box-shadow: 0 0 0 1000px #162236 inset !important;
+  -webkit-text-fill-color: #e2e8f0 !important;
+  caret-color: #e2e8f0 !important;
+}
+ 
+input:not(:-webkit-autofill) {
+  animation-name: onAutoFillCancel;
+}
+ 

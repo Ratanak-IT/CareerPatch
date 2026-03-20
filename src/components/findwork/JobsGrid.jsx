@@ -1,12 +1,7 @@
-import { useEffect, useRef} from "react";
-import {
-  getJobId
-} from "../../utils/jobUtils";
+import { useEffect, useRef } from "react";
+import { getJobId } from "../../utils/jobUtils";
 import JobCardSkeleton from "../loading/JobsCardSkeleton";
 import JobCard from "./JobCard";
-
-
-
 
 export default function JobsGrid({
   filtered,
@@ -20,11 +15,11 @@ export default function JobsGrid({
   const observerRef = useRef(null);
 
   const filteredNoDraft = (filtered || []).filter(
-    (j) => (j?.status || "OPEN") !== "DRAFT"
+    (j) => (j?.status || "OPEN") !== "DRAFT",
   );
 
   const visible = filteredNoDraft.slice(0, visibleCount);
-  const hasMore = visibleCount < filteredNoDraft.length;
+  const hasMore = setVisibleCount && visibleCount < filteredNoDraft.length;
 
   useEffect(() => {
     if (!hasMore) return;
@@ -34,7 +29,7 @@ export default function JobsGrid({
         const first = entries[0];
         if (first.isIntersecting) {
           setVisibleCount((prev) =>
-            Math.min(prev + pageSize, filteredNoDraft.length)
+            Math.min(prev + pageSize, filteredNoDraft.length),
           );
         }
       },
@@ -42,7 +37,7 @@ export default function JobsGrid({
         root: null,
         rootMargin: "200px",
         threshold: 0.1,
-      }
+      },
     );
 
     const current = observerRef.current;

@@ -1,4 +1,4 @@
-// src/pages/FindFreelancers.jsx
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import HeroSectionComponent from "../components/freelancer/HeroSectionComponent";
@@ -208,3 +208,5 @@ export default function FindFreelancers() {
     </div>
   );
 }
+
+

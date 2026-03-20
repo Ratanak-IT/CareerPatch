@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useCreateServiceMutation, useGetCategoriesQuery } from "../../../services/servicesApi";
 import { uploadImageToCloudinary } from "../../../utils/uploadToCloudinary";
+import { toast } from "react-toastify";
 
 const FALLBACK_THUMB = "https://placehold.co/56x56?text=?";
 
@@ -17,6 +18,113 @@ function Chip({ text, onRemove }) {
         ×
       </button>
     </span>
+  );
+}
+
+/* ─── Custom Category Dropdown ───────────────────────────────────────────── */
+function CategoryDropdown({ categories, value, onChange, disabled }) {
+  const [open, setOpen] = useState(false);
+  const ref             = useRef(null);
+
+  const selected = categories.find((c) => c.id === value);
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleSelect = (cat) => {
+    onChange(cat.id);
+    setOpen(false);
+  };
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => setOpen((o) => !o)}
+        className={`group w-full flex items-center justify-between gap-3
+                    px-4 py-3 rounded-xl text-sm font-medium
+                    transition-all duration-200 outline-none select-none
+                    disabled:opacity-50 disabled:cursor-not-allowed
+                    ${open
+                      ? "bg-blue-500 text-white shadow-lg shadow-blue-500/25"
+                      : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-sm"
+                    }`}
+      >
+        <span className="flex items-center gap-2.5 min-w-0">
+          <span className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors
+            ${open ? "bg-white/20" : "bg-blue-50 dark:bg-blue-900/30"}`}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke={open ? "#fff" : "#3b82f6"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+              <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+              <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+              <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+            </svg>
+          </span>
+          <span className={`truncate ${!selected && !open ? "text-gray-400 dark:text-gray-500 font-normal" : ""}`}>
+            {selected ? selected.name : "Select a category"}
+          </span>
+        </span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+             className={`shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`}>
+          <path d="M6 9l6 6 6-6"/>
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute z-50 left-0 right-0 top-full mt-1.5
+                        bg-white dark:bg-gray-800
+                        border border-gray-200 dark:border-gray-700
+                        rounded-2xl shadow-2xl dark:shadow-black/60
+                        overflow-hidden">
+          <ul className="max-h-48 overflow-y-auto py-1">
+            {categories.map((cat) => {
+              const isSelected = cat.id === value;
+              return (
+                <li key={cat.id}>
+                  <button
+                    type="button"
+                    onClick={() => handleSelect(cat)}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5
+                                text-sm text-left rounded-lg mx-1 transition-colors duration-100
+                                ${isSelected
+                                  ? "bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400 font-semibold"
+                                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/60"
+                                }`}
+                    style={{ width: "calc(100% - 8px)" }}
+                  >
+                    <span className={`w-2 h-2 rounded-full shrink-0
+                      ${isSelected ? "bg-blue-500" : "bg-gray-300 dark:bg-gray-600"}`} />
+                    <span className="flex-1 truncate">{cat.name}</span>
+                    {isSelected && (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                           stroke="#3b82f6" strokeWidth="2.5" strokeLinecap="round" className="shrink-0">
+                        <path d="M20 6L9 17l-5-5"/>
+                      </svg>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          {categories.length > 0 && (
+            <div className="px-4 py-2 border-t border-gray-100 dark:border-gray-700/80">
+              <p className="text-[11px] text-gray-400 dark:text-gray-500">
+                {categories.length} {categories.length === 1 ? "category" : "categories"}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -95,6 +203,8 @@ export default function CreatePostModal({ onClose }) {
         imageUrls,
       }).unwrap();
 
+      toast.success("Create Successfully")
+
       onClose?.();
     } catch (e) {
       console.error(e);
@@ -172,23 +282,16 @@ export default function CreatePostModal({ onClose }) {
                              placeholder:text-gray-400 dark:placeholder:text-gray-500 resize-none"
                 />
               </div>
-
+            
               {/* Category */}
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Category</p>
-                <select
+                <CategoryDropdown
+                  categories={categories}
                   value={form.categoryId}
-                  onChange={(e) => set("categoryId", e.target.value)}
+                  onChange={(id) => set("categoryId", id)}
                   disabled={busy}
-                  className="w-full bg-transparent dark:bg-gray-900 border-b border-gray-300 dark:border-gray-600
-                             focus:border-blue-500 outline-none py-2
-                             text-gray-900 dark:text-white"
-                >
-                  <option value="">— Select a category —</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                  ))}
-                </select>
+                />
               </div>
 
               {/* Status */}

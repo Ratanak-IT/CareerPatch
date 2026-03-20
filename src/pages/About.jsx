@@ -1,5 +1,4 @@
-// src/pages/About.jsx
-import React from "react";
+
 import AboutPage from "../components/about/AboutPage";
 import ContactPage from "./ContactPage";
 import StarsBackground from "../components/startBackground/StarsBackground";

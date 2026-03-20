@@ -1,4 +1,4 @@
-// src/components/freelancer/HeroSectionComponent.jsx
+
 import imgMain from "../../assets/modelforfindfreelancer.png";
 import FreelancerSearchBarComponent from "./FreelancerSearchBarComponent";
 
@@ -66,7 +66,7 @@ export default function HeroSectionComponent({
       </section>
 
       {/* SearchBar — flush at bottom, same px as MainSection */}
-      <div className="absolute bottom-0 left-0 right-0 px-6 sm:px-8 md:px-[25px] lg:px-[120px] 2xl:px-60 z-20">
+      <div className="absolute bottom-0 left-0 right-0 px-6 sm:px-8 md:px-[25px] lg:px-[120px] 2xl:px-[240px] z-20">
         <div className="max-w-[1440px] mx-auto">
           <FreelancerSearchBarComponent
             category={category}

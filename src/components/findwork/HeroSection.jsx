@@ -1,15 +1,144 @@
+import { useState } from "react";
 import SearchBar from "../search/SearchBar";
 import sectionpagefind from "../../assets/sectionpagefind.png";
 import qestion from "../../assets/qestion.png";
-import khim from "../../assets/khim.png";
-import kormva from "../../assets/kormva.png";
-import ratanalkkh from "../../assets/ratanalkkh.png";
+import { useGetBusinessesQuery } from "../../services/freelancerApi";
 
-const AVATARS = [
-  { src: khim, alt: "Khim" },
-  { src: kormva, alt: "Kormva" },
-  { src: ratanalkkh, alt: "Ratanalkkh" },
-];
+function AvatarItem({ src, name, index }) {
+  const [hovered, setHovered] = useState(false);
+
+  const initials = (name || "?")
+    .split(" ")
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+  const colors = [
+    "#3B82F6",
+    "#8B5CF6",
+    "#EC4899",
+    "#10B981",
+    "#F59E0B",
+    "#06B6D4",
+  ];
+  const color = colors[(name?.charCodeAt(0) || 0) % colors.length];
+
+  return (
+    <div
+      className="relative"
+      style={{
+        marginLeft: index === 0 ? 0 : "-12px",
+        zIndex: hovered ? 20 : 10 - index,
+      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <div
+        className="absolute bottom-full left-1/2 mb-2 px-2.5 py-1 rounded-lg
+                   text-[11px] font-semibold text-white bg-gray-900 dark:bg-slate-700
+                   whitespace-nowrap shadow-lg pointer-events-none"
+        style={{
+          transform: hovered
+            ? "translateX(-50%) translateY(0) scale(1)"
+            : "translateX(-50%) translateY(4px) scale(0.9)",
+          opacity: hovered ? 1 : 0,
+          transition: "all 0.18s cubic-bezier(0.34,1.56,0.64,1)",
+        }}
+      >
+        {name || "Business"}
+        <span
+          className="absolute top-full left-1/2 -translate-x-1/2
+                         border-4 border-transparent border-t-gray-900 dark:border-t-slate-700"
+        />
+      </div>
+
+      <div
+        className="w-10 h-10 rounded-full border-2 border-white dark:border-[#0f172a]
+                   overflow-hidden flex items-center justify-center
+                   text-white text-xs font-bold transition-transform duration-200"
+        style={{
+          background: color,
+          transform: hovered
+            ? "translateY(-4px) scale(1.12)"
+            : "translateY(0) scale(1)",
+        }}
+      >
+        {src ? (
+          <img
+            src={src}
+            alt={name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
+          />
+        ) : (
+          <span>{initials}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AvatarGroup({ users, totalCount }) {
+  const display = users.filter(Boolean).slice(0, 3);
+  const overflow = totalCount > 3 ? totalCount - 3 : 0;
+
+  return (
+    <div className="flex flex-wrap items-center gap-4 justify-center lg:justify-start">
+      <div className="flex items-center gap-3">
+        <div className="flex items-center">
+          {display.map((u, i) => (
+            <AvatarItem
+              key={u?.id ?? i}
+              src={u?.profileImageUrl || null}
+              name={u?.companyName || u?.fullName || null}
+              index={i}
+            />
+          ))}
+          {overflow > 0 && (
+            <div
+              className="w-10 h-10 rounded-full border-2 border-white dark:border-[#0f172a]
+                         bg-[#1E88E5] flex items-center justify-center
+                         text-white text-[11px] font-bold"
+              style={{ marginLeft: "-12px" }}
+            >
+              +{overflow > 99 ? "99" : overflow}
+            </div>
+          )}
+        </div>
+
+        <p className="text-xs font-medium text-gray-400 dark:text-slate-400 text-left m-0">
+          Over{" "}
+          <span className="text-[#1E88E5] font-bold">
+            {totalCount > 0 ? `${totalCount.toLocaleString()}+` : "12,800+"}
+          </span>
+          <br />
+          businesses hiring now
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function AvatarSkeleton() {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex items-center">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="w-10 h-10 rounded-full border-2 border-white dark:border-[#0f172a]
+                       bg-gray-200 dark:bg-slate-700 animate-pulse"
+            style={{ marginLeft: i === 0 ? 0 : "-12px" }}
+          />
+        ))}
+      </div>
+      <div className="h-4 w-36 rounded bg-gray-200 dark:bg-slate-700 animate-pulse" />
+    </div>
+  );
+}
 
 export default function HeroSection({
   searchText,
@@ -21,6 +150,25 @@ export default function HeroSection({
   onChangeBudget,
   onSubmit,
 }) {
+  const { data: raw, isLoading } = useGetBusinessesQuery();
+
+  const { businesses, totalCount } = (() => {
+    if (raw?.total != null && Array.isArray(raw?.list)) {
+      return { businesses: raw.list.filter(Boolean), totalCount: raw.total };
+    }
+    const list = Array.isArray(raw)
+      ? raw
+      : Array.isArray(raw?.data)
+        ? raw.data
+        : Array.isArray(raw?.content)
+          ? raw.content
+          : Array.isArray(raw?.data?.content)
+            ? raw.data.content
+            : [];
+    const clean = list.filter(Boolean);
+    return { businesses: clean, totalCount: clean.length };
+  })();
+
   return (
     <div
       className="relative w-full"
@@ -88,49 +236,11 @@ export default function HeroSection({
                 expertise. Connect with the best clients worldwide.
               </p>
 
-              <div className="flex flex-wrap items-center gap-4 justify-center lg:justify-start">
-                <div className="flex items-center gap-3">
-                  <div className="flex -space-x-3">
-                    {AVATARS.map(({ src, alt }, i) => (
-                      <img
-                        key={i}
-                        src={src}
-                        alt={alt}
-                        className="w-10 h-10 rounded-full border-2 border-white
-                                   dark:border-[#0f172a] object-cover"
-                      />
-                    ))}
-                  </div>
-                  <p className="text-xs font-medium text-gray-400 dark:text-slate-400 text-left m-0">
-                    Over <span className="text-[#1E88E5] font-bold">12,800+</span>
-                    <br />
-                    freelancers to complete your projects
-                  </p>
-                </div>
-
-                <button
-                  className="inline-flex items-center gap-2
-                             bg-[#1E88E5] hover:bg-blue-600
-                             dark:bg-blue-500 dark:hover:bg-blue-400
-                             text-white font-semibold text-sm
-                             px-6 py-3 rounded-xl transition-colors duration-200"
-                >
-                  Find your skill
-                  <svg
-                    className="w-4 h-4 shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2.5}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      d="M7 17 17 7M17 7H7M17 7v10"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-              </div>
+              {isLoading ? (
+                <AvatarSkeleton />
+              ) : (
+                <AvatarGroup users={businesses} totalCount={totalCount} />
+              )}
             </div>
 
             <div className="w-full lg:w-[44%] relative flex justify-center lg:justify-end items-end self-end">
@@ -168,7 +278,7 @@ export default function HeroSection({
                     className="text-[18px] lg:text-[20px] font-extrabold leading-none
                                text-gray-900 dark:text-slate-100"
                   >
-                    30K+
+                    {totalCount > 0 ? `${totalCount}+` : "30K+"}
                   </span>
                   <span className="text-base lg:text-lg">💼</span>
                 </div>
@@ -176,7 +286,7 @@ export default function HeroSection({
                   className="text-[10px] font-semibold uppercase tracking-wide
                              text-gray-400 dark:text-slate-400"
                 >
-                  Hired Experts
+                  {totalCount > 0 ? "Businesses" : "Hired Experts"}
                 </span>
               </div>
 
@@ -191,7 +301,7 @@ export default function HeroSection({
       </section>
 
       <div
-        className="absolute bottom-0 left-0 right-0 z-30 px-6 lg:px-[120px]"
+        className="absolute bottom-0 left-0 right-0 z-30 px-6 lg:px-[120px] 2xl:px-[50px]"
         style={{ transform: "translateY(50%)" }}
       >
         <div className="max-w-[1440px] 2xl:px-30 mx-auto">

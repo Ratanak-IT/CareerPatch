@@ -68,15 +68,15 @@ export default function MentorCard({ name, role, spec, img, socials = {} }) {
                           text-slate-900 dark:text-white">
             {name}
           </div>
-          <div className="mt-2 text-base min-[428px]:text-sm text-slate-500 dark:text-slate-400">
+          <div className="mt-2 min-[428px]:text-md text-slate-500 dark:text-gray-200">
             {role}
           </div>
 
           <div className="mt-5 min-[428px]:mt-3 flex flex-wrap justify-center min-[428px]:justify-start gap-x-3 gap-y-1">
-            <span className="text-sm min-[428px]:text-xs text-slate-500 dark:text-slate-400">
+            <span className="text-sm min-[428px]:text-md text-gray-600 dark:text-gray-200">
               Specializations
             </span>
-            <span className="text-sm min-[428px]:text-xs font-semibold text-slate-900 dark:text-white">
+            <span className="text-md min-[428px]:text-md font-semibold text-gray-600 dark:text-white">
               {spec}
             </span>
           </div>

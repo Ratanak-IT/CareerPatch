@@ -1,8 +1,9 @@
-import React from "react";
+import { useContext } from "react";
 import { Link } from "react-router";
 import logo from "../../assets/logo.png";
+import logoDark from "../../assets/logodark.jpg";
+import { DarkModeContext } from "../navbar/NavbarComponent";
 
-/* Load Poppins once */
 if (!document.head.querySelector('link[href*="Poppins"]')) {
   const link = document.createElement("link");
   link.href =
@@ -11,161 +12,126 @@ if (!document.head.querySelector('link[href*="Poppins"]')) {
   document.head.appendChild(link);
 }
 
-// ── Social Icon ──
-function SocialIcon({ href, label, children }) {
-  return (
-    <a
-      href={href}
-      aria-label={label}
-      className={[
-        "w-10 h-10 rounded-full flex items-center justify-center no-underline flex-shrink-0 border-2",
-        "transition-all duration-200 hover:shadow-md",
-        // base
-        "border-gray-300 text-gray-400 bg-white/70",
-        // dark
-        "dark:border-slate-600 dark:text-slate-400 dark:bg-slate-700/80",
-        // hover
-        "hover:border-blue-500 hover:text-blue-500 hover:bg-blue-50/90",
-        "dark:hover:border-blue-500 dark:hover:text-blue-500 dark:hover:bg-blue-500/15",
-      ].join(" ")}
-    >
-      {children}
-    </a>
-  );
-}
+const socials = [
+  {
+    label: "Facebook",
+    href: "https://www.facebook.com/istad.co",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <rect width="24" height="24" rx="5" fill="#1877F2" />
+        <path
+          d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"
+          fill="white"
+        />
+      </svg>
+    ),
+  },
+  {
+    label: "YouTube",
+    href: "https://www.youtube.com/@istad7665",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <rect x="2" y="5" width="20" height="14" rx="4" fill="#FF0000" />
+        <polygon points="10,9 16,12 10,15" fill="white" />
+      </svg>
+    ),
+  },
+  {
+    label: "TikTok",
+    href: "https://www.tiktok.com/@istad369",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <rect width="24" height="24" rx="5" fill="#000000" />
+        <path d="M14 3v10.5a3.5 3.5 0 1 1-2-3.2V3h2z" fill="white" />
+        <path d="M14 3c1.5 2.5 3.5 4 6 4v2c-2.5 0-4.5-1-6-2.5" fill="white" />
+      </svg>
+    ),
+  },
+];
 
-// ── Footer Nav Link ──
-function FooterLink({ to, children }) {
-  return (
-    <Link
-      to={to}
-      className={[
-        "group flex items-center gap-2.5 no-underline",
-        "transition-all duration-200 hover:translate-x-1.5",
-        "text-slate-500 dark:text-slate-300",
-        "hover:text-blue-500",
-      ].join(" ")}
-      style={{ fontFamily: "'Poppins', sans-serif", fontSize: "15px" }}
-    >
-      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-slate-300 dark:bg-slate-500 transition-colors duration-200" />
-      {children}
-    </Link>
-  );
-}
-
-// ── Contact Row ──
-function ContactRow({ icon, text }) {
-  return (
-    <div
-      className={[
-        "flex items-center gap-3 px-3.5 py-2.5 rounded-xl cursor-default",
-        "transition-all duration-200",
-        // base
-        "bg-white/60 border border-slate-200",
-        // dark
-        "dark:bg-slate-800/90 dark:border-slate-700",
-        // hover
-        "hover:bg-blue-50/90 hover:border-blue-200",
-        "dark:hover:bg-blue-500/12 dark:hover:border-blue-500",
-      ].join(" ")}
-    >
-      <span className="flex-shrink-0 flex text-gray-400 dark:text-slate-400 transition-colors duration-200">
-        {icon}
-      </span>
-      <span
-        className="text-slate-500 dark:text-slate-200"
-        style={{ fontFamily: "'Poppins', sans-serif", fontSize: "14px" }}
-      >
-        {text}
-      </span>
-    </div>
-  );
-}
-
-// ── Section Heading ──
 function SectionHeading({ title }) {
   return (
-    <div className="mb-5">
+    <div className="mb-4">
       <h3
-        className="text-slate-900 dark:text-slate-100"
-        style={{
-          fontFamily: "'Poppins', sans-serif",
-          fontSize: "16px",
-          fontWeight: 700,
-          margin: "0 0 10px 0",
-        }}
+        className="text-slate-900 dark:text-slate-100 text-[15px] font-bold m-0 mb-2"
+        style={{ fontFamily: "'Poppins', sans-serif" }}
       >
         {title}
       </h3>
       <div
-        className="w-9 h-0.5 rounded-full"
+        className="w-8 h-0.5 rounded-full"
         style={{ background: "linear-gradient(to right, #3B6CF4, #7C3AED)" }}
       />
     </div>
   );
 }
 
-// ── Footer ──
+function FooterLink({ to, children }) {
+  return (
+    <Link
+      to={to}
+      className="group flex items-center gap-2.5 no-underline transition-all duration-200
+                 hover:translate-x-1 text-slate-500 dark:text-slate-300 hover:text-blue-500"
+      style={{ fontFamily: "'Poppins', sans-serif", fontSize: "14px" }}
+    >
+      <span
+        className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-slate-300 dark:bg-slate-500
+                       group-hover:bg-blue-500 transition-colors duration-200"
+      />
+      {children}
+    </Link>
+  );
+}
+
 export default function FooterComponent() {
+  // ── Read darkMode from the same context the Navbar uses ──
+  const { darkMode } = useContext(DarkModeContext);
+
   const forClients = [
     { label: "Home", path: "/" },
     { label: "Find Work", path: "/findwork" },
     { label: "Find Freelancers", path: "/findfreelan" },
     { label: "About Us", path: "/about" },
   ];
-
   const forFreelancers = [
     { label: "Find Work", path: "/findwork" },
     { label: "Create Account", path: "/register" },
   ];
-  const contactInfo = [
-    { label: "Contact", path: "/contact" },
-  ];
+  const contactInfo = [{ label: "Contact", path: "/contact" }];
 
   return (
     <footer style={{ fontFamily: "'Poppins', sans-serif" }}>
-      {/* ── MAIN BODY ── */}
-      <div
-        className={[
-          "relative overflow-hidden transition-all duration-300",
-          "border-t border-slate-200",
-          "dark:border-[#1e3a5f]",
-          // light gradient
-          "bg-[linear-gradient(150deg,#f8fbff_0%,#eef4ff_45%,#e0edff_75%,#d4e6ff_100%)]",
-          // dark gradient
-          "dark:bg-[linear-gradient(160deg,#0d1b2e_0%,#0f2240_35%,#111827_65%,#0d1520_100%)]",
-        ].join(" ")}
-      >
-        {/* Glowing blobs (LIGHT) */}
+      <div className="relative overflow-hidden transition-all duration-300 border-t border-slate-200 dark:border-[#1e3a5f] bg-[linear-gradient(150deg,#f8fbff_0%,#eef4ff_45%,#e0edff_75%,#d4e6ff_100%)] dark:bg-[linear-gradient(160deg,#0d1b2e_0%,#0f2240_35%,#111827_65%,#0d1520_100%)]">
+        {/* Blobs */}
         <div className="absolute -top-20 -right-20 w-80 h-80 rounded-full pointer-events-none bg-[radial-gradient(circle,rgba(59,108,244,0.07)_0%,transparent_70%)] dark:hidden" />
         <div className="absolute -bottom-10 left-[5%] w-64 h-64 rounded-full pointer-events-none bg-[radial-gradient(circle,rgba(124,58,237,0.05)_0%,transparent_70%)] dark:hidden" />
-
-        {/* Glowing blobs (DARK) */}
         <div className="absolute -top-24 -right-16 w-96 h-96 rounded-full pointer-events-none opacity-30 bg-[radial-gradient(circle,rgba(59,108,244,0.25)_0%,transparent_65%)] hidden dark:block" />
         <div className="absolute top-1/2 -left-20 w-80 h-80 rounded-full pointer-events-none opacity-20 bg-[radial-gradient(circle,rgba(124,58,237,0.3)_0%,transparent_65%)] hidden dark:block" />
-        <div className="absolute bottom-0 right-1/3 w-64 h-64 rounded-full pointer-events-none opacity-15 bg-[radial-gradient(circle,rgba(59,130,246,0.35)_0%,transparent_70%)] hidden dark:block" />
 
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-[120px] pt-16 pb-12 relative z-10">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-5">
-            {/* ── COL 1: Brand ── */}
-            <div className="flex flex-col gap-5 sm:col-span-2 lg:col-span-1">
+        <div className="max-w-[1440px] mx-auto px-5 sm:px-8 lg:px-[120px] pt-14 pb-10 relative z-10">
+          <div className="flex flex-col md:flex-row gap-10 md:gap-8 lg:gap-12">
+            {/* Brand */}
+            <div className="flex flex-col gap-5 md:w-[220px] lg:w-[260px] flex-shrink-0">
               <Link to="/" className="inline-block no-underline leading-none">
                 <img
-                  src={logo}
+                  src={darkMode ? logoDark : logo}
                   alt="CareerPatch"
-                  className="object-contain block"
-                  style={{ width: "226px", height: "69px" }}
+                  className="object-contain block transition-opacity duration-300"
+                  style={{
+                    width: "200px",
+                    height: "61px",
+                    // multiply removes white bg on light logo; normal on dark logo
+                    mixBlendMode: darkMode ? "normal" : "multiply",
+                  }}
                 />
               </Link>
 
               <p
-                className="text-slate-500 dark:text-slate-400"
+                className="text-slate-500 dark:text-slate-400 m-0"
                 style={{
-                  fontFamily: "'Poppins', sans-serif",
                   fontSize: "14px",
                   lineHeight: "1.75",
-                  margin: 0,
-                  maxWidth: "260px",
+                  maxWidth: "240px",
                 }}
               >
                 Powerful Freelance Marketplace connecting Clients &amp;
@@ -174,110 +140,100 @@ export default function FooterComponent() {
 
               <div className="h-px w-3/4 bg-[linear-gradient(to_right,#cbd5e1,transparent)] dark:bg-[linear-gradient(to_right,rgba(100,116,139,0.4),transparent)]" />
 
-              {/* Follow us */}
               <div>
                 <p
-                  className="text-blue-500"
+                  className="text-blue-500 m-0 mb-3"
                   style={{
-                    fontFamily: "'Poppins', sans-serif",
-                    fontSize: "12px",
+                    fontSize: "11px",
                     fontWeight: 600,
-                    letterSpacing: "0.08em",
+                    letterSpacing: "0.1em",
                     textTransform: "uppercase",
-                    margin: "0 0 12px 0",
                   }}
                 >
                   Follow us
                 </p>
-
                 <div className="flex items-center gap-2.5">
-                  <SocialIcon href="#" label="Facebook">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                    </svg>
-                  </SocialIcon>
-
-                  <SocialIcon href="#" label="Instagram">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                      <circle cx="12" cy="12" r="4" />
-                      <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none" />
-                    </svg>
-                  </SocialIcon>
-
-                  <SocialIcon href="#" label="Telegram">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="22" y1="2" x2="11" y2="13" />
-                      <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                    </svg>
-                  </SocialIcon>
+                  {socials.map(({ label, href, icon }) => (
+                    <a
+                      key={label}
+                      href={href}
+                      aria-label={label}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-10 h-10 rounded-full flex items-center justify-center border-2 flex-shrink-0
+                                  border-gray-300 bg-white/70 dark:border-slate-600 dark:bg-slate-700/80
+                                  hover:border-blue-500 hover:bg-blue-50 dark:hover:border-blue-500
+                                  dark:hover:bg-blue-500/15 transition-all duration-200 hover:shadow-md"
+                    >
+                      {icon}
+                    </a>
+                  ))}
                 </div>
               </div>
             </div>
 
-            {/* ── COL 2: For Clients ── */}
-            <div className="flex flex-col">
-              <SectionHeading title="For Clients" />
-              <div className="flex flex-col gap-3">
-                {forClients.map((item) => (
-                  <FooterLink key={item.path} to={item.path}>
-                    {item.label}
-                  </FooterLink>
-                ))}
+            {/* Nav grid:
+                mobile → 2 cols: [Clients | Freelancers] / [Contact spans 2]
+                md+    → 3 cols: [Clients | Freelancers | Contact]  */}
+            <div className="flex-1 grid grid-cols-2 md:grid-cols-3 gap-8">
+              <div className="flex flex-col">
+                <SectionHeading title="For Clients" />
+                <div className="flex flex-col gap-3">
+                  {forClients.map((item) => (
+                    <FooterLink key={item.path} to={item.path}>
+                      {item.label}
+                    </FooterLink>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* ── COL 3: For Freelancers ── */}
-            <div className="flex flex-col">
-              <SectionHeading title="For Freelancers" />
-              <div className="flex flex-col gap-3">
-                {forFreelancers.map((item) => (
-                  <FooterLink key={item.path} to={item.path}>
-                    {item.label}
-                  </FooterLink>
-                ))}
+              <div className="flex flex-col">
+                <SectionHeading title="For Freelancers" />
+                <div className="flex flex-col gap-3">
+                  {forFreelancers.map((item) => (
+                    <FooterLink key={item.path} to={item.path}>
+                      {item.label}
+                    </FooterLink>
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* ── COL 4: Contact Us ── */}
-            <div className="flex flex-col">
-              <SectionHeading title="Contact Us" />
-              <div className="flex flex-col gap-2.5">
-                {contactInfo.map((item) => (
-                  <FooterLink key={item.path} to={item.path}>
-                    {item.label}
-                  </FooterLink>
-                ))}
+              <div className="flex flex-col col-span-2 md:col-span-1">
+                <SectionHeading title="Contact Us" />
+                <div className="flex flex-col gap-3">
+                  {contactInfo.map((item) => (
+                    <FooterLink key={item.path} to={item.path}>
+                      {item.label}
+                    </FooterLink>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
 
           {/* Divider */}
-          <div className="mt-14 h-px bg-[linear-gradient(to_right,transparent,#cbd5e1_20%,#cbd5e1_80%,transparent)] dark:bg-[linear-gradient(to_right,transparent,rgba(100,116,139,0.3)_20%,rgba(100,116,139,0.3)_80%,transparent)]" />
-        </div>
-      </div>
+          <div className="mt-12 h-px bg-[linear-gradient(to_right,transparent,#cbd5e1_20%,#cbd5e1_80%,transparent)] dark:bg-[linear-gradient(to_right,transparent,rgba(100,116,139,0.3)_20%,rgba(100,116,139,0.3)_80%,transparent)]" />
 
-      {/* ── BOTTOM BAR ── */}
-      <div className="bg-[linear-gradient(90deg,#1e3a8a_0%,#2563eb_40%,#3B6CF4_60%,#7C3AED_100%)]">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-[120px] py-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p
-            className="m-0 text-center sm:text-left text-[13.5px] text-white/75"
-            style={{ fontFamily: "'Poppins', sans-serif" }}
-          >
-            CareerPatch 2026. All right reserved
-          </p>
-
-          <div className="flex flex-wrap justify-center sm:justify-end gap-4 sm:gap-5">
-            {["Privacy Policy", "Terms of Service", "Cookie Policy"].map((item) => (
-              <a
-                key={item}
-                href="#"
-                className="no-underline transition-colors duration-200 text-[13px] text-white/60 hover:text-white"
-                style={{ fontFamily: "'Poppins', sans-serif" }}
-              >
-                {item}
-              </a>
-            ))}
+          {/* Bottom bar */}
+          <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-[13px] text-slate-400 dark:text-slate-500 m-0">
+              © {new Date().getFullYear()} CareerPatch. All rights reserved.
+            </p>
+            <div className="flex items-center gap-5">
+              {[
+                { label: "Privacy Policy", to: "/privacy" },
+                { label: "Terms of Service", to: "/terms" },
+              ].map(({ label, to }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className="text-[13px] text-slate-400 dark:text-slate-500 no-underline
+                             hover:text-blue-500 dark:hover:text-blue-400 transition-colors duration-200"
+                >
+                  {label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </div>

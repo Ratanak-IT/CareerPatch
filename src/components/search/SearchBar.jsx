@@ -24,7 +24,7 @@ function ModernDropdown({ value, options, onChange, placeholder }) {
                    text-sm text-left bg-transparent
                    text-gray-600 dark:text-slate-300
                    hover:bg-gray-50 dark:hover:bg-[#13233f]
-                   transition-colors"
+                   transition-colors cursor-pointer"
       >
         <span className="truncate">{value || placeholder}</span>
         <svg
@@ -139,7 +139,7 @@ export default function SearchBar({
             value={searchText}
             onChange={(e) => onChangeSearch(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && onSubmit()}
-            placeholder="Search by title"
+            placeholder="Search by title & Category"
             className="flex-1 min-w-0 bg-transparent outline-none
                        text-sm text-gray-700 dark:text-slate-200
                        placeholder-gray-400 dark:placeholder-slate-500"
@@ -148,7 +148,7 @@ export default function SearchBar({
           {searchText && (
             <button
               onClick={() => onChangeSearch("")}
-              className="text-gray-300 hover:text-gray-500 dark:text-slate-600 dark:hover:text-slate-400 shrink-0"
+              className="text-gray-300 hover:text-gray-500 dark:text-slate-600 dark:hover:text-slate-400 shrink-0 cursor-pointer"
             >
               <svg
                 className="w-4 h-4"
@@ -166,7 +166,7 @@ export default function SearchBar({
         <div className="w-px self-stretch bg-gray-200 dark:bg-[#1e3a5f]" />
 
         {/* Category */}
-        <div className="relative flex items-center" style={{ flex: "1" }}>
+        <div className="relative flex items-center " style={{ flex: "1" }}>
           <ModernDropdown
             value={selectedCategory}
             options={categoryOptions}
@@ -192,7 +192,7 @@ export default function SearchBar({
           className="px-10 bg-[#1E88E5] hover:bg-blue-600
                      dark:bg-blue-500 dark:hover:bg-blue-400
                      text-white font-semibold text-sm
-                     transition-colors shrink-0 rounded-r-2xl"
+                     transition-colors shrink-0 rounded-r-2xl cursor-pointer"
         >
           Search
         </button>

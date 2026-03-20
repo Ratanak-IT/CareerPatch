@@ -10,6 +10,8 @@ import { selectIsAuthed, setUser } from "../features/auth/authSlice";
 import { useMeQuery } from "../services/authApi";
 import { useEffect } from "react";
 import ScrollToTopButton from "../components/common/ScrollToTopButton";
+import { useUserStatus } from "../hooks/useUserStatus";
+import BannedScreen from "../components/common/BannedScreen";
 
 const RootLayout = () => {
   const dispatch = useDispatch();
@@ -22,6 +24,14 @@ const RootLayout = () => {
       dispatch(setUser(data.data));
     }
   }, [isSuccess, data, dispatch]);
+
+
+  const { isBanned, isSuspended, loading: statusLoading } = useUserStatus();
+
+  if (isAuthed && !statusLoading && (isBanned || isSuspended)) {
+    return <BannedScreen status={isBanned ? "BANNED" : "SUSPENDED"} />;
+  }
+
 
   return (
     <>

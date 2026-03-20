@@ -9,13 +9,11 @@ import OwnJobCard from "../../card/OwnJobCard";
 import BookmarkedServiceCard from "../../bookmark/BookmarkedServiceCard";
 import BookmarkedJobCard from "../../bookmark/BookmarkedJobCard";
 
-// ─── Fallbacks ────────────────────────────────────────────────────────────────
 const FALLBACK_COVER =
   "https://images.unsplash.com/photo-1529101091764-c3526daf38fe?auto=format&fit=crop&q=80&w=1600";
 const FALLBACK_AVATAR = "https://placehold.co/80x80?text=B";
 const FALLBACK_IMAGE  = "https://placehold.co/400x220?text=No+Image";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatDate(value) {
   if (!value) return "—";
   let v = value;
@@ -45,7 +43,6 @@ function isPdf(url) {
   return url.toLowerCase().includes(".pdf") || url.toLowerCase().includes("application/pdf");
 }
 
-// ─── Spinner ──────────────────────────────────────────────────────────────────
 function Spinner() {
   return (
     <div className="flex justify-center py-12">
@@ -54,7 +51,6 @@ function Spinner() {
   );
 }
 
-// ─── Empty ────────────────────────────────────────────────────────────────────
 function Empty({ label }) {
   return (
     <div className="flex flex-col items-center justify-center py-12 text-gray-400 dark:text-gray-500">

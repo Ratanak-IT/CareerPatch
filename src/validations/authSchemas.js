@@ -49,13 +49,13 @@ export const freelancerSchema = z
       .min(3,  "At least 3 characters")
       .max(30,  "Too long")
       .regex(/^[a-zA-Z0-9_]+$/, "Only letters, numbers and underscores"),
-    gender:   z.enum(["Male", "Female", "Other"], { errorMap: () => ({ message: "Select a gender" }) }),
+    gender:   z.string().min(1, "Select a gender"),
     email,
     phone,
     password,
     confirmPassword: z.string().min(1, "Please confirm your password"),
   })
-  .refine(d => d.password === d.confirmPassword, {
+  .refine((d) => d.password === d.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });
@@ -65,20 +65,16 @@ export const businessSchema = z
   .object({
     firstName:      name,
     lastName:       name,
-    gender:         z.enum(["Male", "Female", "Other"], { errorMap: () => ({ message: "Select a gender" }) }),
+    gender:         z.string().min(1, "Select a gender"),
     companyName:    z.string().min(1, "Company name is required").max(100, "Too long"),
     companyWebsite: z.string().url("Enter a valid URL (https://…)").or(z.literal("")),
-    industry: z.enum(
-      ["Technology","Finance","Healthcare","Education","Retail",
-       "Manufacturing","Media & Entertainment","Real Estate","Transportation","Other"],
-      { errorMap: () => ({ message: "Select an industry" }) }
-    ),
+    industry:       z.string().min(1, "Select an industry"),   // ← plain string, no enum
     email,
     phone,
     password,
     confirmPassword: z.string().min(1, "Please confirm your password"),
   })
-  .refine(d => d.password === d.confirmPassword, {
+  .refine((d) => d.password === d.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });

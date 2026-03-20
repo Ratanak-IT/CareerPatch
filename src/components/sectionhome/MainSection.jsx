@@ -17,8 +17,14 @@ function AvatarItem({ src, name, index, total }) {
     .toUpperCase();
 
   const colors = [
-    "#3B82F6", "#8B5CF6", "#EC4899", "#10B981",
-    "#F59E0B", "#EF4444", "#06B6D4", "#6366F1",
+    "#3B82F6",
+    "#8B5CF6",
+    "#EC4899",
+    "#10B981",
+    "#F59E0B",
+    "#EF4444",
+    "#06B6D4",
+    "#6366F1",
   ];
   const color = colors[(name?.charCodeAt(0) || 0) % colors.length];
 
@@ -52,7 +58,9 @@ function AvatarItem({ src, name, index, total }) {
                    transition-transform duration-200"
         style={{
           background: color,
-          transform: hovered ? "translateY(-4px) scale(1.12)" : "translateY(0) scale(1)",
+          transform: hovered
+            ? "translateY(-4px) scale(1.12)"
+            : "translateY(0) scale(1)",
           marginLeft: index === 0 ? 0 : "-12px",
         }}
       >
@@ -61,7 +69,9 @@ function AvatarItem({ src, name, index, total }) {
             src={src}
             alt={name}
             className="w-full h-full object-cover"
-            onError={(e) => { e.currentTarget.style.display = "none"; }}
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+            }}
           />
         ) : (
           <span>{initials}</span>
@@ -72,7 +82,7 @@ function AvatarItem({ src, name, index, total }) {
 }
 
 function AvatarGroup({ users, totalCount }) {
-  const display = users.slice(0, 3);
+  const display = users.slice(0, 5);
   const overflow = totalCount > 5 ? totalCount - 5 : 0;
 
   return (
@@ -94,7 +104,7 @@ function AvatarGroup({ users, totalCount }) {
                        bg-[#1E88E5] flex items-center justify-center text-white text-[11px] font-bold"
             style={{ marginLeft: "-12px", zIndex: 0 }}
           >
-            +{overflow}
+            +{overflow > 99 ? "99" : overflow}
           </div>
         )}
       </div>
@@ -114,31 +124,44 @@ function AvatarGroup({ users, totalCount }) {
 export default function MainSection() {
   const { data: raw, isLoading } = useGetFreelancersQuery();
 
-  /* Init AOS once on mount */
   useEffect(() => {
     AOS.init({
-      duration: 700,       // ms per animation
+      duration: 700,
       easing: "ease-out-cubic",
-      once: true,          // animate only the first time
-      offset: 60,          // px from viewport edge to trigger
+      once: true,
+      offset: 60,
     });
   }, []);
 
-  const allUsers = React.useMemo(() => {
-    if (Array.isArray(raw))                return raw;
-    if (Array.isArray(raw?.data))          return raw.data;
-    if (Array.isArray(raw?.content))       return raw.content;
-    if (Array.isArray(raw?.data?.content)) return raw.data.content;
-    return [];
+
+  const { freelancers, totalCount } = React.useMemo(() => {
+    if (raw?.total != null && Array.isArray(raw?.list)) {
+      const withPhoto = raw.list.filter((u) => u?.profileImageUrl);
+      const withoutPhoto = raw.list.filter((u) => !u?.profileImageUrl);
+      return {
+        freelancers: [...withPhoto, ...withoutPhoto],
+        totalCount: raw.total,
+      };
+    }
+
+    // Fallback: plain array (old API shape)
+    const list = Array.isArray(raw)
+      ? raw
+      : Array.isArray(raw?.data)
+        ? raw.data
+        : Array.isArray(raw?.content)
+          ? raw.content
+          : Array.isArray(raw?.data?.content)
+            ? raw.data.content
+            : [];
+
+    const withPhoto = list.filter((u) => u?.profileImageUrl);
+    const withoutPhoto = list.filter((u) => !u?.profileImageUrl);
+    return {
+      freelancers: [...withPhoto, ...withoutPhoto],
+      totalCount: list.length,
+    };
   }, [raw]);
-
-  const freelancers = React.useMemo(() => {
-    const withPhoto    = allUsers.filter((u) => u?.profileImageUrl);
-    const withoutPhoto = allUsers.filter((u) => !u?.profileImageUrl);
-    return [...withPhoto, ...withoutPhoto];
-  }, [allUsers]);
-
-  const totalCount = freelancers.length;
 
   return (
     <section
@@ -179,7 +202,9 @@ export default function MainSection() {
           >
             <span className="text-[#1E88E5]">Freelance Jobs</span>
             <br />
-            <span className="text-gray-900 dark:text-white">and Talents at</span>
+            <span className="text-gray-900 dark:text-white">
+              and Talents at
+            </span>
             <br />
             <span className="text-gray-900 dark:text-white">Your </span>
             <span className="text-[#1E88E5]">Fingertips</span>
@@ -192,16 +217,16 @@ export default function MainSection() {
             className="text-sm sm:text-base leading-relaxed max-w-[480px]
                        text-gray-500 dark:text-slate-400 m-0"
           >
-            Connect with top freelancers and clients on our platform.
-            Find your perfect match for your next project.
+            Connect with top freelancers and clients on our platform. Find your
+            perfect match for your next project.
           </p>
 
-          {/* Avatar group */}
+
           <div data-aos="fade-up" data-aos-delay="300">
             {isLoading ? (
               <div className="flex items-center gap-3">
                 <div className="flex">
-                  {[0, 1, 2, 3, 4].map((i) => (
+                  {[0, 1, 2].map((i) => (
                     <div
                       key={i}
                       className="w-9 h-9 lg:w-11 lg:h-11 rounded-full bg-gray-200 dark:bg-slate-700 animate-pulse
@@ -218,7 +243,6 @@ export default function MainSection() {
           </div>
         </div>
 
-        {/* ── RIGHT IMAGE ───────────────────────────────────────────── */}
         <div
           data-aos="fade-left"
           data-aos-delay="150"
@@ -235,7 +259,7 @@ export default function MainSection() {
             }}
           />
 
-          {/* Floating Stats Card */}
+          {/* Floating Stats Card — now shows real freelancer count */}
           <div
             data-aos="zoom-in"
             data-aos-delay="500"
@@ -246,12 +270,12 @@ export default function MainSection() {
           >
             <div className="flex items-center gap-2">
               <span className="text-lg sm:text-2xl font-extrabold text-gray-900 dark:text-slate-100">
-                30K+
+                {totalCount > 0 ? `${totalCount}+` : "30K+"}
               </span>
               <span className="text-lg sm:text-xl">💼</span>
             </div>
             <span className="text-[10px] sm:text-xs font-medium text-gray-400 dark:text-slate-400">
-              People got hired
+              {totalCount > 0 ? "Freelancers" : "People got hired"}
             </span>
           </div>
 

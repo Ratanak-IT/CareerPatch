@@ -1,4 +1,3 @@
-// src/components/about/TechCard.jsx
 
 export function TechCardSkeleton() {
   return (

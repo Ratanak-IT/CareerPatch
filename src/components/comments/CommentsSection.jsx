@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useComments } from "../../hooks/useComments";
 
 function timeAgo(value) {
@@ -23,6 +23,7 @@ export default function CommentsSection({
   authUser,
 }) {
   const [input, setInput] = useState("");
+  const listRef = useRef(null);
 
   const {
     comments,
@@ -32,6 +33,12 @@ export default function CommentsSection({
     postComment,
     deleteComment,
   } = useComments(postType, postId, authUser);
+
+  // Auto-scroll to bottom when new comment added
+  useEffect(() => {
+    if (!listRef.current || loading) return;
+    listRef.current.scrollTo({ top: listRef.current.scrollHeight, behavior: "smooth" });
+  }, [comments.length, loading]);
 
   const currentUserId =
     authUser?.id || authUser?.userId || authUser?.sub || null;
@@ -62,7 +69,7 @@ export default function CommentsSection({
       )}
 
       {/* Comment list */}
-      <div className="space-y-4 mb-4 max-h-64 overflow-y-auto pr-1">
+      <div ref={listRef} className="space-y-4 mb-4 max-h-64 overflow-y-auto pr-1">
         {loading ? (
           <div className="space-y-3">
             {[1, 2].map((n) => (

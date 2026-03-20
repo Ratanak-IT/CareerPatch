@@ -110,7 +110,7 @@ export default function TalentByFreelancer({
         <div className="w-full h-px bg-[#e8f0fe] dark:bg-[#1e3a5f]" />
 
         {/* ── Skill pills ── */}
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1.5 min-h-[36px] items-start">
           {visibleTags.map((skill, i) => (
             <span key={i}
               className="inline-block text-[11px] font-semibold px-3 py-1 rounded-full

@@ -13,12 +13,21 @@ import JobsGrid from "../components/findwork/JobsGrid";
 import { useGetAllJobsQuery } from "../services/servicesApi";
 import TalentByFreelancerSkeleton from "../components/loading/Talentbyfreelancerskeleton";
 import StarsBackground from "../components/startBackground/StarsBackground";
-
+import { useVisibleCount } from "../hooks/useVisibleCount";
 
 export default function Home() {
+  const visibleCount = useVisibleCount();
   const { data, isLoading, isError } = useGetFreelancersQuery();
 
-  const freelancers = data?.data?.content || [];
+  const freelancers = useMemo(() => {
+    if (Array.isArray(data?.list)) return data.list;
+    if (Array.isArray(data?.data?.content)) return data.data.content;
+    if (Array.isArray(data?.content)) return data.content;
+    if (Array.isArray(data?.data)) return data.data;
+    if (Array.isArray(data)) return data;
+    return [];
+  }, [data]);
+
   const {
     data: jobData,
     isLoading: jobLoading,
@@ -36,7 +45,7 @@ export default function Home() {
     <div>
       <StarsBackground starCount={200} />
       <MainSection />
-      
+
       <HowIsWork />
       <FindTheBest />
       <div>
@@ -49,10 +58,10 @@ export default function Home() {
       </div>
       {/* Card nusiness owner show */}
       <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6">
-        <div className="mt-6 pb-16">
+        <div className="mt-6">
           <JobsGrid
-            filtered={jobs.slice(0, 4)}
-            visibleCount={4}
+            filtered={jobs.slice(0, visibleCount)}
+            visibleCount={visibleCount}
             isLoading={jobLoading}
             isError={jobError}
           />

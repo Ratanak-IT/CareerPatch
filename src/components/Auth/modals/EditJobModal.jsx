@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import { toast } from "react-toastify";
 import { useGetCategoriesQuery, useUpdateJobMutation } from "../../../services/servicesApi";
 import { uploadImageToCloudinary } from "../../../utils/uploadToCloudinary";
 
@@ -82,6 +83,8 @@ export default function EditJobModal({ job, onClose, onSaved }) {
         status:      form.status,
         jobImages:   finalImages,
       }).unwrap();
+
+      toast.success("Job updated successfully!");
 
       onSaved?.();
       onClose();
@@ -318,8 +321,7 @@ export default function EditJobModal({ job, onClose, onSaved }) {
               </div>
             </div>
           </div>
-
-          {/* ── Save button ── */}
+      
           <div className="pt-3 flex justify-center">
             <button
               type="button"

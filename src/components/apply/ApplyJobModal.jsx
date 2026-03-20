@@ -1,4 +1,4 @@
-// src/components/apply/ApplyJobModal.jsx
+
 import { useRef, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { selectAuthUser } from "../../features/auth/authSlice";
@@ -151,6 +151,7 @@ export default function ApplyJobModal({ job, onClose }) {
     phone:       authUser?.phone   || "",
     jobTitle:    job?.title        || "",
     description: "",
+    coverLetter: "",
   });
 
   const [cvFile,          setCvFile]          = useState(null);
@@ -234,6 +235,7 @@ export default function ApplyJobModal({ job, onClose }) {
         description:      form.description.trim() || null,
         cv_url:           cvUrl,
         overview_url:     overviewUrl,
+        cover_letter:     form.coverLetter.trim() || null,
       });
       setSubmitting(false);
       if (dbErr) { setError("Failed to submit. Please try again."); return; }
@@ -376,6 +378,44 @@ export default function ApplyJobModal({ job, onClose }) {
               disabled={isBusy} rows={4}
               placeholder="Tell us about yourself and why you're a great fit for this role…"
               className={`${inputCls} resize-none`} />
+          </div>
+
+          {/* Cover Letter */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[13px] font-semibold text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+              Cover Letter
+              <span className="text-[11px] font-normal text-slate-400 dark:text-slate-500">(optional but recommended)</span>
+            </label>
+            <div className="relative">
+              <textarea
+                value={form.coverLetter}
+                onChange={(e) => set("coverLetter", e.target.value)}
+                disabled={isBusy}
+                rows={5}
+                maxLength={1000}
+                placeholder="Introduce yourself and explain why you're the best fit for this role. Mention relevant skills, experience, and what excites you about this opportunity…"
+                className={`${inputCls} resize-none`}
+              />
+              <span className="absolute bottom-2 right-3 text-[10px] text-slate-400 dark:text-slate-600 pointer-events-none">
+                {form.coverLetter.length}/1000
+              </span>
+            </div>
+            {/* Tips */}
+            {form.coverLetter.length === 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                {["Mention your top skill", "Why this job?", "Your availability"].map((tip) => (
+                  <button
+                    key={tip}
+                    type="button"
+                    disabled={isBusy}
+                    onClick={() => set("coverLetter", form.coverLetter + (form.coverLetter ? " " : "") + tip + "...")}
+                    className="text-[11px] px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-500 dark:text-blue-400 border border-blue-100 dark:border-blue-800 hover:bg-blue-100 transition"
+                  >
+                    + {tip}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Upload row — 2 cols on sm+ */}

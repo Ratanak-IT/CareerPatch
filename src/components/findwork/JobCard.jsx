@@ -13,8 +13,9 @@ import {
   FALLBACK_IMAGE,
   FALLBACK_AVATAR,
 } from "../../utils/jobUtils";
+import { toast } from "react-toastify";
 
-export default function JobCard({ job, categoryMap = {}}) {
+export default function JobCard({ job, categoryMap = {} }) {
   const navigate = useNavigate();
   const isAuthed = useSelector(selectIsAuthed);
   const authUser = useSelector(selectAuthUser);
@@ -79,20 +80,38 @@ export default function JobCard({ job, categoryMap = {}}) {
     e.preventDefault();
     e.stopPropagation();
     if (!isAuthed) {
-      navigate(`/login?redirect=${encodeURIComponent(`/businesses/${job.userId}`)}`);
+      navigate(
+        `/login?redirect=${encodeURIComponent(`/businesses/${job.userId}`)}`,
+      );
       return;
     }
     if (job?.userId) navigate(`/businesses/${job.userId}`);
   };
 
-  const handleBookmark = (e) => {
+  const handleBookmark = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (!isAuthed) {
       navigate(`/login?redirect=${encodeURIComponent(`/jobs/${jobId}`)}`);
       return;
     }
-    toggle();
+    const wasLiked = liked; // capture before toggle flips it
+    try {
+      await toggle();
+      if (wasLiked) {
+        toast.info("Bookmark removed", {
+          icon: "🔖",
+          autoClose: 1500,
+        });
+      } else {
+        toast.success("Bookmark saved!", {
+          icon: "❤️",
+          autoClose: 1500,
+        });
+      }
+    } catch {
+      toast.error("Failed to update bookmark");
+    }
   };
 
   const handleApplyClick = (e) => {
@@ -118,11 +137,7 @@ export default function JobCard({ job, categoryMap = {}}) {
         />
       )}
 
-      <div
-        data-aos="fade-up"
-        data-aos-delay="0"
-        data-aos-duration="650"
-      >
+      <div data-aos="fade-up" data-aos-delay="0" data-aos-duration="650">
         <Link
           to={`/jobs/${jobId}`}
           onClick={(e) => requireAuth(e, `/jobs/${jobId}`)}
@@ -141,9 +156,12 @@ export default function JobCard({ job, categoryMap = {}}) {
               src={image}
               alt={title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              onError={(e) => { e.currentTarget.src = FALLBACK_IMAGE; }}
+              onError={(e) => {
+                e.currentTarget.src = FALLBACK_IMAGE;
+              }}
             />
 
+            {/* Bookmark button */}
             <button
               onClick={handleBookmark}
               className={`absolute top-3 right-3 w-8 h-8 rounded-full
@@ -155,7 +173,11 @@ export default function JobCard({ job, categoryMap = {}}) {
                              : "bg-white/90 dark:bg-slate-800/90"
                          }`}
               aria-label={
-                isAuthed ? (liked ? "Remove bookmark" : "Bookmark") : "Login to bookmark"
+                isAuthed
+                  ? liked
+                    ? "Remove bookmark"
+                    : "Bookmark"
+                  : "Login to bookmark"
               }
               type="button"
             >
@@ -175,7 +197,10 @@ export default function JobCard({ job, categoryMap = {}}) {
             </button>
 
             {!isAuthed && (
-              <div className="absolute inset-0 bg-transparent group-hover:bg-black/5 transition-colors duration-200 flex items-end justify-center pb-3 opacity-0 group-hover:opacity-100 pointer-events-none">
+              <div
+                className="absolute inset-0 bg-transparent group-hover:bg-black/5 transition-colors duration-200
+                              flex items-end justify-center pb-3 opacity-0 group-hover:opacity-100 pointer-events-none"
+              >
                 <span className="bg-black/60 text-white text-[10px] font-semibold px-3 py-1 rounded-full">
                   Login to view details
                 </span>
@@ -185,11 +210,11 @@ export default function JobCard({ job, categoryMap = {}}) {
 
           {/* Content */}
           <div className="p-3 sm:p-4 flex flex-col flex-1">
-            <h3 className="text-[#1E88E5] dark:text-blue-100 font-bold text-md mb-1 line-clamp-1 truncate">
+            <h3 className="text-[#1E88E5] dark:text-blue-100 font-bold text-lg mb-1 line-clamp-1 truncate">
               {title}
             </h3>
 
-            <p className="text-gray-400 text-xs dark:text-gray-300 leading-relaxed mb-3 overflow-hidden line-clamp-3">
+            <p className="text-gray-400 text-md dark:text-gray-300 leading-relaxed mb-3 overflow-hidden line-clamp-3 min-h-[3.75rem]">
               {description}
             </p>
 
@@ -200,8 +225,8 @@ export default function JobCard({ job, categoryMap = {}}) {
                   status === "OPEN"
                     ? "text-green-500"
                     : status === "DRAFT"
-                    ? "text-yellow-500"
-                    : "text-gray-500"
+                      ? "text-yellow-500"
+                      : "text-gray-500"
                 }`}
               >
                 {status}
@@ -212,7 +237,8 @@ export default function JobCard({ job, categoryMap = {}}) {
               {tags.slice(0, 3).map((t) => (
                 <span
                   key={t}
-                  className="bg-[#1E88E5]/10 dark:bg-blue-500/20 text-[#1E88E5] dark:text-blue-400 text-[10px] font-semibold px-2.5 py-0.5 rounded-full"
+                  className="bg-[#1E88E5]/10 dark:bg-blue-500/20 text-[#1E88E5] dark:text-blue-400
+                             text-[10px] font-semibold px-2.5 py-0.5 rounded-full"
                 >
                   {t}
                 </span>
@@ -222,6 +248,7 @@ export default function JobCard({ job, categoryMap = {}}) {
             <div className="border-t border-gray-100 dark:border-slate-700 mb-3" />
 
             <div className="flex items-center justify-between mt-auto">
+              {/* Author */}
               <button
                 type="button"
                 onClick={goBusinessProfile}
@@ -232,19 +259,23 @@ export default function JobCard({ job, categoryMap = {}}) {
                   src={authorAvatar}
                   alt={authorName}
                   className="w-8 h-8 rounded-full object-cover ring-2 ring-gray-100 dark:ring-slate-700"
-                  onError={(e) => { e.currentTarget.src = FALLBACK_AVATAR; }}
+                  onError={(e) => {
+                    e.currentTarget.src = FALLBACK_AVATAR;
+                  }}
                 />
-                <span className="text-gray-700 w-[13ch] dark:text-gray-300 text-xs font-medium truncate max-w-[110px]">
+                <span className="text-gray-700 dark:text-gray-300 text-xs font-medium truncate max-w-[110px] w-[13ch]">
                   {authorName}
                 </span>
               </button>
 
+              {/* Apply button */}
               <button
                 onClick={handleApplyClick}
-                className="bg-[#1E88E5] hover:bg-blue-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200 active:scale-95"
+                className="bg-[#1E88E5] hover:bg-blue-600 text-white text-xs font-semibold
+                           px-3 py-1.5 rounded-lg transition-all duration-200 active:scale-95 cursor-pointer"
                 type="button"
               >
-                Apply Now
+                Apply
               </button>
             </div>
           </div>

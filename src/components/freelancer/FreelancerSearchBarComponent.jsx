@@ -29,7 +29,7 @@ function ModernDropdown({
         onClick={() => !loading && setOpen((v) => !v)}
         className="w-full h-full flex items-center justify-between px-4 md:px-5
                    text-sm text-left bg-transparent outline-none
-                   text-gray-500 dark:text-slate-300 transition-colors"
+                   text-gray-500 dark:text-slate-300 transition-colors cursor-pointer"
       >
         <span className="truncate">
           {loading ? "Loading categories..." : value || placeholder}
@@ -212,7 +212,7 @@ export default function FreelancerSearchBarComponent({
           className="px-10 bg-[#1E88E5] hover:bg-blue-600
                      dark:bg-blue-500 dark:hover:bg-blue-400
                      text-white font-semibold text-sm
-                     transition-colors shrink-0 rounded-r-2xl"
+                     transition-colors shrink-0 rounded-r-2xl cursor-pointer"
         >
           Search
         </button>
@@ -258,7 +258,7 @@ export default function FreelancerSearchBarComponent({
               onClick={handleSearch}
               className="w-9 h-9 rounded-xl bg-[#1E88E5] hover:bg-blue-600
                          flex items-center justify-center shrink-0
-                         transition-colors active:scale-95"
+                         transition-colors active:scale-95 cursor-pointer"
             >
               <svg
                 className="w-[18px] h-[18px] text-white"

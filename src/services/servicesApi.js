@@ -1,15 +1,22 @@
-// src/services/serviceApi.js (or your current file path)
+
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-// Wraps fetchBaseQuery to silently swallow 403 responses (freelancers
-// hitting bookmark endpoints that require BUSINESS_OWNER role).
-// Returns empty array data so the UI shows "No bookmarks" instead of erroring.
 function make403SilentQuery(baseQueryFn) {
   return async (args, api, extraOptions) => {
     const result = await baseQueryFn(args, api, extraOptions);
+
+
     if (result?.error?.status === 403) {
       return { data: [] };
     }
+
+    if (
+      result?.error?.status === "PARSING_ERROR" &&
+      result?.error?.originalStatus === 200
+    ) {
+      return { data: result.error.data ?? "ok" };
+    }
+
     return result;
   };
 }
@@ -23,8 +30,8 @@ export function normalizeService(s) {
     imageUrls: Array.isArray(s?.jobImages)
       ? s.jobImages
       : Array.isArray(s?.imageUrls)
-      ? s.imageUrls
-      : [],
+        ? s.imageUrls
+        : [],
   };
 }
 
@@ -48,30 +55,29 @@ function normalizeBookmarkList(res) {
   return [];
 }
 
-// ─────────────────────────────────────────────────────────────
-// API
-// ─────────────────────────────────────────────────────────────
 export const serviceApi = createApi({
   reducerPath: "serviceApi",
 
-  baseQuery: make403SilentQuery(fetchBaseQuery({
-    baseUrl: BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
-      const state = getState();
+  baseQuery: make403SilentQuery(
+    fetchBaseQuery({
+      baseUrl: BASE_URL,
+      prepareHeaders: (headers, { getState }) => {
+        const state = getState();
 
-      const token =
-        state?.auth?.accessToken ||
-        state?.auth?.token ||
-        localStorage.getItem("ACCESS_TOKEN") ||
-        localStorage.getItem("token");
+        const token =
+          state?.auth?.accessToken ||
+          state?.auth?.token ||
+          localStorage.getItem("ACCESS_TOKEN") ||
+          localStorage.getItem("token");
 
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
+        if (token) {
+          headers.set("authorization", `Bearer ${token}`);
+        }
 
-      return headers;
-    },
-  })),
+        return headers;
+      },
+    }),
+  ),
 
   tagTypes: ["Service", "ServiceBookmark", "JobBookmark"],
 
