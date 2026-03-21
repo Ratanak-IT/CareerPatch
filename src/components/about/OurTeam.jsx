@@ -5,7 +5,7 @@ import Team3 from "../../assets/bidin.jpg";
 import Team4 from "../../assets/kormva.png";
 import Team5 from "../../assets/seanghour.JPG";
 import Team6 from "../../assets/chhorpong.jpg";
-import Team7 from "../../assets/member.png";
+import Team7 from "../../assets/karona.jpg";
 import TeamCard, { TeamCardSkeleton } from "./Teamcard";
 import { TechCardSkeleton } from "./TechCard";
 import LogoLoop from "../looplogo/LogoLoop";
