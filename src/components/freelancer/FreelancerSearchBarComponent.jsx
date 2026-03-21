@@ -17,7 +17,6 @@ function ModernDropdown({
         setOpen(false);
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -34,7 +33,6 @@ function ModernDropdown({
         <span className="truncate">
           {loading ? "Loading categories..." : value || placeholder}
         </span>
-
         <svg
           className={`w-4 h-4 shrink-0 ml-2 text-gray-400 dark:text-slate-500 transition-transform ${
             open ? "rotate-180" : ""
@@ -58,7 +56,6 @@ function ModernDropdown({
           <div className="max-h-64 overflow-y-auto py-2">
             {options.map((option) => {
               const active = value === option;
-
               return (
                 <button
                   key={option}
@@ -134,7 +131,8 @@ export default function FreelancerSearchBarComponent({
 
   return (
     <div style={{ fontFamily: "'Poppins', sans-serif" }}>
-      {/* Desktop */}
+
+   {/* desktop */}
       <div
         className="hidden md:flex items-stretch h-[64px] rounded-2xl overflow-visible
                    bg-white dark:bg-[#0d1b35]
@@ -142,10 +140,7 @@ export default function FreelancerSearchBarComponent({
                    shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_32px_rgba(0,0,0,0.5)]"
       >
         {/* Search input */}
-        <div
-          className="flex items-center gap-3 px-6 min-w-0"
-          style={{ flex: "2" }}
-        >
+        <div className="flex items-center gap-3 px-6 min-w-0" style={{ flex: "2" }}>
           <svg
             className="w-[18px] h-[18px] text-gray-400 dark:text-slate-500 shrink-0"
             fill="none"
@@ -178,13 +173,7 @@ export default function FreelancerSearchBarComponent({
               className="text-gray-300 hover:text-gray-500 dark:text-slate-600
                          dark:hover:text-slate-400 shrink-0"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
               </svg>
             </button>
@@ -218,19 +207,22 @@ export default function FreelancerSearchBarComponent({
         </button>
       </div>
 
-      {/* Mobile */}
+      {/* mobile */}
       <div className="md:hidden">
+
         <div
-          className="w-full rounded-2xl overflow-visible
+          className="w-full rounded-2xl
                      bg-white dark:bg-[#0d1b35]
                      border border-gray-200 dark:border-[#1e3a5f]
                      shadow-[0_4px_20px_rgba(0,0,0,0.08)]"
         >
-          {/* Search row */}
+
           <div
-            className="flex items-center gap-3 px-4 h-[54px]
+            className="flex items-center gap-2 pl-4 pr-3 h-[54px]
                        border-b border-gray-100 dark:border-[#1e3a5f]"
+            style={{ borderTopLeftRadius: "1rem", borderTopRightRadius: "1rem" }}
           >
+            {/* Search icon */}
             <svg
               className="w-[17px] h-[17px] text-gray-400 dark:text-slate-500 shrink-0"
               fill="none"
@@ -242,17 +234,36 @@ export default function FreelancerSearchBarComponent({
               <path d="m21 21-4.35-4.35" strokeLinecap="round" />
             </svg>
 
+            {/* Text input */}
             <input
               type="text"
               value={localSearch}
               onChange={(e) => setLocalSearch(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Search by title, category, freelancer name"
-              className="flex-1 bg-transparent outline-none text-[14px]
+              className="flex-1 min-w-0 bg-transparent outline-none text-[14px]
                          text-gray-700 dark:text-slate-200
                          placeholder-gray-400 dark:placeholder-slate-500"
             />
 
+            {/* Clear button */}
+            {localSearch && (
+              <button
+                type="button"
+                onClick={() => {
+                  setLocalSearch("");
+                  onChangeSearch?.("");
+                }}
+                className="text-gray-300 hover:text-gray-500 dark:text-slate-600
+                           dark:hover:text-slate-400 shrink-0 p-1"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
+                </svg>
+              </button>
+            )}
+
+            {/* Submit arrow button */}
             <button
               type="button"
               onClick={handleSearch}
@@ -276,8 +287,10 @@ export default function FreelancerSearchBarComponent({
             </button>
           </div>
 
-          {/* Filter row */}
-          <div className="flex h-[48px]">
+          <div
+            className="flex h-[48px]"
+            style={{ borderBottomLeftRadius: "1rem", borderBottomRightRadius: "1rem" }}
+          >
             <div className="relative flex-1">
               <ModernDropdown
                 value={category}
@@ -288,8 +301,10 @@ export default function FreelancerSearchBarComponent({
               />
             </div>
           </div>
+
         </div>
       </div>
+
     </div>
   );
 }

@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router";
 import { useSelector } from "react-redux";
@@ -162,11 +161,10 @@ function ErrorState({ message, onBack }) {
 const card =
   "bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-[#334155] rounded-2xl p-3.5 sm:p-6 shadow-sm";
 
-// ─── Sidebar card content (shared between inline mobile + desktop sticky) ─────
+// ─── Sidebar card content ─────────────────────────────────────────────────────
 function SidebarContent({ exp, canFavorite, liked, handleToggleFavorite }) {
   return (
     <>
-      {/* Experience + Heart */}
       <div className="flex items-center justify-between mb-5">
         <div
           className="flex items-center gap-3 flex-1 p-3 rounded-xl
@@ -345,65 +343,103 @@ export default function CardDetailFreelancer() {
 
           {/* ══ LEFT — main content column ══ */}
           <div className="w-full lg:w-[62%] flex flex-col gap-5 order-1">
-            {/* ── Header card (profile) ── */}
+            {/* ── Header card ── */}
             <div className={card}>
-              <div className="flex flex-col xs:flex-row items-start justify-between gap-3 sm:gap-4">
-                <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
-                  {/* Avatar — clickable */}
+              {/* Avatar + name + title + location row */}
+              <div className="flex items-start gap-3 sm:gap-4 min-w-0">
+                <Link
+                  to={`/freelancers/${service?.userId}`}
+                  className="relative shrink-0 hover:opacity-80 transition-opacity"
+                >
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl overflow-hidden ring-2 ring-blue-100">
+                    <img
+                      src={avatar}
+                      alt={name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = FALLBACK_AVATAR;
+                      }}
+                    />
+                  </div>
+                  {status === "AVAILABLE" && (
+                    <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white" />
+                  )}
+                </Link>
+
+                <div className="min-w-0 flex-1">
                   <Link
                     to={`/freelancers/${service?.userId}`}
-                    className="relative shrink-0 hover:opacity-80 transition-opacity"
+                    className="flex items-center gap-2 mb-1.5 w-fit hover:opacity-75 transition-opacity"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl overflow-hidden ring-2 ring-blue-100">
-                      <img
-                        src={avatar}
-                        alt={name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = FALLBACK_AVATAR;
+                    <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                      {name.slice(0, 2).toUpperCase()}
+                    </div>
+                    <span className="text-[13px] font-semibold truncate underline-offset-2 hover:underline text-slate-900 dark:text-white">
+                      {name}
+                    </span>
+                  </Link>
+
+                  <h1 className="text-blue-500 text-[17px] sm:text-xl lg:text-[22px] font-bold leading-snug mb-1.5 sm:mb-2">
+                    {title}
+                  </h1>
+
+                  <div className="flex flex-wrap items-center gap-3">
+                    {loc && (
+                      <span className="flex items-center gap-1.5 text-[12px] text-slate-500 dark:text-slate-400">
+                        <IconLocation />
+                        {loc}
+                      </span>
+                    )}
+                    <span className="flex items-center gap-1.5 text-[12px] text-slate-500 dark:text-slate-400">
+                      <IconClock />
+                      Posted {posted}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── Status + catName + Message — same row ✅ ── */}
+              {(status || catName) && (
+                <>
+                  <div className="my-4 border-t border-slate-100 dark:border-[#334155]" />
+                  <div className="flex flex-wrap items-center gap-2">
+                    {status && (
+                      <span
+                        className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full
+                        bg-emerald-50 text-emerald-600 border border-emerald-100
+                        dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-900/50"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                        {status}
+                      </span>
+                    )}
+                    {catName && (
+                      <span
+                        className="text-[11px] font-semibold px-3 py-1 rounded-full
+                        bg-blue-50 text-blue-600 border border-blue-100
+                        dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-900/50"
+                      >
+                        {catName}
+                      </span>
+                    )}
+                    {/* ✅ Message button — same row as status/catName */}
+                    <div className="ml-auto shrink-0">
+                      <MessageButton
+                        otherUser={{
+                          id: user?.id || service?.userId,
+                          fullName: name,
+                          profileImageUrl: avatar,
                         }}
                       />
                     </div>
-                    {status === "AVAILABLE" && (
-                      <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white" />
-                    )}
-                  </Link>
-
-                  <div className="min-w-0">
-                    {/* Name — clickable */}
-                    <Link
-                      to={`/freelancers/${service?.userId}`}
-                      className="flex items-center gap-2 mb-1.5 w-fit hover:opacity-75 transition-opacity"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
-                        {name.slice(0, 2).toUpperCase()}
-                      </div>
-                      <span className="text-[13px] font-semibold truncate underline-offset-2 hover:underline text-slate-900 dark:text-white">
-                        {name}
-                      </span>
-                    </Link>
-
-                    <h1 className="text-blue-500 text-[17px] sm:text-xl lg:text-[22px] font-bold leading-snug mb-1.5 sm:mb-2">
-                      {title}
-                    </h1>
-
-                    <div className="flex flex-wrap items-center gap-3">
-                      {loc && (
-                        <span className="flex items-center gap-1.5 text-[12px] text-slate-500 dark:text-slate-400">
-                          <IconLocation />
-                          {loc}
-                        </span>
-                      )}
-                      <span className="flex items-center gap-1.5 text-[12px] text-slate-500 dark:text-slate-400">
-                        <IconClock />
-                        Posted {posted}
-                      </span>
-                    </div>
                   </div>
-                </div>
+                </>
+              )}
 
-                <div className="shrink-0 self-start xs:self-auto mt-1 xs:mt-0">
+              {/* Fallback: show Message when no status/catName */}
+              {!status && !catName && (
+                <div className="mt-4 flex justify-end">
                   <MessageButton
                     otherUser={{
                       id: user?.id || service?.userId,
@@ -412,29 +448,10 @@ export default function CardDetailFreelancer() {
                     }}
                   />
                 </div>
-              </div>
-
-              {(status || catName) && (
-                <>
-                  <div className="my-4 border-t border-slate-100 dark:border-[#334155]" />
-                  <div className="flex flex-wrap gap-2">
-                    {status && (
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-900/50">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-                        {status}
-                      </span>
-                    )}
-                    {catName && (
-                      <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-900/50">
-                        {catName}
-                      </span>
-                    )}
-                  </div>
-                </>
               )}
             </div>
 
-            {/* ── Sidebar inline — ONLY on < lg, placed RIGHT AFTER profile ── */}
+            {/* ── Sidebar inline — ONLY on < lg ── */}
             <div className="lg:hidden">
               <div className={card}>
                 <SidebarContent {...sidebarProps} />
@@ -508,31 +525,6 @@ export default function CardDetailFreelancer() {
             {(tools.length > 0 || skillsArr.length > 0) && (
               <div className={card}>
                 <div className="flex flex-col md:flex-row gap-6 md:gap-0">
-                  <div className="w-full md:w-[45%] md:pr-6">
-                    <h2 className="text-base sm:text-[20px] font-bold mb-3 sm:mb-4 text-slate-900 dark:text-white">
-                      Tools & Technologies
-                    </h2>
-                    {tools.length > 0 ? (
-                      <ul className="space-y-3">
-                        {tools.map((tool, i) => (
-                          <li
-                            key={i}
-                            className="flex items-center gap-2.5 text-[13px] text-slate-500 dark:text-slate-400"
-                          >
-                            <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0" />
-                            {typeof tool === "string"
-                              ? tool
-                              : tool?.name || "—"}
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-[12px] italic opacity-40 text-slate-500 dark:text-slate-400">
-                        None
-                      </p>
-                    )}
-                  </div>
-                  <div className="hidden md:block w-px bg-slate-100 dark:bg-[#334155] shrink-0" />
                   <div className="flex-1 md:pl-6">
                     <h2 className="text-base sm:text-[20px] font-bold mb-3 sm:mb-4 text-slate-900 dark:text-white">
                       Skills

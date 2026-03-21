@@ -1,12 +1,34 @@
-// src/components/sectionhome/FindTheBest.jsx
 import React, { useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import ButtonComponent from "../button/ButtonComponent";
 import girlImg from "../../assets/girl.png";
 import { Link } from "react-router";
+import { useGetFreelancersQuery, useGetJobsQuery } from "../../services/freelancerApi";
 
 export default function FindTheBest() {
+  const { data: freelancerRaw } = useGetFreelancersQuery();
+  const { data: jobRaw }        = useGetJobsQuery();
+  const freelancerCount = (() => {
+    if (freelancerRaw?.total != null) return freelancerRaw.total;
+    const arr =
+      Array.isArray(freelancerRaw)                ? freelancerRaw :
+      Array.isArray(freelancerRaw?.data)          ? freelancerRaw.data :
+      Array.isArray(freelancerRaw?.content)       ? freelancerRaw.content :
+      Array.isArray(freelancerRaw?.data?.content) ? freelancerRaw.data.content : [];
+    return arr.length || null;
+  })();
+
+  const jobCount = (() => {
+    if (jobRaw?.total != null) return jobRaw.total;
+    const arr =
+      Array.isArray(jobRaw)                ? jobRaw :
+      Array.isArray(jobRaw?.data)          ? jobRaw.data :
+      Array.isArray(jobRaw?.content)       ? jobRaw.content :
+      Array.isArray(jobRaw?.data?.content) ? jobRaw.data.content : [];
+    return arr.length || null;
+  })();
+
   useEffect(() => {
     AOS.init({
       duration: 700,
@@ -26,15 +48,10 @@ export default function FindTheBest() {
       ].join(" ")}
       style={{ fontFamily: "'Poppins', sans-serif" }}
     >
-      <div
-        className="
-          max-w-[1440px] mx-auto
-          px-4 sm:px-6 md:px-8 lg:px-[120px]
-          flex flex-col lg:flex-row
-          items-center
-          gap-10 lg:gap-8
-        "
-      >
+      <div className="max-w-[1440px] mx-auto
+                      px-4 sm:px-6 md:px-8 lg:px-[120px]
+                      flex flex-col lg:flex-row items-center gap-10 lg:gap-8">
+
         {/* LEFT: Image + floating stat cards */}
         <div
           data-aos="fade-right"
@@ -42,51 +59,37 @@ export default function FindTheBest() {
           data-aos-duration="800"
           className="w-full lg:w-1/2 relative flex justify-center order-1"
         >
-          {/* 500+ freelancers */}
+          {/* Freelancer count */}
           <div
             data-aos="zoom-in"
             data-aos-delay="350"
-            className="
-              absolute z-10
-              top-20 right-2
-              sm:top-10 sm:right-6
-              md:top-40 md:right-30
-              lg:top-45 lg:right-4
-              rounded-2xl px-4 py-3 sm:px-5 sm:py-4
-              min-w-[120px] sm:min-w-[140px]
-              bg-white dark:bg-[rgba(15,34,64,0.95)]
-              shadow-[0_8px_32px_rgba(30,136,229,0.12)]
-            "
+            className="absolute z-10
+                       top-20 right-10 sm:top-10 sm:right-6 md:top-40 md:right-30 lg:top-45 lg:right-4
+                       rounded-2xl px-4 py-3 sm:px-5 sm:py-4 min-w-[120px] sm:min-w-[140px]
+                       bg-white dark:bg-[rgba(15,34,64,0.95)]
+                       shadow-[0_8px_32px_rgba(30,136,229,0.12)]"
           >
             <p className="text-[20px] sm:text-[24px] md:text-[28px] font-bold text-[#1E88E5] leading-none">
-              500+
+              {freelancerCount != null ? `${freelancerCount}+` : "500+"}
             </p>
             <p className="text-xs sm:text-sm mt-1 text-gray-500 dark:text-slate-400">
               freelancers
             </p>
           </div>
 
-          {/* 300+ freelance work posted */}
           <div
             data-aos="zoom-in"
             data-aos-delay="500"
-            className="
-              absolute z-10
-              bottom-15 left-15
-              sm:bottom-16 sm:left-4
-              md:bottom-25 md:left-60
-              lg:bottom-28 lg:left-30
-              rounded-2xl px-4 py-3 sm:px-5 sm:py-4
-              min-w-[150px] sm:min-w-[180px]
-              bg-white dark:bg-[rgba(15,34,64,0.95)]
-              shadow-[0_8px_32px_rgba(30,136,229,0.12)]
-            "
+            className="absolute z-10
+                       bottom-15 left-20 sm:bottom-16 sm:left-5 md:bottom-25 md:left-65 lg:bottom-28 lg:left-40
+                       rounded-2xl px-4 py-3 sm:px-5 sm:py-5 min-w-[150px] sm:min-w-[130px]
+                       bg-white dark:bg-[rgba(15,34,64,0.95)]"
           >
             <p className="text-[20px] sm:text-[24px] md:text-[28px] font-bold text-[#1E88E5] leading-none">
-              300+
+              {jobCount != null ? `${jobCount}+` : "300+"}
             </p>
             <p className="text-xs sm:text-sm mt-1 text-gray-500 dark:text-slate-400">
-              freelance work posted
+              freelance posted
             </p>
           </div>
 
@@ -94,27 +97,17 @@ export default function FindTheBest() {
           <img
             src={girlImg}
             alt="Professional freelancer"
-            className="
-              relative z-0
-              w-full
-              max-w-[260px] sm:max-w-[340px] md:max-w-[420px] lg:max-w-[460px]
-              h-auto object-contain select-none
-            "
+            className="relative z-0 w-full
+                       max-w-[260px] sm:max-w-[340px] md:max-w-[420px] lg:max-w-[460px]
+                       h-auto object-contain select-none"
             style={{ maxHeight: "520px" }}
             draggable={false}
           />
         </div>
 
         {/* RIGHT: Text */}
-        <div
-          className="
-            w-full lg:w-1/2
-            space-y-5 sm:space-y-6
-            text-center lg:text-left
-            order-2
-            lg:pl-8
-          "
-        >
+        <div className="w-full lg:w-1/2 space-y-5 sm:space-y-6
+                        text-center lg:text-left order-2 lg:pl-8">
           <h2
             data-aos="fade-up"
             data-aos-delay="100"
@@ -129,7 +122,8 @@ export default function FindTheBest() {
           <p
             data-aos="fade-up"
             data-aos-delay="220"
-            className="text-sm sm:text-base leading-relaxed max-w-[560px] mx-auto lg:mx-0 text-gray-500 dark:text-slate-400"
+            className="text-sm sm:text-base leading-relaxed max-w-[560px] mx-auto lg:mx-0
+                       text-gray-500 dark:text-slate-400"
           >
             Professional freelance banner with bold tagline, stats, and clean
             trust-focused design.
@@ -145,22 +139,14 @@ export default function FindTheBest() {
                 text={
                   <span className="flex items-center gap-2">
                     Find freelancer
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" strokeWidth="2.5"
+                      strokeLinecap="round" strokeLinejoin="round">
                       <line x1="7" y1="17" x2="17" y2="7" />
                       <polyline points="7 7 17 7 17 17" />
                     </svg>
                   </span>
                 }
-                onClick={() => console.log("Find freelancer clicked")}
               />
             </Link>
           </div>

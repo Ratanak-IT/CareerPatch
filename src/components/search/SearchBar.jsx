@@ -10,7 +10,6 @@ function ModernDropdown({ value, options, onChange, placeholder }) {
         setOpen(false);
       }
     }
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -28,7 +27,9 @@ function ModernDropdown({ value, options, onChange, placeholder }) {
       >
         <span className="truncate">{value || placeholder}</span>
         <svg
-          className={`w-4 h-4 shrink-0 ml-2 text-gray-400 dark:text-slate-500 transition-transform ${open ? "rotate-180" : ""}`}
+          className={`w-4 h-4 shrink-0 ml-2 text-gray-400 dark:text-slate-500 transition-transform ${
+            open ? "rotate-180" : ""
+          }`}
           fill="none"
           stroke="currentColor"
           strokeWidth={2}
@@ -112,17 +113,15 @@ export default function SearchBar({
 
   return (
     <div style={{ fontFamily: "'Poppins', sans-serif" }}>
-      {/* Desktop */}
+
+ {/* desktop */}
       <div
         className="hidden md:flex items-stretch h-[64px] rounded-2xl overflow-visible
                    bg-white dark:bg-[#0d1b35]
                    border border-gray-200 dark:border-[#1e3a5f]
                    shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_32px_rgba(0,0,0,0.5)]"
       >
-        <div
-          className="flex items-center gap-3 px-6 min-w-0"
-          style={{ flex: "2" }}
-        >
+        <div className="flex items-center gap-3 px-6 min-w-0" style={{ flex: "2" }}>
           <svg
             className="w-[18px] h-[18px] text-gray-400 dark:text-slate-500 shrink-0"
             fill="none"
@@ -133,7 +132,6 @@ export default function SearchBar({
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.35-4.35" strokeLinecap="round" />
           </svg>
-
           <input
             type="text"
             value={searchText}
@@ -144,19 +142,12 @@ export default function SearchBar({
                        text-sm text-gray-700 dark:text-slate-200
                        placeholder-gray-400 dark:placeholder-slate-500"
           />
-
           {searchText && (
             <button
               onClick={() => onChangeSearch("")}
               className="text-gray-300 hover:text-gray-500 dark:text-slate-600 dark:hover:text-slate-400 shrink-0 cursor-pointer"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
               </svg>
             </button>
@@ -165,8 +156,7 @@ export default function SearchBar({
 
         <div className="w-px self-stretch bg-gray-200 dark:bg-[#1e3a5f]" />
 
-        {/* Category */}
-        <div className="relative flex items-center " style={{ flex: "1" }}>
+        <div className="relative flex items-center" style={{ flex: "1" }}>
           <ModernDropdown
             value={selectedCategory}
             options={categoryOptions}
@@ -177,7 +167,6 @@ export default function SearchBar({
 
         <div className="w-px self-stretch bg-gray-200 dark:bg-[#1e3a5f]" />
 
-        {/* Budget */}
         <div className="relative flex items-center" style={{ flex: "1" }}>
           <ModernDropdown
             value={budgetRange}
@@ -198,15 +187,24 @@ export default function SearchBar({
         </button>
       </div>
 
-      {/* Mobile */}
+  {/* mobile */}
       <div className="md:hidden">
+
         <div
-          className="w-full rounded-2xl overflow-visible
+          className="w-full rounded-2xl
                      bg-white dark:bg-[#0d1b35]
                      border border-gray-200 dark:border-[#1e3a5f]
                      shadow-[0_4px_20px_rgba(0,0,0,0.08)]"
         >
-          <div className="flex items-center gap-3 px-4 h-[54px] border-b border-gray-100 dark:border-[#1e3a5f]">
+
+          <div
+            className="flex items-center gap-2 pl-4 pr-3 h-[54px]
+                       border-b border-gray-100 dark:border-[#1e3a5f]"
+            style={{
+              borderTopLeftRadius: "1rem",
+              borderTopRightRadius: "1rem",
+            }}
+          >
             <svg
               className="w-[17px] h-[17px] text-gray-400 dark:text-slate-500 shrink-0"
               fill="none"
@@ -224,10 +222,22 @@ export default function SearchBar({
               onChange={(e) => onChangeSearch(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && onSubmit()}
               placeholder="Search by title"
-              className="flex-1 bg-transparent outline-none text-[14px]
+              className="flex-1 min-w-0 bg-transparent outline-none text-[14px]
                          text-gray-700 dark:text-slate-200
                          placeholder-gray-400 dark:placeholder-slate-500"
             />
+
+            {searchText && (
+              <button
+                onClick={() => onChangeSearch("")}
+                className="text-gray-300 hover:text-gray-500 dark:text-slate-600
+                           dark:hover:text-slate-400 shrink-0 p-1"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
+                </svg>
+              </button>
+            )}
 
             <button
               onClick={onSubmit}
@@ -251,7 +261,13 @@ export default function SearchBar({
             </button>
           </div>
 
-          <div className="flex h-[48px] divide-x divide-gray-100 dark:divide-[#1e3a5f]">
+          <div
+            className="flex h-[48px] divide-x divide-gray-100 dark:divide-[#1e3a5f]"
+            style={{
+              borderBottomLeftRadius: "1rem",
+              borderBottomRightRadius: "1rem",
+            }}
+          >
             <div className="relative flex-1">
               <ModernDropdown
                 value={selectedCategory}
@@ -260,7 +276,6 @@ export default function SearchBar({
                 placeholder="All Category"
               />
             </div>
-
             <div className="relative flex-1">
               <ModernDropdown
                 value={budgetRange}
@@ -270,8 +285,10 @@ export default function SearchBar({
               />
             </div>
           </div>
+
         </div>
       </div>
+
     </div>
   );
 }

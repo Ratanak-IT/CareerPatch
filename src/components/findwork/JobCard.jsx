@@ -214,7 +214,7 @@ export default function JobCard({ job, categoryMap = {} }) {
               {title}
             </h3>
 
-            <p className="text-gray-400 text-md dark:text-gray-300 leading-relaxed mb-3 overflow-hidden line-clamp-3 min-h-[3.75rem]">
+            <p className="text-gray-400 text-sm dark:text-gray-300 leading-relaxed mb-3 overflow-hidden line-clamp-3 min-h-[3.75rem]">
               {description}
             </p>
 

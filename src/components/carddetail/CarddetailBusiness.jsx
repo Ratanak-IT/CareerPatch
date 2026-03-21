@@ -1,8 +1,10 @@
-
 import { useMemo, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router";
 import { useSelector } from "react-redux";
-import { useGetAllJobsQuery, useGetJobByIdQuery } from "../../services/detailworkApi";
+import {
+  useGetAllJobsQuery,
+  useGetJobByIdQuery,
+} from "../../services/detailworkApi";
 import { useGetUserByIdQuery } from "../../services/userApi";
 import { selectAuthUser } from "../../features/auth/authSlice";
 import { useBookmarks } from "../../hooks/useBookmarks";
@@ -13,8 +15,8 @@ import ApplyJobModal from "../apply/ApplyJobModal";
 
 /* ─── constants ─────────────────────────────────────────────────────────── */
 const FALLBACK_AVATAR = "https://placehold.co/64x64?text=?";
-const FALLBACK_COVER  = "https://placehold.co/900x320?text=No+Image";
-const FALLBACK_THUMB  = "https://placehold.co/80x56?text=img";
+const FALLBACK_COVER = "https://placehold.co/900x320?text=No+Image";
+const FALLBACK_THUMB = "https://placehold.co/80x56?text=img";
 
 /* ─── helpers ───────────────────────────────────────────────────────────── */
 function timeAgo(value) {
@@ -29,7 +31,11 @@ function timeAgo(value) {
   if (sec < 3600) return `${Math.floor(sec / 60)}m ago`;
   if (sec < 86400) return `${Math.floor(sec / 3600)}h ago`;
   if (sec < 604800) return `${Math.floor(sec / 86400)}d ago`;
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  return d.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 function normalizeList(resp) {
   const raw = resp?.data ?? resp;
@@ -49,7 +55,9 @@ function normalizeOne(resp) {
   if (typeof raw === "object") return raw;
   return null;
 }
-function getJobId(job) { return job?.id ?? job?.jobId ?? job?._id ?? null; }
+function getJobId(job) {
+  return job?.id ?? job?.jobId ?? job?._id ?? null;
+}
 function asText(x, fallback = "—") {
   if (x == null) return fallback;
   if (typeof x === "string") return x;
@@ -59,41 +67,89 @@ function asText(x, fallback = "—") {
 
 /* ─── icons ─────────────────────────────────────────────────────────────── */
 const IconClock = () => (
-  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-    <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+  <svg
+    className="w-3.5 h-3.5 shrink-0"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.8}
+    viewBox="0 0 24 24"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
   </svg>
 );
 const IconLocation = () => (
-  <svg className="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" /><circle cx="12" cy="10" r="3" />
+  <svg
+    className="w-3.5 h-3.5 shrink-0"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.8}
+    viewBox="0 0 24 24"
+  >
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+    <circle cx="12" cy="10" r="3" />
   </svg>
 );
 const IconBack = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.2} viewBox="0 0 24 24">
+  <svg
+    className="w-4 h-4"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2.2}
+    viewBox="0 0 24 24"
+  >
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
   </svg>
 );
 const IconBriefcase = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
+  <svg
+    className="w-4 h-4"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.8}
+    viewBox="0 0 24 24"
+  >
     <rect x="2" y="7" width="20" height="14" rx="2" />
     <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2M2 12h20" />
   </svg>
 );
 const IconCalendar = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-    <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+  <svg
+    className="w-4 h-4"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.8}
+    viewBox="0 0 24 24"
+  >
+    <rect x="3" y="4" width="18" height="18" rx="2" />
+    <path d="M16 2v4M8 2v4M3 10h18" />
   </svg>
 );
 const IconTimer = () => (
-  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
-    <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" strokeLinecap="round" />
+  <svg
+    className="w-4 h-4"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={1.8}
+    viewBox="0 0 24 24"
+  >
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 3" strokeLinecap="round" />
   </svg>
 );
 const IconHeart = ({ filled }) => (
-  <svg className="w-5 h-5 transition-transform duration-200" viewBox="0 0 24 24"
-    fill={filled ? "#727FE8" : "none"} stroke={filled ? "#3E43C9" : "currentColor"} strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round"
-      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+  <svg
+    className="w-5 h-5 transition-transform duration-200"
+    viewBox="0 0 24 24"
+    fill={filled ? "#727FE8" : "none"}
+    stroke={filled ? "#3E43C9" : "currentColor"}
+    strokeWidth={2}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z"
+    />
   </svg>
 );
 
@@ -123,13 +179,28 @@ function ErrorState({ message, onBack }) {
     <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] flex items-center justify-center px-4">
       <div className="bg-white dark:bg-[#1e293b] rounded-2xl shadow border border-slate-100 dark:border-slate-700 p-8 max-w-md w-full text-center">
         <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
-          <svg className="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg
+            className="w-5 h-5 text-red-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
         </div>
-        <p className="text-sm font-semibold text-slate-800 dark:text-white mb-1">Could not load</p>
+        <p className="text-sm font-semibold text-slate-800 dark:text-white mb-1">
+          Could not load
+        </p>
         <p className="text-xs text-slate-400 mb-5 break-words">{message}</p>
-        <button onClick={onBack} className="px-5 py-2 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors">
+        <button
+          onClick={onBack}
+          className="px-5 py-2 rounded-xl bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold transition-colors"
+        >
           Go Back
         </button>
       </div>
@@ -137,70 +208,101 @@ function ErrorState({ message, onBack }) {
   );
 }
 
-const card = "bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-[#334155] rounded-2xl p-4 sm:p-6 shadow-sm";
+const card =
+  "bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-[#334155] rounded-2xl p-4 sm:p-6 shadow-sm";
 
-/* ─── Sidebar content (shared: mobile inline + desktop sticky) ───────────── */
-function SidebarContent({ job, liked, handleToggleFavorite, duration, deadline, canApply, onApply }) {
+/* ─── Sidebar content ───────────────────────────────────────────────────── */
+function SidebarContent({
+  job,
+  liked,
+  handleToggleFavorite,
+  duration,
+  deadline,
+  canApply,
+  onApply,
+}) {
   return (
     <>
-      {/* Experience row + heart button */}
       <div className="flex items-center justify-between mb-5">
-        <div className="flex items-center gap-3 flex-1 p-3 rounded-xl
-          bg-blue-50 border border-blue-100 dark:bg-blue-950/50 dark:border-blue-900/40">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0
-            bg-blue-100 text-blue-600 dark:bg-blue-900/60 dark:text-blue-300">
+        <div
+          className="flex items-center gap-3 flex-1 p-3 rounded-xl
+          bg-blue-50 border border-blue-100 dark:bg-blue-950/50 dark:border-blue-900/40"
+        >
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0
+            bg-blue-100 text-blue-600 dark:bg-blue-900/60 dark:text-blue-300"
+          >
             <IconBriefcase />
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider font-semibold mb-0.5 text-slate-500 dark:text-slate-400">Experience</p>
+            <p className="text-[10px] uppercase tracking-wider font-semibold mb-0.5 text-slate-500 dark:text-slate-400">
+              Experience
+            </p>
             <p className="text-[13px] font-bold text-slate-900 dark:text-white">
               {job?.experienceLevel || job?.experience || "Expert"}
             </p>
           </div>
         </div>
-        <button onClick={handleToggleFavorite}
+        <button
+          onClick={handleToggleFavorite}
           aria-label={liked ? "Remove from favorites" : "Add to favorites"}
           className={`ml-3 w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-all duration-200 active:scale-90 hover:scale-110
-            ${liked
-              ? "bg-blue-200 dark:bg-blue-900/30"
-              : "text-blue-400 hover:text-blue-500 hover:bg-blue-50 dark:text-slate-500 dark:hover:text-blue-400 dark:hover:bg-white/5"}`}>
+            ${
+              liked
+                ? "bg-blue-200 dark:bg-blue-900/30"
+                : "text-blue-400 hover:text-blue-500 hover:bg-blue-50 dark:text-slate-500 dark:hover:text-blue-400 dark:hover:bg-white/5"
+            }`}
+        >
           <IconHeart filled={liked} />
         </button>
       </div>
 
       <div className="border-t border-slate-100 dark:border-[#334155] mb-4" />
 
-      {/* Duration */}
       {duration && (
-        <div className="flex items-center gap-3 p-3 rounded-xl mb-3
-          bg-slate-50 border border-slate-100 dark:bg-slate-700/50 dark:border-slate-700">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0
-            bg-slate-200 text-slate-600 dark:bg-slate-600/60 dark:text-slate-300">
+        <div
+          className="flex items-center gap-3 p-3 rounded-xl mb-3
+          bg-slate-50 border border-slate-100 dark:bg-slate-700/50 dark:border-slate-700"
+        >
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0
+            bg-slate-200 text-slate-600 dark:bg-slate-600/60 dark:text-slate-300"
+          >
             <IconTimer />
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider font-semibold mb-0.5 text-slate-500 dark:text-slate-400">Duration</p>
-            <p className="text-[13px] font-bold text-slate-900 dark:text-white">{duration}</p>
+            <p className="text-[10px] uppercase tracking-wider font-semibold mb-0.5 text-slate-500 dark:text-slate-400">
+              Duration
+            </p>
+            <p className="text-[13px] font-bold text-slate-900 dark:text-white">
+              {duration}
+            </p>
           </div>
         </div>
       )}
 
-      {/* Deadline */}
       {deadline && (
-        <div className="flex items-center gap-3 p-3 rounded-xl mb-4
-          bg-slate-50 border border-slate-100 dark:bg-slate-700/50 dark:border-slate-700">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0
-            bg-blue-50 text-blue-500 dark:bg-slate-600/60 dark:text-blue-300">
+        <div
+          className="flex items-center gap-3 p-3 rounded-xl mb-4
+          bg-slate-50 border border-slate-100 dark:bg-slate-700/50 dark:border-slate-700"
+        >
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0
+            bg-blue-50 text-blue-500 dark:bg-slate-600/60 dark:text-blue-300"
+          >
             <IconCalendar />
           </div>
           <div>
-            <p className="text-[10px] uppercase tracking-wider font-semibold mb-0.5 text-slate-500 dark:text-slate-400">Deadline</p>
-            <p className="text-[13px] font-bold text-blue-500 break-words">{deadline}</p>
+            <p className="text-[10px] uppercase tracking-wider font-semibold mb-0.5 text-slate-500 dark:text-slate-400">
+              Deadline
+            </p>
+            <p className="text-[13px] font-bold text-blue-500 break-words">
+              {deadline}
+            </p>
           </div>
         </div>
       )}
 
-      {/* Apply Now — FREELANCER only */}
       {canApply && (
         <button
           onClick={onApply}
@@ -209,8 +311,15 @@ function SidebarContent({ job, liked, handleToggleFavorite, duration, deadline, 
                      bg-blue-500 hover:bg-blue-600 active:scale-[0.98] transition-all
                      shadow-sm shadow-blue-200 dark:shadow-none"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" />
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <line x1="22" y1="2" x2="11" y2="13" />
+            <polygon points="22 2 15 22 11 13 2 9 22 2" />
           </svg>
           Apply Now
         </button>
@@ -219,41 +328,65 @@ function SidebarContent({ job, liked, handleToggleFavorite, duration, deadline, 
   );
 }
 
-/* ─── Main ─────────────────────────────────────────────────────────────── */
+/* ─── Main ──────────────────────────────────────────────────────────────── */
 export default function CardDetailBusiness() {
-  const navigate  = useNavigate();
+  const navigate = useNavigate();
   const { jobId } = useParams();
-  const authUser  = useSelector(selectAuthUser);
+  const authUser = useSelector(selectAuthUser);
 
   const [activeImg, setActiveImg] = useState(0);
-  const [imgError,  setImgError]  = useState(false);
+  const [imgError, setImgError] = useState(false);
   const [applyOpen, setApplyOpen] = useState(false);
 
-  const { data: byIdResp, isLoading: byIdLoading, isError: byIdError, error: byIdErrObj } =
-    useGetJobByIdQuery(jobId, { skip: !jobId });
-  const { data: listResp, isLoading: listLoading, isError: listError, error: listErrObj } =
-    useGetAllJobsQuery(undefined, { skip: !jobId });
+  const {
+    data: byIdResp,
+    isLoading: byIdLoading,
+    isError: byIdError,
+    error: byIdErrObj,
+  } = useGetJobByIdQuery(jobId, { skip: !jobId });
+  const {
+    data: listResp,
+    isLoading: listLoading,
+    isError: listError,
+    error: listErrObj,
+  } = useGetAllJobsQuery(undefined, { skip: !jobId });
 
   const job = useMemo(() => {
     const byId = normalizeOne(byIdResp);
     if (byId) return byId;
-    return normalizeList(listResp).find((x) => String(getJobId(x)) === String(jobId)) ?? null;
+    return (
+      normalizeList(listResp).find(
+        (x) => String(getJobId(x)) === String(jobId),
+      ) ?? null
+    );
   }, [byIdResp, listResp, jobId]);
 
-  const { data: userRes } = useGetUserByIdQuery(job?.userId, { skip: !job?.userId });
+  const { data: userRes } = useGetUserByIdQuery(job?.userId, {
+    skip: !job?.userId,
+  });
   const user = userRes?.data ?? userRes;
 
-  const { liked, toggle: toggleBookmark } = useBookmarks({ id: job?.id, type: "job" });
+  const { liked, toggle: toggleBookmark } = useBookmarks({
+    id: job?.id,
+    type: "job",
+  });
 
-  /* ── role checks ── */
-  const viewerType = (authUser?.userType ?? authUser?.role ?? "").toString().toUpperCase();
-  const isOwner    = authUser && job?.userId &&
+  const viewerType = (authUser?.userType ?? authUser?.role ?? "")
+    .toString()
+    .toUpperCase();
+  const isOwner =
+    authUser &&
+    job?.userId &&
     String(authUser?.id ?? authUser?.userId) === String(job?.userId);
-  const canApply   = !!authUser && !isOwner && viewerType === "FREELANCER";
+  const canApply = !!authUser && !isOwner && viewerType === "FREELANCER";
 
   const handleToggleFavorite = async (e) => {
-    e.preventDefault(); e.stopPropagation();
-    if (!authUser) { navigate("/login"); return; }
+    e.preventDefault();
+    e.stopPropagation();
+    if (!authUser) {
+      navigate("/login");
+      return;
+    }
     const wasLiked = liked;
     try {
       await toggleBookmark();
@@ -268,49 +401,78 @@ export default function CardDetailBusiness() {
   };
 
   const handleOpenApply = () => {
-    if (!authUser) { navigate("/login"); return; }
+    if (!authUser) {
+      navigate("/login");
+      return;
+    }
     setApplyOpen(true);
   };
 
   const loading = (byIdLoading && !byIdError) || (listLoading && !listError);
 
-  const name     = user?.fullName || user?.companyName || user?.username ||
-                   job?.companyName || job?.company?.name || job?.company || "Company";
-  const avatar   = user?.profileImageUrl || FALLBACK_AVATAR;
-  const loc      = user?.address || job?.location || job?.address || null;
-  const title    = job?.title ?? "Untitled";
-  const desc     = job?.description ?? "No description.";
-  const posted   = timeAgo(job?.createdAt);
-  const status   = job?.status ?? null;
-  const catName  = job?.category?.name || job?.categoryName || null;
+  const name =
+    user?.fullName ||
+    user?.companyName ||
+    user?.username ||
+    job?.companyName ||
+    job?.company?.name ||
+    job?.company ||
+    "Company";
+  const avatar = user?.profileImageUrl || FALLBACK_AVATAR;
+  const loc = user?.address || job?.location || job?.address || null;
+  const title = job?.title ?? "Untitled";
+  const desc = job?.description ?? "No description.";
+  const posted = timeAgo(job?.createdAt);
+  const status = job?.status ?? null;
+  const catName = job?.category?.name || job?.categoryName || null;
   const duration = job?.duration ?? null;
   const deadline = job?.deadline ?? job?.endDate ?? null;
 
-  const responsibilities = Array.isArray(job?.responsibilities) ? job.responsibilities : [];
-  const requirements     = Array.isArray(job?.requirements)     ? job.requirements     : [];
-  const skillsArr        = Array.isArray(job?.skills) ? job.skills
-                         : Array.isArray(job?.skill)  ? job.skill : [];
+  const responsibilities = Array.isArray(job?.responsibilities)
+    ? job.responsibilities
+    : [];
+  const requirements = Array.isArray(job?.requirements) ? job.requirements : [];
+  const skillsArr = Array.isArray(job?.skills)
+    ? job.skills
+    : Array.isArray(job?.skill)
+      ? job.skill
+      : [];
 
   const images = (() => {
-    if (Array.isArray(job?.jobImages) && job.jobImages.length) return job.jobImages.filter(Boolean);
-    if (typeof job?.jobImages === "string" && job.jobImages)   return [job.jobImages];
-    if (Array.isArray(job?.imageUrls) && job.imageUrls.length) return job.imageUrls.filter(Boolean);
+    if (Array.isArray(job?.jobImages) && job.jobImages.length)
+      return job.jobImages.filter(Boolean);
+    if (typeof job?.jobImages === "string" && job.jobImages)
+      return [job.jobImages];
+    if (Array.isArray(job?.imageUrls) && job.imageUrls.length)
+      return job.imageUrls.filter(Boolean);
     return [];
   })();
-  const coverSrc = !imgError && images[activeImg] ? images[activeImg] : FALLBACK_COVER;
+  const coverSrc =
+    !imgError && images[activeImg] ? images[activeImg] : FALLBACK_COVER;
 
-  if (!jobId) return <ErrorState message="Missing job ID." onBack={() => navigate(-1)} />;
+  if (!jobId)
+    return <ErrorState message="Missing job ID." onBack={() => navigate(-1)} />;
   if (loading) return <Skeleton />;
   if (!job) {
-    const msg = (byIdError && JSON.stringify(byIdErrObj)) || (listError && JSON.stringify(listErrObj)) || "Not found.";
+    const msg =
+      (byIdError && JSON.stringify(byIdErrObj)) ||
+      (listError && JSON.stringify(listErrObj)) ||
+      "Not found.";
     return <ErrorState message={msg} onBack={() => navigate(-1)} />;
   }
 
-  const sidebarProps = { job, liked, handleToggleFavorite, duration, deadline, canApply, onApply: handleOpenApply };
+  const sidebarProps = {
+    job,
+    liked,
+    handleToggleFavorite,
+    duration,
+    deadline,
+    canApply,
+    onApply: handleOpenApply,
+  };
 
   return (
     <>
-      {/* Full Apply Job Modal — opens on Apply Now */}
       {applyOpen && (
         <ApplyJobModal
           job={{ id: jobId, title: job?.title }}
@@ -318,94 +480,143 @@ export default function CardDetailBusiness() {
         />
       )}
 
-      <div className="min-h-screen bg-slate-50 dark:bg-[#0f172a] transition-colors duration-300"
-        style={{ fontFamily: "'Poppins', sans-serif" }}>
+      <div
+        className="min-h-screen bg-slate-50 dark:bg-[#0f172a] transition-colors duration-300"
+        style={{ fontFamily: "'Poppins', sans-serif" }}
+      >
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-
           {/* Back */}
-          <button onClick={() => navigate(-1)}
+          <button
+            onClick={() => navigate(-1)}
             className="inline-flex items-center gap-2 text-sm font-medium mb-6 px-4 py-2 rounded-xl transition-all
               text-slate-500 hover:text-slate-900 hover:bg-slate-100
-              dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5">
+              dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
+          >
             <IconBack /> Back
           </button>
 
           <div className="flex flex-col lg:flex-row gap-6 items-start">
-
             {/* ── Right sticky sidebar — desktop only ── */}
             <div className="hidden lg:block lg:w-[38%] order-2">
               <div className="lg:sticky lg:top-6 flex flex-col gap-5">
                 <div className={card}>
                   <SidebarContent {...sidebarProps} />
                 </div>
-                <CommentsSection postType="job" postId={jobId} authUser={authUser} />
+                <CommentsSection
+                  postType="job"
+                  postId={jobId}
+                  authUser={authUser}
+                />
               </div>
             </div>
 
             {/* ── Left main column ── */}
             <div className="w-full lg:w-[62%] flex flex-col gap-5 order-1">
-
               {/* Header card */}
               <div className={card}>
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-4 min-w-0">
-                    <Link to={`/businesses/${job?.userId}`}
-                      className="relative shrink-0 hover:opacity-80 transition-opacity">
-                      <div className="w-14 h-14 rounded-2xl overflow-hidden ring-2 ring-blue-100">
-                        <img src={avatar} alt={name} className="w-full h-full object-cover"
-                          onError={(e) => { e.currentTarget.src = FALLBACK_AVATAR; }} />
-                      </div>
-                      {status === "OPEN" && (
-                        <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white" />
-                      )}
-                    </Link>
-
-                    <div className="min-w-0">
-                      <Link to={`/businesses/${job?.userId}`}
-                        className="flex items-center gap-2 mb-1.5 w-fit hover:opacity-75 transition-opacity">
-                        <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
-                          {name.slice(0, 2).toUpperCase()}
-                        </div>
-                        <span className="text-[13px] font-semibold truncate underline-offset-2 hover:underline text-slate-900 dark:text-white">
-                          {name}
-                        </span>
-                      </Link>
-                      <h1 className="text-blue-500 text-xl sm:text-[22px] font-bold leading-snug mb-2">{title}</h1>
-                      <div className="flex flex-wrap items-center gap-3 text-slate-500 dark:text-slate-400">
-                        {loc && <span className="flex items-center gap-1.5 text-[12px]"><IconLocation />{loc}</span>}
-                        <span className="flex items-center gap-1.5 text-[12px]"><IconClock />Posted {posted}</span>
-                      </div>
+                <div className="flex items-start gap-4 min-w-0">
+                  <Link
+                    to={`/businesses/${job?.userId}`}
+                    className="relative shrink-0 hover:opacity-80 transition-opacity"
+                  >
+                    <div className="w-14 h-14 rounded-2xl overflow-hidden ring-2 ring-blue-100">
+                      <img
+                        src={avatar}
+                        alt={name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = FALLBACK_AVATAR;
+                        }}
+                      />
                     </div>
-                  </div>
-                  <div className="shrink-0">
-                    <MessageButton otherUser={{ id: job?.userId || job?.postedBy, fullName: name, profileImageUrl: avatar }} />
+                    {status === "OPEN" && (
+                      <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white" />
+                    )}
+                  </Link>
+
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      to={`/businesses/${job?.userId}`}
+                      className="flex items-center gap-2 mb-1.5 w-fit hover:opacity-75 transition-opacity"
+                    >
+                      <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                        {name.slice(0, 2).toUpperCase()}
+                      </div>
+                      <span className="text-[13px] font-semibold truncate underline-offset-2 hover:underline text-slate-900 dark:text-white">
+                        {name}
+                      </span>
+                    </Link>
+                    <h1 className="text-blue-500 text-xl sm:text-[22px] font-bold leading-snug mb-2">
+                      {title}
+                    </h1>
+                    <div className="flex flex-wrap items-center gap-3 text-slate-500 dark:text-slate-400">
+                      {loc && (
+                        <span className="flex items-center gap-1.5 text-[12px]">
+                          <IconLocation />
+                          {loc}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1.5 text-[12px]">
+                        <IconClock />
+                        Posted {posted}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
+                {/* ── Status + catName + Message button — same row ── */}
                 {(status || catName) && (
                   <>
                     <div className="my-4 border-t border-slate-100 dark:border-[#334155]" />
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       {catName && (
-                        <span className="text-[11px] font-semibold px-3 py-1 rounded-full
+                        <span
+                          className="text-[11px] font-semibold px-3 py-1 rounded-full
                           bg-blue-50 text-blue-600 border border-blue-100
-                          dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-900/50">
+                          dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-900/50"
+                        >
                           {catName}
                         </span>
                       )}
                       {status && (
-                        <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full
+                        <span
+                          className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1 rounded-full
                           bg-emerald-50 text-emerald-600 border border-emerald-100
-                          dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-900/50">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />{status}
+                          dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-900/50"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
+                          {status}
                         </span>
                       )}
+                      {/* ✅ Message button now on same row as OPEN badge */}
+                      <div className="ml-auto shrink-0">
+                        <MessageButton
+                          otherUser={{
+                            id: job?.userId || job?.postedBy,
+                            fullName: name,
+                            profileImageUrl: avatar,
+                          }}
+                        />
+                      </div>
                     </div>
                   </>
                 )}
+
+                {/* Fallback: show Message when no status/catName */}
+                {!status && !catName && (
+                  <div className="mt-4 flex justify-end">
+                    <MessageButton
+                      otherUser={{
+                        id: job?.userId || job?.postedBy,
+                        fullName: name,
+                        profileImageUrl: avatar,
+                      }}
+                    />
+                  </div>
+                )}
               </div>
 
-              {/* Sidebar — mobile/md inline (below profile header) */}
+              {/* Sidebar — mobile/md inline */}
               <div className="lg:hidden">
                 <div className={card}>
                   <SidebarContent {...sidebarProps} />
@@ -415,20 +626,38 @@ export default function CardDetailBusiness() {
               {/* Cover image */}
               <div className="bg-white dark:bg-[#1e293b] border border-slate-100 dark:border-[#334155] rounded-2xl overflow-hidden shadow-sm">
                 <div className="relative h-[220px] sm:h-[300px]">
-                  <img src={coverSrc} alt={title} className="w-full h-full object-cover"
-                    onError={() => setImgError(true)} />
+                  <img
+                    src={coverSrc}
+                    alt={title}
+                    className="w-full h-full object-cover"
+                    onError={() => setImgError(true)}
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
                 </div>
                 {images.length > 1 && (
                   <div className="p-3 flex gap-2 overflow-x-auto border-t border-slate-100 dark:border-[#334155]">
                     {images.slice(0, 6).map((url, i) => (
-                      <button key={i} onClick={() => { setActiveImg(i); setImgError(false); }}
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setActiveImg(i);
+                          setImgError(false);
+                        }}
                         className={`shrink-0 w-[72px] h-12 rounded-xl overflow-hidden border-2 transition-all
-                          ${i === activeImg
-                            ? "border-blue-500 shadow-md scale-105"
-                            : "border-transparent opacity-55 hover:opacity-90 hover:border-slate-200 dark:hover:border-slate-600"}`}>
-                        <img src={url} alt="" className="w-full h-full object-cover"
-                          onError={(e) => { e.currentTarget.src = FALLBACK_THUMB; }} />
+                          ${
+                            i === activeImg
+                              ? "border-blue-500 shadow-md scale-105"
+                              : "border-transparent opacity-55 hover:opacity-90 hover:border-slate-200 dark:hover:border-slate-600"
+                          }`}
+                      >
+                        <img
+                          src={url}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = FALLBACK_THUMB;
+                          }}
+                        />
                       </button>
                     ))}
                   </div>
@@ -437,18 +666,28 @@ export default function CardDetailBusiness() {
 
               {/* Description */}
               <div className={card}>
-                <h2 className="text-[20px] font-bold mb-3 text-slate-900 dark:text-white">Job Description</h2>
-                <p className="text-[16px] leading-[1.75] whitespace-pre-line text-slate-500 dark:text-gray-200">{desc}</p>
+                <h2 className="text-[20px] font-bold mb-3 text-slate-900 dark:text-white">
+                  Job Description
+                </h2>
+                <p className="text-[16px] leading-[1.75] whitespace-pre-line text-slate-500 dark:text-gray-200">
+                  {desc}
+                </p>
               </div>
 
               {/* Responsibilities */}
               {responsibilities.length > 0 && (
                 <div className={card}>
-                  <h2 className="text-[14px] font-bold mb-4 text-slate-900 dark:text-white">Responsibilities</h2>
+                  <h2 className="text-[14px] font-bold mb-4 text-slate-900 dark:text-white">
+                    Responsibilities
+                  </h2>
                   <ul className="space-y-3">
                     {responsibilities.map((r, i) => (
-                      <li key={i} className="flex items-start gap-2.5 text-[13px] text-slate-500 dark:text-slate-400">
-                        <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0 mt-2" />{asText(r)}
+                      <li
+                        key={i}
+                        className="flex items-start gap-2.5 text-[13px] text-slate-500 dark:text-slate-400"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0 mt-2" />
+                        {asText(r)}
                       </li>
                     ))}
                   </ul>
@@ -460,31 +699,48 @@ export default function CardDetailBusiness() {
                 <div className={card}>
                   <div className="flex flex-col md:flex-row gap-6 md:gap-0">
                     <div className="w-full md:w-[45%] md:pr-6">
-                      <h2 className="text-[14px] font-bold mb-4 text-slate-900 dark:text-white">Requirements</h2>
+                      <h2 className="text-[14px] font-bold mb-4 text-slate-900 dark:text-white">
+                        Requirements
+                      </h2>
                       {requirements.length > 0 ? (
                         <ul className="space-y-3">
                           {requirements.map((req, i) => (
-                            <li key={i} className="flex items-start gap-2.5 text-[13px] text-slate-500 dark:text-slate-400">
-                              <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0 mt-2" />{asText(req)}
+                            <li
+                              key={i}
+                              className="flex items-start gap-2.5 text-[13px] text-slate-500 dark:text-slate-400"
+                            >
+                              <span className="w-2 h-2 rounded-full bg-blue-400 shrink-0 mt-2" />
+                              {asText(req)}
                             </li>
                           ))}
                         </ul>
                       ) : (
-                        <p className="text-[12px] italic opacity-40 text-slate-500 dark:text-slate-400">—</p>
+                        <p className="text-[12px] italic opacity-40 text-slate-500 dark:text-slate-400">
+                          —
+                        </p>
                       )}
                     </div>
                     <div className="hidden md:block w-px bg-slate-100 dark:bg-[#334155] shrink-0" />
                     <div className="flex-1 md:pl-6">
-                      <h2 className="text-[14px] font-bold mb-4 text-slate-900 dark:text-white">Skills</h2>
+                      <h2 className="text-[14px] font-bold mb-4 text-slate-900 dark:text-white">
+                        Skills
+                      </h2>
                       <div className="flex flex-wrap gap-2">
                         {skillsArr.map((s, i) => {
-                          const label = typeof s === "string" ? s : s?.name || s?.title || "—";
+                          const label =
+                            typeof s === "string"
+                              ? s
+                              : s?.name || s?.title || "—";
                           return (
-                            <span key={i} style={{ whiteSpace: "nowrap" }}
+                            <span
+                              key={i}
+                              style={{ whiteSpace: "nowrap" }}
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-medium cursor-default transition-colors
                                 bg-indigo-50 text-indigo-600 border border-indigo-100 hover:bg-indigo-100
-                                dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800 dark:hover:bg-indigo-900/60">
-                              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />{label}
+                                dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800 dark:hover:bg-indigo-900/60"
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
+                              {label}
                             </span>
                           );
                         })}
@@ -496,9 +752,12 @@ export default function CardDetailBusiness() {
 
               {/* Comments — mobile only */}
               <div className="lg:hidden">
-                <CommentsSection postType="job" postId={jobId} authUser={authUser} />
+                <CommentsSection
+                  postType="job"
+                  postId={jobId}
+                  authUser={authUser}
+                />
               </div>
-
             </div>
           </div>
         </div>

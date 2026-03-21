@@ -164,6 +164,32 @@ function Section({ title, children, collapsible = true, defaultOpen = true }) {
   );
 }
 
+/* ─── Shared remove button ───────────────────────────────────────────────── */
+function RemoveBtn({ onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-7 h-7 rounded-lg flex items-center justify-center
+                 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white
+                 transition-all shrink-0"
+    >
+      <svg
+        className="w-3.5 h-3.5"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={2.5}
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M6 18L18 6M6 6l12 12"
+        />
+      </svg>
+    </button>
+  );
+}
+
 const TAB_ICONS = {
   info: "👤",
   skills: "⚡",
@@ -173,6 +199,16 @@ const TAB_ICONS = {
   edu: "🎓",
   style: "🎨",
 };
+
+const TABS = [
+  { id: "info", label: "Info" },
+  { id: "skills", label: "Skills" },
+  { id: "projs", label: "Projects" },
+  { id: "certs", label: "Certs" },
+  { id: "exp", label: "Exp" },
+  { id: "edu", label: "Edu" },
+  { id: "style", label: "Style" },
+];
 
 export default function PortfolioEditor({
   portfolio,
@@ -292,41 +328,12 @@ export default function PortfolioEditor({
       (portfolio.education || []).filter((_, idx) => idx !== i),
     );
 
-  const TABS = [
-    { id: "info", label: "Info" },
-    { id: "skills", label: "Skills" },
-    { id: "projs", label: "Projects" },
-    { id: "certs", label: "Certs" },
-    { id: "exp", label: "Exp" },
-    { id: "style", label: "Style" },
-  ];
-
-  /* ── Shared remove button ── */
-  const RemoveBtn = ({ onClick }) => (
-    <button
-      onClick={onClick}
-      className="w-7 h-7 rounded-lg flex items-center justify-center
-                 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white
-                 transition-all shrink-0"
-    >
-      <svg
-        className="w-3.5 h-3.5"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={2.5}
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M6 18L18 6M6 6l12 12"
-        />
-      </svg>
-    </button>
-  );
-
-  /* ── Editor panel content ── */
-  const EditorContent = () => (
+  // ── ✅ FIX: renderContent() is a plain function, NOT a component ──────────
+  // Before (bug): const EditorContent = () => (...)  then <EditorContent />
+  // React treats it as a new component each render → unmounts → input loses focus
+  // After (fix):  const renderContent = () => (...)  then {renderContent()}
+  // Called as a function → same DOM nodes → focus preserved ✅
+  const renderContent = () => (
     <>
       {/* ── INFO ── */}
       {tab === "info" && (
@@ -455,7 +462,6 @@ export default function PortfolioEditor({
               + Add Skill
             </button>
           </Section>
-
           <div className="space-y-2">
             {(portfolio.skills || []).map((s, i) => (
               <div
@@ -561,7 +567,6 @@ export default function PortfolioEditor({
               + Add Project
             </button>
           </Section>
-
           <div className="space-y-2">
             {(portfolio.projects || []).map((p, i) => (
               <div
@@ -839,7 +844,6 @@ export default function PortfolioEditor({
       {/* ── STYLE ── */}
       {tab === "style" && (
         <>
-          {/* Template picker */}
           <Section title="Choose Template">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {TEMPLATES.map((t) => (
@@ -887,8 +891,6 @@ export default function PortfolioEditor({
             </div>
           </Section>
 
-
-          {/* Accent color */}
           <Section title="Accent Color">
             <div className="flex flex-wrap gap-2 items-center">
               {ACCENT_COLORS.map((c) => (
@@ -911,7 +913,6 @@ export default function PortfolioEditor({
             </div>
           </Section>
 
-          {/* Font */}
           <Section title="Font Style" defaultOpen={false}>
             <div className="grid grid-cols-2 gap-2">
               {FONT_OPTIONS.map((f) => (
@@ -937,16 +938,13 @@ export default function PortfolioEditor({
 
   return (
     <div className="fixed inset-0 z-50 flex bg-black/80 backdrop-blur-md">
-      
+      {/* ══ EDITOR PANEL ══ */}
       <div
         className={`flex flex-col bg-[#0f172a] transition-all duration-300 overflow-hidden
-              ${
-                showPreview
-                  ? "hidden lg:flex"
-                  : "flex w-full lg:w-[420px] lg:shrink-0"
-              }
+              ${showPreview ? "hidden lg:flex" : "flex w-full lg:w-[420px] lg:shrink-0"}
               ${splitPreview ? "lg:w-[400px]" : "lg:w-[420px]"}`}
       >
+        {/* Header */}
         <div
           className="flex items-center justify-between px-4 py-3.5 border-b border-slate-800 shrink-0
                         bg-gradient-to-r from-slate-900 to-slate-900/80"
@@ -968,7 +966,6 @@ export default function PortfolioEditor({
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {/* Desktop split preview toggle */}
             <button
               onClick={() => setSplitPreview((p) => !p)}
               className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all
@@ -978,10 +975,9 @@ export default function PortfolioEditor({
                     : "bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 border border-slate-700"
                 }`}
             >
-              <span>{splitPreview ? "◧" : "◧"}</span>
+              <span>◧</span>
               <span>{splitPreview ? "Hide Preview" : "Preview"}</span>
             </button>
-            {/* Mobile preview button */}
             <button
               onClick={() => setShowPreview(true)}
               className="flex lg:hidden items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold
@@ -1000,7 +996,7 @@ export default function PortfolioEditor({
           </div>
         </div>
 
-        {/* ── Tabs (scrollable) ── */}
+        {/* Tabs */}
         <div className="flex border-b border-slate-800 bg-slate-900/60 shrink-0 overflow-x-auto scrollbar-hide">
           {TABS.map((t) => (
             <button
@@ -1020,12 +1016,12 @@ export default function PortfolioEditor({
           ))}
         </div>
 
-        {/* ── Content area ── */}
+        {/* ✅ Content — called as function, NOT as component */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin scrollbar-track-slate-900 scrollbar-thumb-slate-700">
-          <EditorContent />
+          {renderContent()}
         </div>
 
-        {/* ── Save button ── */}
+        {/* Save */}
         <div className="p-4 border-t border-slate-800 shrink-0 bg-slate-900/80">
           <button
             onClick={() => onSave(portfolio, template)}
@@ -1049,16 +1045,15 @@ export default function PortfolioEditor({
           </button>
         </div>
       </div>
+
       {/* ══ PREVIEW PANEL ══ */}
       {(splitPreview || showPreview) && (
         <div
           className={`flex flex-col flex-1 overflow-hidden border-l border-slate-800
                    ${showPreview && !splitPreview ? "w-full" : ""}`}
         >
-          {/* Preview header */}
           <div className="flex items-center justify-between px-4 py-3 bg-slate-900 border-b border-slate-800 shrink-0">
             <div className="flex items-center gap-3">
-              {/* Mobile back button */}
               <button
                 onClick={() => setShowPreview(false)}
                 className="flex lg:hidden items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold
@@ -1077,8 +1072,6 @@ export default function PortfolioEditor({
                 </span>
               </div>
             </div>
-
-            {/* Dark/Light toggle IN preview header — always visible */}
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-1 border border-slate-700">
                 <button
@@ -1101,8 +1094,6 @@ export default function PortfolioEditor({
               </span>
             </div>
           </div>
-
-          {/* Preview content */}
           <div className="flex-1 overflow-y-auto">
             <PortfolioRenderer data={portfolio} template={template} />
           </div>

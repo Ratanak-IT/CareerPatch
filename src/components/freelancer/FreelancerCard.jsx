@@ -131,7 +131,7 @@ export default function FreelancerCard({
           <button
             type="button"
             onClick={handleBookmark}
-            className={`absolute top-3 right-3 z-50 w-8 h-8 rounded-full
+            className={`absolute top-3 right-3 z-10 w-8 h-8 rounded-full
                         backdrop-blur-sm flex items-center justify-center
                         shadow-md transition-all duration-200 hover:scale-110 active:scale-95
                         ${
@@ -172,12 +172,12 @@ export default function FreelancerCard({
 
       {/* ── Body ── */}
       <div className="p-3 sm:p-4 flex flex-col flex-1 overflow-hidden">
-        <h2 className="text-[#1E88E5] dark:text-blue-100 font-bold text-sm mb-1 truncate">
+        <h2 className="text-[#1E88E5] dark:text-blue-100 font-bold text-md mb-1 truncate">
           {title}
         </h2>
 
         <p
-          className="text-gray-500 dark:text-gray-300 text-xs leading-relaxed mb-4 overflow-hidden"
+          className="text-gray-500 dark:text-gray-300 text-sm leading-relaxed mb-4 overflow-hidden"
           style={{
             display: "-webkit-box",
             WebkitLineClamp: 3,

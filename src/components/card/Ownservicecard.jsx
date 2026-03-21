@@ -13,14 +13,10 @@ const FALLBACK_IMAGE = "https://placehold.co/285x253?text=No+Image";
 
 function formatDate(value) {
   if (!value) return "—";
-
   let v = value;
-
   if (typeof v === "number" && v < 1e12) v = v * 1000;
-
   const d = new Date(v);
   if (Number.isNaN(d.getTime())) return "—";
-
   const dd = String(d.getDate()).padStart(2, "0");
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const yyyy = d.getFullYear();
@@ -40,15 +36,45 @@ function getCategoryName(s) {
   return s?.category?.name || s?.categoryName || "—";
 }
 
+/* ─── Status badge colors ────────────────────────────────────────────────── */
+function StatusBadge({ status }) {
+  if (!status) return null;
+
+  const styles = {
+    OPEN: "bg-emerald-500 text-white",
+    ACTIVE: "bg-emerald-500 text-white",
+    AVAILABLE: "bg-emerald-500 text-white",
+    DRAFT: "bg-yellow-400 text-yellow-900",
+    PENDING: "bg-yellow-400 text-yellow-900",
+    CLOSED: "bg-gray-500 text-white",
+    INACTIVE: "bg-gray-500 text-white",
+  };
+  const cls = styles[status?.toUpperCase()] || "bg-blue-500 text-white";
+
+  return (
+    <span
+      className={`
+      absolute top-3 left-3
+      inline-flex items-center gap-1 px-2.5 py-1
+      rounded-full text-[10px] font-bold uppercase tracking-wide
+      shadow-md backdrop-blur-sm
+      ${cls}
+    `}
+    >
+      <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />
+      {status}
+    </span>
+  );
+}
+
 // ─── Delete Confirm Modal ─────────────────────────────────────────────────────
 function DeleteConfirmModal({ service, onClose }) {
   const [deleteService, { isLoading }] = useDeleteServiceMutation();
-  console.log("OwnServiceCard service:", service);
 
   const handleDelete = async () => {
     try {
       await deleteService(service.id).unwrap();
-      toast.success("deleted successfully!");
+      toast.success("Deleted successfully!");
       onClose();
     } catch (e) {
       const isParseError =
@@ -213,14 +239,17 @@ export default function OwnServiceCard({ service, author, avatar }) {
 
   const image = getImage(service);
   const categoryName = getCategoryName(service);
+  const status = service?.status ?? null;
 
   return (
     <>
       <Link
         to={`/services/${service?.id}`}
-        className="w-full bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-md hover:shadow-xl dark:hover:shadow-slate-900/60 transition-shadow duration-300 flex flex-col"
+        className="w-full bg-white dark:bg-slate-800 rounded-2xl overflow-hidden
+                   shadow-md hover:shadow-xl dark:hover:shadow-slate-900/60
+                   transition-shadow duration-300 flex flex-col"
       >
-        {/* Image */}
+        {/* ── Image ── */}
         <div className="relative flex-shrink-0 h-[200px]">
           <img
             src={image}
@@ -230,13 +259,20 @@ export default function OwnServiceCard({ service, author, avatar }) {
               e.currentTarget.src = FALLBACK_IMAGE;
             }}
           />
+
+          {/* ✅ Status badge — top left */}
+          <StatusBadge status={status} />
+
+          {/* Heart — top right */}
           <button
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               dispatch(toggleFavorite(service?.id));
             }}
-            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm flex items-center justify-center shadow transition-transform hover:scale-110"
+            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 dark:bg-slate-800/90
+                       backdrop-blur-sm flex items-center justify-center shadow
+                       transition-transform hover:scale-110"
             aria-label={liked ? "Unlike" : "Like"}
           >
             <svg
@@ -256,7 +292,7 @@ export default function OwnServiceCard({ service, author, avatar }) {
           </button>
         </div>
 
-        {/* Body */}
+        {/* ── Body ── */}
         <div className="p-4 flex flex-col flex-1 overflow-hidden">
           <h2 className="text-blue-500 dark:text-blue-300 font-bold text-sm mb-1 truncate">
             {service?.title || "Untitled"}

@@ -3,92 +3,75 @@ import { Link, useLocation, useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 
-import logo from "../../assets/logo.png";
-import logoDark from "../../assets/logodark.jpg";
+import logo        from "../../assets/logo.png";
+import logoDark    from "../../assets/logodark.jpg";
 import defaultProfile from "../../assets/userdefault.png";
 
-import {
-  logout as logoutAction,
-  selectAuthUser,
-} from "../../features/auth/authSlice";
+import { logout as logoutAction, selectAuthUser } from "../../features/auth/authSlice";
 import { useDarkMode } from "./NavbarComponent";
 import { useMessageNotifications } from "../../hooks/useMessageNotifications";
 
-function DarkIcon({ size = 22, darkMode }) {
+// ── API imports for cache reset on logout ────────────────────────────────────
+import { authApi }         from "../../services/authApi";
+import { freelancerApi }   from "../../services/freelancerApi";
+import { userApi }         from "../../services/userApi";
+import { freelancerPostApi } from "../../services/freelancerPostApi";
+import { profileApi }      from "../../services/profileApi";
+import { serviceApi }      from "../../services/servicesApi";
+import { categoriesApi }   from "../../services/categoriesApi";
+import { apiSlice }        from "../../services/apiSlice";
+import { detailworkApi }   from "../../services/detailworkApi";
+import { jobsApi }         from "../../services/JobsApi";
+
+/* ─── Dark mode icon ─────────────────────────────────────────────────────── */
+function DarkIcon({ darkMode }) {
   return darkMode ? (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="12" cy="12" r="5" />
-      <line x1="12" y1="1" x2="12" y2="3" />
-      <line x1="12" y1="21" x2="12" y2="23" />
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-      <line x1="1" y1="12" x2="3" y2="12" />
-      <line x1="21" y1="12" x2="23" y2="12" />
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+      <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
     </svg>
   ) : (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
     </svg>
   );
 }
 
+/* ─── useIsDark — watches <html class="dark"> ────────────────────────────── */
 function useIsDark() {
   const [dark, setDark] = useState(() =>
-    document.documentElement.classList.contains("dark"),
+    document.documentElement.classList.contains("dark")
   );
   useEffect(() => {
     const obs = new MutationObserver(() =>
-      setDark(document.documentElement.classList.contains("dark")),
+      setDark(document.documentElement.classList.contains("dark"))
     );
-    obs.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
     return () => obs.disconnect();
   }, []);
   return dark;
 }
 
-function NavLink({ to, label, active, darkMode, onClick }) {
+/* ─── NavLink ────────────────────────────────────────────────────────────── */
+function NavLink({ to, label, active, onClick }) {
   return (
-    <Link
-      to={to}
-      onClick={onClick}
+    <Link to={to} onClick={onClick}
       style={{ fontFamily: "'Poppins', sans-serif", fontSize: "18px" }}
-      className={[
-        "px-4 py-2 rounded-lg no-underline whitespace-nowrap transition-all duration-200",
-        active
+      className={`px-4 py-2 rounded-lg no-underline whitespace-nowrap transition-all duration-200
+        ${active
           ? "font-semibold text-blue-500"
-          : darkMode
-            ? "text-slate-300 hover:text-blue-400 hover:bg-blue-900/20"
-            : "text-gray-600 hover:text-blue-500 hover:bg-blue-50",
-      ].join(" ")}
-    >
+          : "text-gray-600 dark:text-slate-300 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20"}`}>
       {label}
     </Link>
   );
 }
 
+/* ─── timeAgoShort ───────────────────────────────────────────────────────── */
 function timeAgoShort(value) {
   if (!value) return "";
   const d = new Date(value);
@@ -100,67 +83,69 @@ function timeAgoShort(value) {
   return `${Math.floor(sec / 86400)}d ago`;
 }
 
+/* ─── Bell icon ──────────────────────────────────────────────────────────── */
+const BellIcon = ({ size = 22 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+  </svg>
+);
+
+/* ══════════════════════════════════════════════════════════════════════════ */
 export default function NavbarAfterLogin() {
   const { darkMode, toggleDark } = useDarkMode();
+  const dispatch  = useDispatch();
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const user      = useSelector(selectAuthUser);
+  const isDark    = useIsDark();
 
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const user = useSelector(selectAuthUser);
-
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
+  const [mobileOpen,  setMobileOpen]  = useState(false);
+  const [notifOpen,   setNotifOpen]   = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
 
   const myId = user?.id || user?.userId || null;
   const { notifications, unreadCount, markRead, markAllRead } =
     useMessageNotifications(myId);
 
-  const notifRef = useRef(null);
+  const notifRef   = useRef(null);
   const profileRef = useRef(null);
-  const isActive = (p) => location.pathname === p;
+  const isActive   = (p) => location.pathname === p;
 
   // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e) => {
-      if (notifRef.current && !notifRef.current.contains(e.target))
-        setNotifOpen(false);
-      if (profileRef.current && !profileRef.current.contains(e.target))
-        setProfileOpen(false);
+      if (notifRef.current   && !notifRef.current.contains(e.target))   setNotifOpen(false);
+      if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Auto-close mobile menu on route change
+  // Auto-close menus on route change
   useEffect(() => {
     setMobileOpen(false);
     setNotifOpen(false);
   }, [location.pathname]);
 
   const navLinks = [
-    { path: "/", label: "Home" },
-    { path: "/findwork", label: "Find work" },
-    { path: "/findfreelan", label: "Find Freelancers" },
-    { path: "/about", label: "About" },
+    { path: "/",           label: "Home"            },
+    { path: "/findwork",   label: "Find work"       },
+    { path: "/findfreelan",label: "Find Freelancers"},
+    { path: "/about",      label: "About"           },
   ];
 
   const displayName = useMemo(() => {
     if (!user) return "User";
-    return (
-      user.fullName ||
-      user.name ||
-      user.username ||
-      user.email?.split("@")?.[0] ||
-      "User"
-    );
+    return user.fullName || user.name || user.username || user.email?.split("@")?.[0] || "User";
   }, [user]);
 
   const displayRole = useMemo(() => {
     if (!user) return "Member";
     const v = String(user.userType || user.role || "Member").toUpperCase();
     if (v.includes("FREELANCER")) return "Freelancer";
-    if (v.includes("BUSINESS")) return "Business Owner";
+    if (v.includes("BUSINESS"))   return "Business Owner";
     return "Member";
   }, [user]);
 
@@ -169,274 +154,144 @@ export default function NavbarAfterLogin() {
     return url && typeof url === "string" ? url : defaultProfile;
   }, [user]);
 
+  // ── ✅ Logout — reset ALL RTK Query caches so next user gets fresh data ──
   const onLogout = () => {
+    dispatch(authApi.util.resetApiState());
+    dispatch(freelancerApi.util.resetApiState());
+    dispatch(userApi.util.resetApiState());
+    dispatch(freelancerPostApi.util.resetApiState());
+    dispatch(profileApi.util.resetApiState());
+    dispatch(serviceApi.util.resetApiState());
+    dispatch(categoriesApi.util.resetApiState());
+    dispatch(apiSlice.util.resetApiState());
+    dispatch(detailworkApi.util.resetApiState());
+    dispatch(jobsApi.util.resetApiState());
     dispatch(logoutAction());
     toast.success("Logged out");
     navigate("/login", { replace: true });
   };
 
-  /* theme vars */
-  const bg = darkMode ? "#0f172a" : "#ffffff";
-  const bdr = darkMode ? "#1e293b" : "#f1f5f9";
-  const txt = darkMode ? "#f1f5f9" : "#0f172a";
-  const sub = darkMode ? "#94a3b8" : "#64748b";
-
-  const dropStyle = (w) => ({
-    position: "absolute",
-    top: "calc(100% + 10px)",
-    right: 0,
-    zIndex: 1000,
-    width: w,
-    borderRadius: "16px",
-    background: darkMode ? "#1e293b" : "#fff",
-    boxShadow: darkMode
-      ? "0 20px 60px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.06)"
-      : "0 20px 60px rgba(0,0,0,0.12),0 0 0 1px rgba(0,0,0,0.06)",
-    overflow: "hidden",
-  });
-
-  const pFont = (sz, w = 400) => ({
-    fontFamily: "'Poppins', sans-serif",
-    fontSize: sz,
-    fontWeight: w,
-    margin: 0,
-  });
-
-  const isDark = useIsDark();
   return (
-    <header
-      className="w-full border-b shadow-sm sticky top-0 z-50 transition-colors duration-300"
-      style={{ background: bg, borderColor: bdr }}
-    >
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-[120px] flex items-center justify-between h-[72px] sm:h-[80px] lg:h-[89px]">
-        {/* LOGO */}
-        <Link to="/" className="no-underline leading-none flex-shrink-0">
-          <img
-            src={isDark ? logoDark : logo}
-            alt="CareerPatch"
-            style={{ filter: "none" }}
-            className="block object-contain w-[130px] sm:w-[170px] lg:w-[210px]"
-          />
+    <header className="w-full border-b shadow-sm sticky top-0 z-50 transition-colors duration-300
+                       bg-white dark:bg-[#0f172a] border-slate-100 dark:border-[#1e293b]">
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-[120px]
+                      flex items-center justify-between h-[72px] sm:h-[80px] lg:h-[89px]">
+
+        {/* ── LOGO ── */}
+        <Link to="/" className="no-underline leading-none shrink-0">
+          <img src={isDark ? logoDark : logo} alt="CareerPatch"
+            className="block object-contain w-[130px] sm:w-[170px] lg:w-[210px]" />
         </Link>
 
-        {/* DESKTOP NAV */}
+        {/* ── DESKTOP NAV ── */}
         <nav className="hidden lg:flex items-center gap-1">
           {navLinks.map(({ path, label }) => (
-            <NavLink
-              key={path}
-              to={path}
-              label={label}
-              active={isActive(path)}
-              darkMode={darkMode}
-            />
+            <NavLink key={path} to={path} label={label} active={isActive(path)} />
           ))}
         </nav>
 
-        {/* DESKTOP RIGHT ACTIONS */}
-        <div className="hidden lg:flex items-center gap-3 flex-shrink-0">
+        {/* ── DESKTOP RIGHT ── */}
+        <div className="hidden lg:flex items-center gap-3 shrink-0">
+
           {/* Dark toggle */}
-          <button
-            onClick={toggleDark}
-            aria-label="Toggle dark mode"
-            className="w-9 h-9 flex items-center justify-center rounded-full border-0 bg-transparent cursor-pointer hover:opacity-75 transition-opacity"
-            style={{ color: "#3b82f6" }}
-          >
-            <DarkIcon size={22} darkMode={darkMode} />
+          <button onClick={toggleDark} aria-label="Toggle dark mode"
+            className="w-9 h-9 flex items-center justify-center rounded-full
+                       bg-transparent border-0 cursor-pointer text-blue-500 hover:opacity-75 transition-opacity">
+            <DarkIcon darkMode={darkMode} />
           </button>
 
-          {/* Notifications */}
+          {/* ── Notifications ── */}
           <div ref={notifRef} className="relative">
             <button
-              onClick={() => {
-                setNotifOpen((o) => !o);
-                setProfileOpen(false);
-              }}
+              onClick={() => { setNotifOpen((o) => !o); setProfileOpen(false); }}
               aria-label="Notifications"
-              className="w-9 h-9 flex items-center justify-center rounded-full border-0 bg-transparent cursor-pointer hover:opacity-75 relative"
-              style={{ color: "#3b82f6" }}
-            >
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
+              className="w-9 h-9 flex items-center justify-center rounded-full
+                         bg-transparent border-0 cursor-pointer text-blue-500 hover:opacity-75 relative">
+              <BellIcon />
               {unreadCount > 0 && (
-                <span
-                  className="absolute -top-1 -right-1 flex items-center justify-center rounded-full text-white"
-                  style={{
-                    width: 18,
-                    height: 18,
-                    fontSize: 10,
-                    fontWeight: 700,
-                    background: "#ef4444",
-                  }}
-                >
+                <span className="absolute -top-1 -right-1 w-[18px] h-[18px] rounded-full
+                                 bg-red-500 text-white text-[10px] font-bold
+                                 flex items-center justify-center">
                   {unreadCount}
                 </span>
               )}
             </button>
 
             {notifOpen && (
-              <div style={dropStyle("340px")}>
+              <div className="absolute top-[calc(100%+10px)] right-0 z-[1000] w-[340px]
+                             rounded-2xl overflow-hidden
+                             bg-white dark:bg-[#1e293b]
+                             shadow-[0_20px_60px_rgba(0,0,0,0.12),0_0_0_1px_rgba(0,0,0,0.06)]
+                             dark:shadow-[0_20px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.06)]">
                 {/* Header */}
-                <div
-                  className="flex items-center justify-between px-5 py-4"
-                  style={{ borderBottom: `1px solid ${bdr}` }}
-                >
-                  <span style={{ ...pFont("14px", 600), color: txt }}>
+                <div className="flex items-center justify-between px-5 py-4
+                               border-b border-slate-100 dark:border-[#1e293b]">
+                  <span className="text-sm font-semibold text-slate-900 dark:text-slate-100"
+                    style={{ fontFamily: "'Poppins', sans-serif" }}>
                     Notifications
                     {unreadCount > 0 && (
-                      <span
-                        className="ml-2 px-2 py-0.5 rounded-full text-white"
-                        style={{
-                          fontSize: 11,
-                          fontWeight: 600,
-                          background: "#3b82f6",
-                        }}
-                      >
+                      <span className="ml-2 px-2 py-0.5 rounded-full text-white text-[11px] font-semibold bg-blue-500">
                         {unreadCount} new
                       </span>
                     )}
                   </span>
                   {unreadCount > 0 && (
-                    <button
-                      onClick={markAllRead}
-                      style={{
-                        ...pFont("12px", 500),
-                        color: "#3b82f6",
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                      }}
-                    >
+                    <button onClick={markAllRead}
+                      className="text-xs text-blue-500 bg-transparent border-0 cursor-pointer"
+                      style={{ fontFamily: "'Poppins', sans-serif" }}>
                       Mark all read
                     </button>
                   )}
                 </div>
+
                 {/* List */}
-                <div style={{ maxHeight: 300, overflowY: "auto" }}>
+                <div className="max-h-[300px] overflow-y-auto">
                   {notifications.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 gap-2">
-                      <svg
-                        className="w-8 h-8 text-gray-300"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                        />
+                      <svg className="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                       </svg>
-                      <p style={{ ...pFont("12px"), color: sub }}>
-                        No new messages
-                      </p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500"
+                        style={{ fontFamily: "'Poppins', sans-serif" }}>No new messages</p>
                     </div>
                   ) : (
                     notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        className="flex items-start gap-3 px-5 py-3 cursor-pointer transition-colors"
-                        style={{
-                          background: darkMode
-                            ? "rgba(59,130,246,0.08)"
-                            : "rgba(239,246,255,0.8)",
-                          borderBottom: `1px solid ${darkMode ? "#1e293b" : "#f8fafc"}`,
-                        }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.background = darkMode
-                            ? "rgba(255,255,255,0.04)"
-                            : "#f8fafc")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.background = darkMode
-                            ? "rgba(59,130,246,0.08)"
-                            : "rgba(239,246,255,0.8)")
-                        }
-                        onClick={() => {
-                          markRead(n.id);
-                          setNotifOpen(false);
-                          navigate("/chat", {
-                            state: { openConvId: n.convId },
-                          });
-                        }}
-                      >
-                        {/* Avatar */}
+                      <div key={n.id}
+                        className="flex items-start gap-3 px-5 py-3 cursor-pointer transition-colors
+                                   bg-blue-50/80 dark:bg-blue-500/[0.08]
+                                   hover:bg-slate-50 dark:hover:bg-white/[0.04]
+                                   border-b border-slate-50 dark:border-[#1e293b]"
+                        onClick={() => { markRead(n.id); setNotifOpen(false); navigate("/chat", { state: { openConvId: n.convId } }); }}>
                         {n.senderAvatar ? (
-                          <img
-                            src={n.senderAvatar}
-                            alt=""
-                            className="w-9 h-9 rounded-full object-cover flex-shrink-0"
-                          />
+                          <img src={n.senderAvatar} alt=""
+                            className="w-9 h-9 rounded-full object-cover shrink-0" />
                         ) : (
-                          <div
-                            className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold"
-                            style={{
-                              background:
-                                "linear-gradient(135deg,#3b82f6,#6366f1)",
-                            }}
-                          >
+                          <div className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center
+                                          text-white text-xs font-bold
+                                          bg-gradient-to-br from-blue-500 to-indigo-500">
                             {n.senderName?.slice(0, 1)?.toUpperCase() || "?"}
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <p
-                            style={{
-                              ...pFont("13px", 600),
-                              color: darkMode ? "#e2e8f0" : "#0f172a",
-                              marginBottom: 2,
-                            }}
-                          >
-                            {n.senderName}
-                          </p>
-                          <p
-                            style={{
-                              ...pFont("11px"),
-                              color: sub,
-                              marginBottom: 3,
-                            }}
-                          >
-                            {n.preview}
-                          </p>
-                          <p style={{ ...pFont("11px"), color: "#3b82f6" }}>
-                            {timeAgoShort(n.time)}
-                          </p>
+                          <p className="text-[13px] font-semibold text-slate-900 dark:text-slate-100 mb-0.5 truncate"
+                            style={{ fontFamily: "'Poppins', sans-serif" }}>{n.senderName}</p>
+                          <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-0.5 truncate"
+                            style={{ fontFamily: "'Poppins', sans-serif" }}>{n.preview}</p>
+                          <p className="text-[11px] text-blue-500"
+                            style={{ fontFamily: "'Poppins', sans-serif" }}>{timeAgoShort(n.time)}</p>
                         </div>
-                        <div
-                          className="w-2 h-2 rounded-full flex-shrink-0 mt-1"
-                          style={{ background: "#3b82f6" }}
-                        />
+                        <div className="w-2 h-2 rounded-full shrink-0 mt-1 bg-blue-500" />
                       </div>
                     ))
                   )}
                 </div>
-                <div
-                  className="px-5 py-3 text-center"
-                  style={{ borderTop: `1px solid ${bdr}` }}
-                >
-                  <button
-                    onClick={() => {
-                      setNotifOpen(false);
-                      navigate("/chat");
-                    }}
-                    style={{
-                      ...pFont("13px", 500),
-                      color: "#3b82f6",
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                    }}
-                  >
+
+                {/* Footer */}
+                <div className="px-5 py-3 text-center border-t border-slate-100 dark:border-[#1e293b]">
+                  <button onClick={() => { setNotifOpen(false); navigate("/chat"); }}
+                    className="text-[13px] text-blue-500 bg-transparent border-0 cursor-pointer"
+                    style={{ fontFamily: "'Poppins', sans-serif" }}>
                     View all messages →
                   </button>
                 </div>
@@ -444,116 +299,66 @@ export default function NavbarAfterLogin() {
             )}
           </div>
 
-          {/* Profile menu */}
+          {/* ── Profile dropdown ── */}
           <div ref={profileRef} className="relative">
             <button
-              onClick={() => {
-                setProfileOpen((o) => !o);
-                setNotifOpen(false);
-              }}
+              onClick={() => { setProfileOpen((o) => !o); setNotifOpen(false); }}
               aria-label="Profile menu"
-              className="flex items-center gap-2 border-0 bg-transparent cursor-pointer p-0"
-            >
-              <img
-                src={profileSrc}
-                alt="Profile"
-                className="rounded-full object-cover flex-shrink-0"
-                style={{
-                  width: 40,
-                  height: 40,
-                  border: "2.5px solid #3b82f6",
-                  boxShadow: "0 0 0 3px rgba(59,130,246,0.15)",
-                }}
-                onError={(e) => (e.currentTarget.src = defaultProfile)}
-              />
-              <svg
-                width="13"
-                height="13"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke={sub}
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                style={{
-                  transition: "transform 0.2s",
-                  transform: profileOpen ? "rotate(180deg)" : "rotate(0)",
-                }}
-              >
+              className="flex items-center gap-2 bg-transparent border-0 cursor-pointer p-0">
+              <img src={profileSrc} alt="Profile"
+                className="w-10 h-10 rounded-full object-cover shrink-0
+                           ring-[2.5px] ring-blue-500 ring-offset-1 ring-offset-white dark:ring-offset-[#0f172a]"
+                onError={(e) => (e.currentTarget.src = defaultProfile)} />
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                stroke="#94a3b8" strokeWidth="2.5" strokeLinecap="round"
+                className={`transition-transform duration-200 ${profileOpen ? "rotate-180" : ""}`}>
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </button>
 
             {profileOpen && (
-              <div style={dropStyle("230px")}>
+              <div className="absolute top-[calc(100%+10px)] right-0 z-[1000] w-[230px]
+                             rounded-2xl overflow-hidden
+                             bg-white dark:bg-[#1e293b]
+                             shadow-[0_20px_60px_rgba(0,0,0,0.12),0_0_0_1px_rgba(0,0,0,0.06)]
+                             dark:shadow-[0_20px_60px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.06)]">
+
                 {/* User info */}
-                <div
-                  className="flex items-center gap-3 px-5 py-4"
-                  style={{ borderBottom: `1px solid ${bdr}` }}
-                >
-                  <img
-                    src={profileSrc}
-                    alt=""
-                    className="rounded-full object-cover flex-shrink-0"
-                    style={{
-                      width: 38,
-                      height: 38,
-                      border: "2px solid #3b82f6",
-                    }}
-                    onError={(e) => (e.currentTarget.src = defaultProfile)}
-                  />
+                <div className="flex items-center gap-3 px-5 py-4
+                               border-b border-slate-100 dark:border-[#334155]">
+                  <img src={profileSrc} alt=""
+                    className="w-[38px] h-[38px] rounded-full object-cover shrink-0 ring-2 ring-blue-500"
+                    onError={(e) => (e.currentTarget.src = defaultProfile)} />
                   <div>
-                    <p style={{ ...pFont("14px", 600), color: txt }}>
-                      {displayName}
-                    </p>
-                    <p style={{ ...pFont("12px"), color: sub }}>
-                      {displayRole}
-                    </p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 m-0"
+                      style={{ fontFamily: "'Poppins', sans-serif" }}>{displayName}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 m-0"
+                      style={{ fontFamily: "'Poppins', sans-serif" }}>{displayRole}</p>
                   </div>
                 </div>
+
                 {/* My Profile */}
-                <Link
-                  to="/profile"
-                  onClick={() => setProfileOpen(false)}
-                  className="flex items-center gap-3 px-5 py-3 no-underline transition-colors"
-                  style={{ color: darkMode ? "#cbd5e1" : "#374151" }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = darkMode
-                      ? "rgba(255,255,255,0.05)"
-                      : "#f8fafc";
-                    e.currentTarget.style.color = "#3b82f6";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "transparent";
-                    e.currentTarget.style.color = darkMode
-                      ? "#cbd5e1"
-                      : "#374151";
-                  }}
-                >
+                <Link to="/profile" onClick={() => setProfileOpen(false)}
+                  className="flex items-center gap-3 px-5 py-3 no-underline transition-colors
+                             text-slate-700 dark:text-slate-300
+                             hover:bg-slate-50 dark:hover:bg-white/5 hover:text-blue-500">
                   <span>👤</span>
-                  <span style={pFont("14px", 500)}>My Profile</span>
+                  <span className="text-sm font-medium" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                    My Profile
+                  </span>
                 </Link>
+
                 {/* Logout */}
-                <div
-                  style={{ borderTop: `1px solid ${bdr}`, padding: "6px 0" }}
-                >
+                <div className="border-t border-slate-100 dark:border-[#334155] py-1.5">
                   <button
-                    onClick={() => {
-                      setProfileOpen(false);
-                      onLogout();
-                    }}
-                    className="w-full flex items-center gap-3 px-5 py-3 border-0 bg-transparent cursor-pointer text-left transition-colors"
-                    style={{ color: "#ef4444" }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.background = darkMode
-                        ? "rgba(239,68,68,0.08)"
-                        : "#fff5f5")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.background = "transparent")
-                    }
-                  >
+                    onClick={() => { setProfileOpen(false); onLogout(); }}
+                    className="w-full flex items-center gap-3 px-5 py-3 border-0 bg-transparent cursor-pointer
+                               text-left text-red-500 transition-colors
+                               hover:bg-red-50 dark:hover:bg-red-500/[0.08]">
                     <span>🚪</span>
-                    <span style={pFont("14px", 500)}>Log out</span>
+                    <span className="text-sm font-medium" style={{ fontFamily: "'Poppins', sans-serif" }}>
+                      Log out
+                    </span>
                   </button>
                 </div>
               </div>
@@ -561,98 +366,44 @@ export default function NavbarAfterLogin() {
           </div>
         </div>
 
-        {/* ── MOBILE HEADER ROW ─────────────────────────────────────────── */}
+        {/* ── MOBILE HEADER ROW ── */}
         <div className="lg:hidden flex items-center gap-1">
           {/* Dark toggle */}
-          <button
-            onClick={toggleDark}
-            className="w-9 h-9 flex items-center justify-center text-blue-500 bg-transparent border-0 cursor-pointer"
-          >
-            <DarkIcon size={20} darkMode={darkMode} />
+          <button onClick={toggleDark}
+            className="w-9 h-9 flex items-center justify-center text-blue-500 bg-transparent border-0 cursor-pointer">
+            <DarkIcon darkMode={darkMode} />
           </button>
 
-          {/* Notification bell */}
+          {/* Bell */}
           <button
-            onClick={() => {
-              setNotifOpen((o) => !o);
-              setProfileOpen(false);
-              setMobileOpen(false);
-            }}
-            className="w-9 h-9 flex items-center justify-center bg-transparent border-0 cursor-pointer relative"
-            style={{ color: "#3b82f6" }}
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-            </svg>
+            onClick={() => { setNotifOpen((o) => !o); setProfileOpen(false); setMobileOpen(false); }}
+            className="w-9 h-9 flex items-center justify-center bg-transparent border-0 cursor-pointer text-blue-500 relative">
+            <BellIcon size={20} />
             {unreadCount > 0 && (
-              <span
-                className="absolute top-1 right-1 w-2 h-2 rounded-full"
-                style={{ background: "#ef4444" }}
-              />
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500" />
             )}
           </button>
 
-          {/* ✅ Profile avatar → navigate directly to /profile on mobile tap */}
-          <button
-            onClick={() => navigate("/profile")}
+          {/* Avatar → /profile */}
+          <button onClick={() => navigate("/profile")}
             className="bg-transparent border-0 cursor-pointer p-0 flex items-center"
-            aria-label="My profile"
-          >
-            <img
-              src={profileSrc}
-              alt="Profile"
-              className="rounded-full object-cover"
-              style={{ width: 34, height: 34, border: "2px solid #3b82f6" }}
-              onError={(e) => (e.currentTarget.src = defaultProfile)}
-            />
+            aria-label="My profile">
+            <img src={profileSrc} alt="Profile"
+              className="w-[34px] h-[34px] rounded-full object-cover ring-2 ring-blue-500"
+              onError={(e) => (e.currentTarget.src = defaultProfile)} />
           </button>
 
           {/* Hamburger */}
           <button
-            onClick={() => {
-              setMobileOpen((o) => !o);
-              setNotifOpen(false);
-            }}
-            className={[
-              "w-10 h-10 flex items-center justify-center rounded-lg border-0 bg-transparent cursor-pointer transition-colors",
-              darkMode
-                ? "text-slate-300 hover:bg-slate-800"
-                : "text-gray-600 hover:bg-gray-100",
-            ].join(" ")}
-          >
+            onClick={() => { setMobileOpen((o) => !o); setNotifOpen(false); }}
+            className="w-10 h-10 flex items-center justify-center rounded-lg border-0 bg-transparent cursor-pointer
+                       text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors">
             {mobileOpen ? (
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             ) : (
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <line x1="3" y1="12" x2="15" y2="12" />
                 <line x1="3" y1="18" x2="21" y2="18" />
@@ -662,184 +413,109 @@ export default function NavbarAfterLogin() {
         </div>
       </div>
 
-      {/* ── MOBILE NOTIFICATION PANEL ────────────────────────────────────── */}
+      {/* ── MOBILE NOTIFICATION PANEL ── */}
       {notifOpen && (
         <div
-          className="lg:hidden absolute left-3 right-3 z-50 rounded-2xl overflow-hidden shadow-2xl"
-          style={{
-            top: "calc(100% + 6px)",
-            background: darkMode ? "#1e293b" : "#fff",
-            border: `1px solid ${bdr}`,
-          }}
-        >
-          <div
-            className="flex items-center justify-between px-4 py-3"
-            style={{ borderBottom: `1px solid ${bdr}` }}
-          >
-            <span style={{ ...pFont("14px", 600), color: txt }}>
-              Notifications
-            </span>
+          onMouseDown={(e) => e.stopPropagation()}
+          className="lg:hidden absolute left-3 right-3 top-[calc(100%+6px)] z-50
+                       rounded-2xl overflow-hidden shadow-2xl
+                       bg-white dark:bg-[#1e293b]
+                       border border-slate-100 dark:border-[#1e293b]">
+          <div className="flex items-center justify-between px-4 py-3
+                         border-b border-slate-100 dark:border-[#334155]">
+            <span className="text-sm font-semibold text-slate-900 dark:text-slate-100"
+              style={{ fontFamily: "'Poppins', sans-serif" }}>Notifications</span>
             {unreadCount > 0 && (
-              <button
-                onClick={markAllRead}
-                style={{
-                  ...pFont("12px", 500),
-                  color: "#3b82f6",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
+              <button onClick={markAllRead}
+                className="text-xs text-blue-500 bg-transparent border-0 cursor-pointer">
                 Mark all read
               </button>
             )}
           </div>
-          <div style={{ maxHeight: 260, overflowY: "auto" }}>
+          <div className="max-h-[260px] overflow-y-auto">
             {notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-6 gap-1">
-                <p style={{ ...pFont("12px"), color: sub }}>No new messages</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500"
+                  style={{ fontFamily: "'Poppins', sans-serif" }}>No new messages</p>
               </div>
             ) : (
               notifications.map((n) => (
-                <div
-                  key={n.id}
-                  className="flex items-start gap-3 px-4 py-3 cursor-pointer"
-                  style={{
-                    background: darkMode
-                      ? "rgba(59,130,246,0.08)"
-                      : "rgba(239,246,255,0.8)",
-                    borderBottom: `1px solid ${darkMode ? "#1e293b" : "#f8fafc"}`,
-                  }}
-                  onClick={() => {
-                    markRead(n.id);
-                    setNotifOpen(false);
-                    navigate("/chat", { state: { openConvId: n.convId } });
-                  }}
-                >
+                <div key={n.id}
+                  className="flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors
+                             bg-blue-50/80 dark:bg-blue-500/[0.08]
+                             hover:bg-slate-50 dark:hover:bg-white/[0.04]
+                             border-b border-slate-50 dark:border-[#1e293b]"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onClick={() => { markRead(n.id); setNotifOpen(false); navigate("/chat", { state: { openConvId: n.convId } }); }}>
                   {n.senderAvatar ? (
-                    <img
-                      src={n.senderAvatar}
-                      alt=""
-                      className="w-8 h-8 rounded-full object-cover flex-shrink-0"
-                    />
+                    <img src={n.senderAvatar} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
                   ) : (
-                    <div
-                      className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold"
-                      style={{
-                        background: "linear-gradient(135deg,#3b82f6,#6366f1)",
-                      }}
-                    >
+                    <div className="w-8 h-8 rounded-full shrink-0 flex items-center justify-center
+                                    text-white text-xs font-bold bg-gradient-to-br from-blue-500 to-indigo-500">
                       {n.senderName?.slice(0, 1)?.toUpperCase() || "?"}
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p
-                      style={{
-                        ...pFont("13px", 600),
-                        color: darkMode ? "#e2e8f0" : "#0f172a",
-                        marginBottom: 2,
-                      }}
-                    >
-                      {n.senderName}
-                    </p>
-                    <p style={{ ...pFont("11px"), color: sub }}>{n.preview}</p>
+                    <p className="text-[13px] font-semibold text-slate-900 dark:text-slate-100 mb-0.5 truncate"
+                      style={{ fontFamily: "'Poppins', sans-serif" }}>{n.senderName}</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate"
+                      style={{ fontFamily: "'Poppins', sans-serif" }}>{n.preview}</p>
                   </div>
-                  <div
-                    className="w-2 h-2 rounded-full flex-shrink-0 mt-1"
-                    style={{ background: "#3b82f6" }}
-                  />
+                  <div className="w-2 h-2 rounded-full shrink-0 mt-1 bg-blue-500" />
                 </div>
               ))
             )}
           </div>
+          {/* View all messages footer */}
+          <div className="px-4 py-3 text-center border-t border-slate-100 dark:border-[#334155]">
+            <button
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={() => { setNotifOpen(false); navigate("/chat"); }}
+              className="text-[13px] text-blue-500 bg-transparent border-0 cursor-pointer"
+              style={{ fontFamily: "'Poppins', sans-serif" }}>
+              View all messages →
+            </button>
+          </div>
         </div>
       )}
 
-      {/* ── MOBILE NAV MENU ──────────────────────────────────────────────── */}
+      {/* ── MOBILE NAV MENU ── */}
       {mobileOpen && (
-        <div
-          className="lg:hidden border-t"
-          style={{ background: bg, borderColor: bdr }}
-        >
+        <div className="lg:hidden border-t border-slate-100 dark:border-[#1e293b]
+                       bg-white dark:bg-[#0f172a]">
           <nav className="flex flex-col px-4 sm:px-8 py-2">
             {navLinks.map(({ path, label }) => (
-              <Link
-                key={path}
-                to={path}
-                onClick={() => setMobileOpen(false)}
-                style={{
-                  fontFamily: "'Poppins', sans-serif",
-                  fontSize: "16px",
-                  color: isActive(path)
-                    ? "#3b82f6"
-                    : darkMode
-                      ? "#cbd5e1"
-                      : "#4b5563",
-                  fontWeight: isActive(path) ? 600 : 400,
-                  borderBottom: `1px solid ${bdr}`,
-                  padding: "12px 0",
-                  textDecoration: "none",
-                  display: "block",
-                  transition: "color 0.2s",
-                }}
-              >
+              <Link key={path} to={path} onClick={() => setMobileOpen(false)}
+                className={`py-3 no-underline block transition-colors border-b border-slate-100 dark:border-[#1e293b]
+                  ${isActive(path)
+                    ? "text-blue-500 font-semibold"
+                    : "text-gray-600 dark:text-slate-300 hover:text-blue-500"}`}
+                style={{ fontFamily: "'Poppins', sans-serif", fontSize: "16px" }}>
                 {label}
               </Link>
             ))}
           </nav>
 
-          {/* User info row */}
-          <div
-            className="flex items-center gap-3 px-4 sm:px-8 py-4"
-            style={{ borderTop: `1px solid ${bdr}` }}
-          >
-            <img
-              src={profileSrc}
-              alt="Profile"
-              className="rounded-full object-cover flex-shrink-0"
-              style={{ width: 42, height: 42, border: "2px solid #3b82f6" }}
-              onError={(e) => (e.currentTarget.src = defaultProfile)}
-            />
+          {/* User row */}
+          <div className="flex items-center gap-3 px-4 sm:px-8 py-4
+                         border-t border-slate-100 dark:border-[#1e293b]">
+            <img src={profileSrc} alt="Profile"
+              className="w-[42px] h-[42px] rounded-full object-cover shrink-0 ring-2 ring-blue-500"
+              onError={(e) => (e.currentTarget.src = defaultProfile)} />
             <div className="flex-1 min-w-0">
-              <p
-                style={{ ...pFont("14px", 600), color: txt }}
-                className="truncate"
-              >
-                {displayName}
-              </p>
-              <p style={{ ...pFont("12px"), color: "#3b82f6" }}>
-                {displayRole}
-              </p>
+              <p className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate m-0"
+                style={{ fontFamily: "'Poppins', sans-serif" }}>{displayName}</p>
+              <p className="text-xs text-blue-500 m-0"
+                style={{ fontFamily: "'Poppins', sans-serif" }}>{displayRole}</p>
             </div>
-            <Link
-              to="/profile"
-              onClick={() => setMobileOpen(false)}
-              style={{
-                ...pFont("12px", 600),
-                color: "#3b82f6",
-                textDecoration: "none",
-                padding: "5px 12px",
-                border: "1px solid #3b82f6",
-                borderRadius: 8,
-                whiteSpace: "nowrap",
-              }}
-            >
+            <Link to="/profile" onClick={() => setMobileOpen(false)}
+              className="text-xs font-semibold text-blue-500 no-underline whitespace-nowrap
+                         px-3 py-1.5 rounded-lg border border-blue-500 transition-colors
+                         hover:bg-blue-50 dark:hover:bg-blue-500/10">
               Profile
             </Link>
-            <button
-              onClick={() => {
-                setMobileOpen(false);
-                onLogout();
-              }}
-              style={{
-                ...pFont("12px", 600),
-                color: "#ef4444",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-              }}
-            >
+            <button onClick={() => { setMobileOpen(false); onLogout(); }}
+              className="text-xs font-semibold text-red-500 bg-transparent border-0 cursor-pointer whitespace-nowrap">
               Log out
             </button>
           </div>

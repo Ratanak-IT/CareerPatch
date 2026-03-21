@@ -8,9 +8,9 @@ import { supabase } from "../../../lib/supabaseClient";
 import OwnJobCard from "../../card/OwnJobCard";
 import BookmarkedServiceCard from "../../bookmark/BookmarkedServiceCard";
 import BookmarkedJobCard from "../../bookmark/BookmarkedJobCard";
+import cover from "../../../assets/covercall.png"
 
-const FALLBACK_COVER =
-  "https://images.unsplash.com/photo-1529101091764-c3526daf38fe?auto=format&fit=crop&q=80&w=1600";
+const FALLBACK_COVER =cover;
 const FALLBACK_AVATAR = "https://placehold.co/80x80?text=B";
 const FALLBACK_IMAGE  = "https://placehold.co/400x220?text=No+Image";
 

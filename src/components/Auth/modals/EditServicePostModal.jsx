@@ -1,5 +1,5 @@
 // src/components/Auth/postcomponent/EditServiceModal.jsx
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useGetCategoriesQuery } from "../../../services/categoriesApi";
 import { useUpdateServiceMutation } from "../../../services/servicesApi";
@@ -24,11 +24,97 @@ function Chip({ text, onRemove }) {
   );
 }
 
+// ── Modern Dropdown (same style as SearchBar filter)
+function ModernDropdown({ value, options, onChange, placeholder, disabled = false, loading = false }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const selected = options.find((o) => o.value === value);
+
+  return (
+    <div ref={ref} className="relative w-full">
+      {/* Trigger button */}
+      <button
+        type="button"
+        onClick={() => !disabled && !loading && setOpen((v) => !v)}
+        className={`w-full flex items-center justify-between px-4 py-2.5
+                   text-sm text-left rounded-xl
+                   border border-gray-200 dark:border-gray-700
+                   bg-white dark:bg-gray-800
+                   text-gray-700 dark:text-slate-200
+                   transition-colors outline-none
+                   ${disabled || loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 focus:ring-2 focus:ring-blue-400"}`}
+      >
+        <span className={`truncate ${!selected ? "text-gray-400 dark:text-gray-500" : ""}`}>
+          {loading ? "Loading categories..." : selected ? selected.label : placeholder}
+        </span>
+        <svg
+          className={`w-4 h-4 shrink-0 ml-2 text-gray-400 dark:text-slate-500 transition-transform ${open ? "rotate-180" : ""}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      {/* Dropdown menu */}
+      {open && !loading && (
+        <div
+          className="absolute left-0 top-[calc(100%+8px)] z-50 w-full overflow-hidden
+                     rounded-2xl border border-gray-200 dark:border-[#1e3a5f]
+                     bg-white dark:bg-[#0d1b35]
+                     shadow-[0_12px_40px_rgba(0,0,0,0.12)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.45)]"
+        >
+          <div className="max-h-64 overflow-y-auto py-2">
+            {options.map((option) => {
+              const active = value === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => {
+                    onChange?.(option.value);
+                    setOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-4 py-3 text-sm text-left transition-colors
+                    ${active
+                      ? "bg-blue-50 text-[#1E88E5] dark:bg-[#14345c] dark:text-blue-400"
+                      : "text-gray-700 hover:bg-gray-50 dark:text-slate-200 dark:hover:bg-[#13233f]"
+                    }`}
+                >
+                  <span className="truncate">{option.label}</span>
+                  {active && (
+                    <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                      <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function EditServiceModal({ service, onClose }) {
-  const { data: categories = [] } = useGetCategoriesQuery();
+  const { data: categories = [], isLoading: categoriesLoading } = useGetCategoriesQuery();
   const [updateService, { isLoading: saving }] = useUpdateServiceMutation();
 
-  // ── Form state (matches API payload)
+  // ── Form state
   const [form, setForm] = useState({
     title:       service?.title       || "",
     description: service?.description || "",
@@ -82,9 +168,9 @@ export default function EditServiceModal({ service, onClose }) {
 
   // ── Submit
   const handleSave = async () => {
-    if (!form.title.trim())    return setError("Title is required.");
+    if (!form.title.trim())       return setError("Title is required.");
     if (!form.description.trim()) return setError("Description is required.");
-    if (!form.categoryId)      return setError("Please select a category.");
+    if (!form.categoryId)         return setError("Please select a category.");
     setError("");
 
     try {
@@ -106,7 +192,7 @@ export default function EditServiceModal({ service, onClose }) {
         imageUrls,
       }).unwrap();
 
-      toast.success("updated successfully!");
+      toast.success("Updated successfully!");
       onClose?.();
     } catch (e) {
       console.error("update service error:", e);
@@ -114,7 +200,13 @@ export default function EditServiceModal({ service, onClose }) {
       setError(e?.message || "Failed to update post.");
     }
   };
-  
+
+  // Build category options for ModernDropdown
+  const categoryOptions = categories.map((cat) => ({
+    value: cat.id,
+    label: cat.name,
+  }));
+
   return (
     <div className="fixed inset-0 z-50 bg-black/30 dark:bg-black/50 flex items-start justify-center px-4 pt-[89px] overflow-y-auto">
       <div className="w-full max-w-[1100px] bg-[#f6f7fb] dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden relative my-4">
@@ -185,22 +277,17 @@ export default function EditServiceModal({ service, onClose }) {
                 />
               </div>
 
-              {/* Category */}
+              {/* Category — ModernDropdown */}
               <div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Category</p>
-                <select
+                <ModernDropdown
                   value={form.categoryId}
-                  onChange={(e) => set("categoryId", e.target.value)}
+                  options={categoryOptions}
+                  onChange={(val) => set("categoryId", val)}
+                  placeholder="— Select a category —"
                   disabled={busy}
-                  className="w-full bg-transparent dark:bg-gray-900 border-b border-gray-300 dark:border-gray-600
-                             focus:border-blue-500 outline-none py-2
-                             text-gray-900 dark:text-white"
-                >
-                  <option value="">— Select a category —</option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>{cat.name}</option>
-                  ))}
-                </select>
+                  loading={categoriesLoading}
+                />
               </div>
 
               {/* Status */}
