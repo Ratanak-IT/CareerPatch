@@ -120,7 +120,6 @@ function AvatarGroup({ users, totalCount }) {
   );
 }
 
-/* ─── MainSection ────────────────────────────────────────────────────────── */
 export default function MainSection() {
   const { data: raw, isLoading } = useGetFreelancersQuery();
 
@@ -244,11 +243,9 @@ export default function MainSection() {
         </div>
 
         <div
-          data-aos="fade-left"
-          data-aos-delay="150"
-          data-aos-duration="900"
-          className="w-full lg:w-[45%] relative flex justify-center items-end self-end"
-        >
+  className="w-full lg:w-[45%] relative flex justify-center items-end self-end"
+  style={{ animation: "heroFadeLeft 0.9s ease-out 0.15s both" }}
+>
           <img
             src={imgMain}
             alt="Professional with Laptop"
@@ -259,7 +256,6 @@ export default function MainSection() {
             }}
           />
 
-          {/* Floating Stats Card — now shows real freelancer count */}
           <div
             data-aos="zoom-in"
             data-aos-delay="500"

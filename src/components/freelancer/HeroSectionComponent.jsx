@@ -226,8 +226,8 @@ export default function HeroSectionComponent({
       </section>
 
       {/* ── SearchBar — flush at bottom ── */}
-      <div className="absolute bottom-0 left-0 right-0 px-6 sm:px-8 md:px-[25px] lg:px-[120px] 2xl:px-[265px] z-20">
-        <div className="max-w-[1440px] mx-auto">
+      <div className="absolute bottom-0 left-0 right-0 px-6 lg:px-[120px] 2xl:px-[50px] z-20">
+        <div className="max-w-[1440px] 2xl:px-30 mx-auto">
           <FreelancerSearchBarComponent
             category={category}
             searchText={searchText}

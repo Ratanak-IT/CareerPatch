@@ -136,8 +136,7 @@ export default function FreelancerSearchBarComponent({
       <div
         className="hidden md:flex items-stretch h-[64px] rounded-2xl overflow-visible
                    bg-white dark:bg-[#0d1b35]
-                   border border-gray-200 dark:border-[#1e3a5f]
-                   shadow-[0_4px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_32px_rgba(0,0,0,0.5)]"
+                   border border-gray-200 dark:border-[#1e3a5f]"
       >
         {/* Search input */}
         <div className="flex items-center gap-3 px-6 min-w-0" style={{ flex: "2" }}>
