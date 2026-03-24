@@ -1,6 +1,10 @@
 
 import { useState } from "react";
-import { signInWithPopup } from "firebase/auth";
+import {
+  signInWithPopup,
+  GithubAuthProvider,
+  GoogleAuthProvider,
+} from "firebase/auth";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
@@ -35,9 +39,7 @@ async function apiPost(path, body) {
 
 async function fetchMe(accessToken) {
   const res = await fetch(`${BASE_URL}/api/users/me`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
+    headers: { Authorization: `Bearer ${accessToken}` },
   });
 
   const json = await res.json();
@@ -70,15 +72,12 @@ async function registerAndLogin(email, password, fullName, photoURL) {
     bio: "",
   };
 
-  const { ok, status, text } = await apiPost(
-    "/api/users/register-freelancer",
-    body,
-  );
+  const { ok, status, text } = await apiPost("/api/users/register-freelancer", body);
   console.log("Register response:", status, text);
 
   if (status === 409) {
     throw new Error(
-      "This email is already registered. Please log in with your email and password instead.",
+      "This email is already registered. Please log in with your email and password instead."
     );
   }
 
@@ -89,15 +88,59 @@ async function registerAndLogin(email, password, fullName, photoURL) {
   return await loginWithCredentials(email, password);
 }
 
-function extractEmail(result) {
+async function fetchGithubPrimaryEmail(accessToken) {
+  const res = await fetch("https://api.github.com/user/emails", {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      Accept: "application/vnd.github+json",
+    },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    console.log("GitHub /user/emails failed:", res.status, text);
+    return null;
+  }
+
+  const emails = await res.json();
+
+  if (!Array.isArray(emails)) return null;
+
+  const primaryVerified =
+    emails.find((item) => item.primary && item.verified) ||
+    emails.find((item) => item.primary) ||
+    emails.find((item) => item.verified) ||
+    emails[0];
+
+  return primaryVerified?.email || null;
+}
+
+async function extractOAuthEmail(result, provider) {
   const fbUser = result?.user;
 
-  return (
+  const directEmail =
     fbUser?.email ||
     fbUser?.providerData?.find((p) => p?.email)?.email ||
-    result?.user?.providerData?.find((p) => p?.email)?.email ||
-    null
-  );
+    null;
+
+  if (directEmail) return directEmail;
+
+  if (provider?.providerId === "github.com") {
+    const credential = GithubAuthProvider.credentialFromResult(result);
+    const githubAccessToken = credential?.accessToken || null;
+
+    if (githubAccessToken) {
+      const githubEmail = await fetchGithubPrimaryEmail(githubAccessToken);
+      if (githubEmail) return githubEmail;
+    }
+  }
+
+  if (provider?.providerId === "google.com") {
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    console.log("Google credential:", credential);
+  }
+
+  return null;
 }
 
 export function useOAuthLogin({ redirectTo = "/" } = {}) {
@@ -109,27 +152,25 @@ export function useOAuthLogin({ redirectTo = "/" } = {}) {
     setLoading(true);
 
     try {
-      // 1) Firebase popup
       const result = await signInWithPopup(auth, provider);
       const fbUser = result.user;
 
-      const email = extractEmail(result);
+      console.log("OAuth result:", result);
+      console.log("Firebase user:", fbUser);
+      console.log("result.user.email:", result?.user?.email);
+      console.log("providerData:", fbUser?.providerData);
+
+      const email = await extractOAuthEmail(result, provider);
       const fullName = fbUser.displayName || email?.split("@")[0] || "User";
       const photoURL = fbUser.photoURL || "";
       const password = makePassword(fbUser.uid);
 
       if (!email) {
-        console.log("OAuth result:", result);
-        console.log("Firebase user:", fbUser);
-        console.log("result.user.email:", result?.user?.email);
-        console.log("providerData:", fbUser?.providerData);
         throw new Error("No email from provider. Try a different account.");
       }
 
-      // 2) Try login first
       let tokens = await loginWithCredentials(email, password);
 
-      // 3) If no account yet, register then login
       if (!tokens) {
         tokens = await registerAndLogin(email, password, fullName, photoURL);
       }
@@ -138,19 +179,15 @@ export function useOAuthLogin({ redirectTo = "/" } = {}) {
         throw new Error("Login failed. Please try again.");
       }
 
-      // 4) Save tokens
       dispatch(
         setTokens({
           accessToken: tokens.accessToken || null,
           refreshToken: tokens.refreshToken || null,
-        }),
+        })
       );
 
-      // 5) Fetch current user
       const user = await fetchMe(tokens.accessToken);
-      if (user) {
-        dispatch(setUser(user));
-      }
+      if (user) dispatch(setUser(user));
 
       toast.success("Login successful!");
       navigate(redirectTo, { replace: true });
