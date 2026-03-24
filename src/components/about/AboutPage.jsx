@@ -322,7 +322,7 @@ export default function AboutPage({ isLoading = false }) {
                       role="Lecturer · Backend"
                       spec="Spring Microservice"
                       img={MentorImg1}
-                      socials={{ github: "#", facebook: "#", telegram: "#" }}
+                      socials={{ github: "https://github.com/it-chhaya", facebook: "https://www.facebook.com/chhayadevkh", telegram: "https://t.me/chhayadevkh" }}
                     />
                   </div>
                   <div data-aos="fade-left" data-aos-duration="750" data-aos-delay="100">
@@ -331,7 +331,7 @@ export default function AboutPage({ isLoading = false }) {
                       role="Lecturer · Data Base"
                       spec="Ai Agent"
                       img={MentorImg2}
-                      socials={{ github: "#", facebook: "#", telegram: "#" }}
+                      socials={{ github: "https://github.com/tarakit", facebook: "https://www.facebook.com/drksearcherz", telegram: "https://t.me/tarakit" }}
                     />
                   </div>
                 </>
