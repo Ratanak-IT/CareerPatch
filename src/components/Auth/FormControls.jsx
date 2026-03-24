@@ -1,4 +1,4 @@
-// src/components/Auth/FormControls.jsx
+
 import { useState, useRef, useEffect } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 
