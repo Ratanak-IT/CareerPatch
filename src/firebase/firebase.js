@@ -5,7 +5,6 @@ import {
   GithubAuthProvider,
 } from "firebase/auth";
 
-// 🔹 Your Firebase config from .env
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FB_API_KEY,
   authDomain: import.meta.env.VITE_FB_AUTH_DOMAIN,
@@ -17,11 +16,12 @@ const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
 
-/* ================= Providers ================= */
-
 export const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope("email");
 googleProvider.addScope("profile");
 
 export const githubProvider = new GithubAuthProvider();
 githubProvider.addScope("user:email");
+githubProvider.setCustomParameters({
+  allow_signup: "true",
+});
